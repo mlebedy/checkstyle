@@ -167,9 +167,11 @@ public class LineWrappingHandler {
                 continue;
             }
             if (currentType == TokenTypes.RPAREN) {
+                indentCheck.notifyLineWrappingLog(this, node, firstNode, firstNodeIndent, expandedTabsColumnNo(node), firstNodeIndent);
                 logWarningMessage(node, firstNodeIndent);
             }
             else if (!TokenUtil.isOfType(currentType, IGNORED_LIST)) {
+                indentCheck.notifyLineWrappingLog(this, node, firstNode, firstNodeIndent, expandedTabsColumnNo(node), currentIndent);
                 logWarningMessage(node, currentIndent);
             }
         }

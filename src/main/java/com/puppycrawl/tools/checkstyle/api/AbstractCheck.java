@@ -19,8 +19,10 @@
 
 package com.puppycrawl.tools.checkstyle.api;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -46,7 +48,7 @@ public abstract class AbstractCheck extends AbstractViolationReporter {
      * @noinspectionreason ThreadLocalNotStaticFinal - static context
      *      is problematic for multithreading
      */
-    private final ThreadLocal<FileContext> context = ThreadLocal.withInitial(FileContext::new);
+    public final ThreadLocal<FileContext> context = ThreadLocal.withInitial(FileContext::new);
 
     /** The tokens the check is interested in. */
     private final Set<String> tokens = new HashSet<>();
@@ -330,10 +332,10 @@ public abstract class AbstractCheck extends AbstractViolationReporter {
     /**
      * The actual context holder.
      */
-    private static class FileContext {
+    public static class FileContext {
 
         /** The sorted set for collecting violations. */
-        private final SortedSet<Violation> violations = new TreeSet<>();
+        public final List<Violation> violations = new ArrayList<>();
 
         /** The current file contents. */
         private FileContents fileContents;

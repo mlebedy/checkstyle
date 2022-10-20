@@ -389,7 +389,7 @@ public class LeftCurlyCheck
      * @return {@code DetailAST} if the first child is {@code TokenTypes.SLIST},
      *     {@code null} otherwise.
      */
-    private static DetailAST getBraceFromSwitchMember(DetailAST ast) {
+    protected static DetailAST getBraceFromSwitchMember(DetailAST ast) {
         final DetailAST brace;
         final DetailAST parent = ast.getParent();
         if (parent.getType() == TokenTypes.SWITCH_RULE) {
@@ -408,7 +408,7 @@ public class LeftCurlyCheck
      * @return {@code DetailAST} if the first child is {@code TokenTypes.SLIST},
      *     {@code null} otherwise.
      */
-    private static DetailAST getBraceAsFirstChild(DetailAST ast) {
+    protected static DetailAST getBraceAsFirstChild(DetailAST ast) {
         DetailAST brace = null;
         if (ast != null) {
             final DetailAST candidate = ast.getFirstChild();
@@ -425,7 +425,7 @@ public class LeftCurlyCheck
      * @param ast {@code DetailAST}.
      * @return {@code DetailAST}.
      */
-    private static DetailAST skipModifierAnnotations(DetailAST ast) {
+    protected static DetailAST skipModifierAnnotations(DetailAST ast) {
         DetailAST resultNode = ast;
         final DetailAST modifiers = ast.findFirstToken(TokenTypes.MODIFIERS);
 
@@ -467,13 +467,15 @@ public class LeftCurlyCheck
      * @param brace token for left curly brace
      * @param startToken token for start of expression
      */
-    private void verifyBrace(final DetailAST brace,
+    protected void verifyBrace(/*final LeftCurlyOption option,*/
+                             final DetailAST brace,
                              final DetailAST startToken) {
         final String braceLine = getLine(brace.getLineNo() - 1);
 
         // Check for being told to ignore, or have '{}' which is a special case
         if (braceLine.length() <= brace.getColumnNo() + 1
                 || braceLine.charAt(brace.getColumnNo() + 1) != '}') {
+
             if (option == LeftCurlyOption.NL) {
                 if (!CommonUtil.hasWhitespaceBefore(brace.getColumnNo(), braceLine)) {
                     log(brace, MSG_KEY_LINE_NEW, OPEN_CURLY_BRACE, brace.getColumnNo() + 1);

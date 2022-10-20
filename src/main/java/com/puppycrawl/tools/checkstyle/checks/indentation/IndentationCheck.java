@@ -493,6 +493,9 @@ public class IndentationCheck extends AbstractCheck {
         }
     }
 
+    public void notifyLog(AbstractExpressionHandler handler, DetailAST mainAst, DetailAST ast, int actualIndent, int parentActualIndent) {}
+    public void notifyLineWrappingLog(LineWrappingHandler handler, DetailAST firstNode, DetailAST currentNode, int firstNodeIndent, int actualIndent, int correctIndent) {}
+
     /**
      * Get the width of a tab.
      *

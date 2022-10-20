@@ -52,7 +52,7 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  *
  */
 @FileStatefulCheck
-public final class TreeWalker extends AbstractFileSetCheck implements ExternalResourceHolder {
+public class TreeWalker extends AbstractFileSetCheck implements ExternalResourceHolder {
 
     /** Maps from token name to ordinary checks. */
     private final Map<Integer, Set<AbstractCheck>> tokenToOrdinaryChecks =
@@ -63,7 +63,7 @@ public final class TreeWalker extends AbstractFileSetCheck implements ExternalRe
             new HashMap<>();
 
     /** Registered ordinary checks, that don't use comment nodes. */
-    private final Set<AbstractCheck> ordinaryChecks = createNewCheckSortedSet();
+    protected final Set<AbstractCheck> ordinaryChecks = createNewCheckSortedSet();
 
     /** Registered comment checks. */
     private final Set<AbstractCheck> commentChecks = createNewCheckSortedSet();

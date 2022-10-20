@@ -48,6 +48,8 @@ public abstract class AbstractExpressionHandler {
     /** Indentation amount for this handler. */
     private IndentLevel indent;
 
+    protected int actualIndent;
+
     /**
      * Construct an instance of this handler with the given indentation check,
      * name, abstract syntax tree, and parent handler.
@@ -69,6 +71,11 @@ public abstract class AbstractExpressionHandler {
      * Check the indentation of the expression we are handling.
      */
     public abstract void checkIndentation();
+
+    public int getActualIndent()
+    {
+        return actualIndent;
+    }
 
     /**
      * Get the indentation amount for this handler. For performance reasons,
@@ -118,7 +125,7 @@ public abstract class AbstractExpressionHandler {
      * @param subtypeName   the type of the expression
      * @param actualIndent  the actual indent level of the expression
      */
-    protected final void logError(DetailAST ast, String subtypeName,
+    protected void logError(DetailAST ast, String subtypeName,
                                   int actualIndent) {
         logError(ast, subtypeName, actualIndent, getIndent());
     }
@@ -131,9 +138,10 @@ public abstract class AbstractExpressionHandler {
      * @param actualIndent   the actual indent level of the expression
      * @param expectedIndent the expected indent level of the expression
      */
-    protected final void logError(DetailAST ast, String subtypeName,
+    protected void logError(DetailAST ast, String subtypeName,
                                   int actualIndent, IndentLevel expectedIndent) {
         final String typeStr;
+        this.actualIndent = actualIndent;
 
         if (subtypeName.isEmpty()) {
             typeStr = "";
@@ -147,6 +155,8 @@ public abstract class AbstractExpressionHandler {
         }
         indentCheck.indentationLog(ast, messageKey,
             typeName + typeStr, actualIndent, expectedIndent);
+
+        indentCheck.notifyLog(this, mainAst, ast, actualIndent, getParent().getActualIndent());
     }
 
     /**
@@ -156,15 +166,18 @@ public abstract class AbstractExpressionHandler {
      * @param actualIndent   the actual indent level of the expression
      * @param expectedIndent the expected indent level of the expression
      */
-    private void logChildError(DetailAST ast,
+    protected void logChildError(DetailAST ast,
                                int actualIndent,
                                IndentLevel expectedIndent) {
+        this.actualIndent = actualIndent;
         String messageKey = IndentationCheck.MSG_CHILD_ERROR;
         if (expectedIndent.isMultiLevel()) {
             messageKey = IndentationCheck.MSG_CHILD_ERROR_MULTI;
         }
         indentCheck.indentationLog(ast, messageKey,
             typeName, actualIndent, expectedIndent);
+
+        indentCheck.notifyLog(this, mainAst, ast, actualIndent, getParent().getActualIndent());
     }
 
     /**
@@ -455,7 +468,7 @@ public abstract class AbstractExpressionHandler {
      *
      * @return the column number for the start of the expression
      */
-    protected final int expandedTabsColumnNo(DetailAST ast) {
+    public final int expandedTabsColumnNo(DetailAST ast) {
         final String line =
             indentCheck.getLine(ast.getLineNo() - 1);
 
@@ -521,7 +534,7 @@ public abstract class AbstractExpressionHandler {
      *
      * @return the MainAst attribute
      */
-    protected final DetailAST getMainAst() {
+    public final DetailAST getMainAst() {
         return mainAst;
     }
 
@@ -530,7 +543,7 @@ public abstract class AbstractExpressionHandler {
      *
      * @return the Parent attribute
      */
-    protected final AbstractExpressionHandler getParent() {
+    public final AbstractExpressionHandler getParent() {
         return parent;
     }
 
