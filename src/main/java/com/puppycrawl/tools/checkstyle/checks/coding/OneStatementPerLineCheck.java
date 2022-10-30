@@ -122,7 +122,7 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
  * @since 5.3
  */
 @FileStatefulCheck
-public final class OneStatementPerLineCheck extends AbstractCheck {
+public class OneStatementPerLineCheck extends AbstractCheck {
 
     /**
      * A key is pointing to the warning message text in "messages.properties"
@@ -310,7 +310,7 @@ public final class OneStatementPerLineCheck extends AbstractCheck {
      *
      * @param currentStatement current statement
      */
-    private void checkResourceVariable(DetailAST currentStatement) {
+    protected void checkResourceVariable(DetailAST currentStatement) {
         if (treatTryResourcesAsStatement) {
             final DetailAST nextNode = currentStatement.getNextSibling();
             if (currentStatement.getPreviousSibling().findFirstToken(TokenTypes.ASSIGN) != null) {
