@@ -416,7 +416,7 @@ public class AnnotationLocationCheck extends AbstractCheck {
      * @param hasParams whether an annotation has parameters.
      * @return true if the annotation has a correct location.
      */
-    private boolean isCorrectLocation(DetailAST annotation, boolean hasParams) {
+    protected boolean isCorrectLocation(DetailAST annotation, boolean hasParams) {
         final boolean allowingCondition;
 
         if (hasParams) {
