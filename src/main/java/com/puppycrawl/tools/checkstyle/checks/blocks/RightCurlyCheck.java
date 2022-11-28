@@ -320,7 +320,7 @@ public class RightCurlyCheck extends AbstractCheck {
      * @return violation message or empty string
      *     if there was no violation during validation.
      */
-    private String validate(Details details) {
+    protected String validate(Details details) {
         String violation = "";
         if (shouldHaveLineBreakBefore(option, details)) {
             violation = MSG_KEY_LINE_BREAK_BEFORE;
@@ -502,7 +502,7 @@ public class RightCurlyCheck extends AbstractCheck {
     /**
      * Structure that contains all details for validation.
      */
-    private static final class Details {
+    protected static final class Details {
 
         /**
          * Token types that identify tokens that will never have SLIST in their AST.
