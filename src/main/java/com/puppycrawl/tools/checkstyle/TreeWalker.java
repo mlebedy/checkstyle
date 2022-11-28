@@ -200,7 +200,7 @@ public class TreeWalker extends AbstractFileSetCheck implements ExternalResource
      * @param check the check to register
      * @throws CheckstyleException if an error occurs
      */
-    private void registerCheck(AbstractCheck check) throws CheckstyleException {
+    protected void registerCheck(AbstractCheck check) throws CheckstyleException {
         final int[] tokens;
         final Set<String> checkTokens = check.getTokenNames();
         if (checkTokens.isEmpty()) {
