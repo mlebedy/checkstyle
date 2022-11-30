@@ -627,6 +627,11 @@ public class WhitespaceAroundCheck extends AbstractCheck {
         allowEmptyMethods = allow;
     }
 
+    protected boolean isAllowEmptyMethods()
+    {
+        return allowEmptyMethods;
+    }
+
     /**
      * Setter to allow empty constructor bodies.
      *
@@ -634,6 +639,11 @@ public class WhitespaceAroundCheck extends AbstractCheck {
      */
     public void setAllowEmptyConstructors(boolean allow) {
         allowEmptyConstructors = allow;
+    }
+
+    protected boolean isAllowEmptyConstructors()
+    {
+        return allowEmptyConstructors;
     }
 
     /**
@@ -647,6 +657,11 @@ public class WhitespaceAroundCheck extends AbstractCheck {
         ignoreEnhancedForColon = ignore;
     }
 
+    protected boolean isIgnoreEnhancedForColon()
+    {
+        return ignoreEnhancedForColon;
+    }
+
     /**
      * Setter to allow empty class, interface and enum bodies.
      *
@@ -654,6 +669,11 @@ public class WhitespaceAroundCheck extends AbstractCheck {
      */
     public void setAllowEmptyTypes(boolean allow) {
         allowEmptyTypes = allow;
+    }
+
+    protected boolean isAllowEmptyTypes()
+    {
+        return allowEmptyTypes;
     }
 
     /**
@@ -665,6 +685,11 @@ public class WhitespaceAroundCheck extends AbstractCheck {
         allowEmptyLoops = allow;
     }
 
+    protected boolean isAllowEmptyLoops()
+    {
+        return allowEmptyLoops;
+    }
+
     /**
      * Setter to allow empty lambda bodies.
      *
@@ -674,6 +699,11 @@ public class WhitespaceAroundCheck extends AbstractCheck {
         allowEmptyLambdas = allow;
     }
 
+    protected boolean isAllowEmptyLambdas()
+    {
+        return allowEmptyLambdas;
+    }
+
     /**
      * Setter to allow empty catch bodies.
      *
@@ -681,6 +711,11 @@ public class WhitespaceAroundCheck extends AbstractCheck {
      */
     public void setAllowEmptyCatches(boolean allow) {
         allowEmptyCatches = allow;
+    }
+
+    protected boolean isAllowEmptyCatches()
+    {
+        return allowEmptyCatches;
     }
 
     @Override
@@ -713,7 +748,7 @@ public class WhitespaceAroundCheck extends AbstractCheck {
      * @param currentType type of ast
      * @return true is ok to skip validation
      */
-    private boolean isNotRelevantSituation(DetailAST ast, int currentType) {
+    protected boolean isNotRelevantSituation(DetailAST ast, int currentType) {
         final int parentType = ast.getParent().getType();
         final boolean starImport = currentType == TokenTypes.STAR
                 && parentType == TokenTypes.DOT;
@@ -725,7 +760,7 @@ public class WhitespaceAroundCheck extends AbstractCheck {
                         || isColonOfForEach(parentType);
         final boolean emptyBlockOrType =
                 isEmptyBlock(ast, parentType)
-                    || allowEmptyTypes && isEmptyType(ast);
+                    || isAllowEmptyTypes() && isEmptyType(ast);
 
         return starImportOrSlistInsideCaseGroup
                 || colonOfCaseOrDefaultOrForEach
@@ -852,7 +887,7 @@ public class WhitespaceAroundCheck extends AbstractCheck {
      */
     private boolean isColonOfForEach(int parentType) {
         return parentType == TokenTypes.FOR_EACH_CLAUSE
-                && ignoreEnhancedForColon;
+                && isIgnoreEnhancedForColon();
     }
 
     /**
@@ -878,7 +913,7 @@ public class WhitespaceAroundCheck extends AbstractCheck {
      *         allowed empty method block.
      */
     private boolean isEmptyMethodBlock(DetailAST ast, int parentType) {
-        return allowEmptyMethods
+        return isAllowEmptyMethods()
                 && isEmptyBlock(ast, parentType, TokenTypes.METHOD_DEF);
     }
 
@@ -893,7 +928,7 @@ public class WhitespaceAroundCheck extends AbstractCheck {
     private boolean isEmptyCtorBlockCheckedFromRcurly(DetailAST ast) {
         final DetailAST parent = ast.getParent();
         final DetailAST grandParent = ast.getParent().getParent();
-        return allowEmptyConstructors
+        return isAllowEmptyConstructors()
                 && parent.getFirstChild().getType() == TokenTypes.RCURLY
                 && (grandParent.getType() == TokenTypes.CTOR_DEF
                         || grandParent.getType() == TokenTypes.COMPACT_CTOR_DEF);
@@ -909,7 +944,7 @@ public class WhitespaceAroundCheck extends AbstractCheck {
      *          empty constructor block.
      */
     private boolean isEmptyCtorBlockCheckedFromSlist(DetailAST ast) {
-        return allowEmptyConstructors
+        return isAllowEmptyConstructors()
                 && (ast.getParent().getType() == TokenTypes.CTOR_DEF
                         || ast.getParent().getType() == TokenTypes.COMPACT_CTOR_DEF)
                 && ast.getFirstChild().getType() == TokenTypes.RCURLY;
@@ -924,7 +959,7 @@ public class WhitespaceAroundCheck extends AbstractCheck {
      *         allowed empty loop block.
      */
     private boolean isEmptyLoop(DetailAST ast, int parentType) {
-        return allowEmptyLoops
+        return isAllowEmptyLoops()
                 && (isEmptyBlock(ast, parentType, TokenTypes.LITERAL_FOR)
                         || isEmptyBlock(ast, parentType, TokenTypes.LITERAL_WHILE)
                         || isEmptyBlock(ast, parentType, TokenTypes.LITERAL_DO));
@@ -940,7 +975,7 @@ public class WhitespaceAroundCheck extends AbstractCheck {
      *         allowed empty lambda block.
      */
     private boolean isEmptyLambda(DetailAST ast, int parentType) {
-        return allowEmptyLambdas && isEmptyBlock(ast, parentType, TokenTypes.LAMBDA);
+        return isAllowEmptyLambdas() && isEmptyBlock(ast, parentType, TokenTypes.LAMBDA);
     }
 
     /**
@@ -953,7 +988,7 @@ public class WhitespaceAroundCheck extends AbstractCheck {
      *         allowed empty catch block.
      */
     private boolean isEmptyCatch(DetailAST ast, int parentType) {
-        return allowEmptyCatches && isEmptyBlock(ast, parentType, TokenTypes.LITERAL_CATCH);
+        return isAllowEmptyCatches() && isEmptyBlock(ast, parentType, TokenTypes.LITERAL_CATCH);
     }
 
     /**
