@@ -255,7 +255,7 @@ public class FinalParametersCheck extends AbstractCheck {
      *
      * @param param parameter to check.
      */
-    private void checkParam(final DetailAST param) {
+    protected void checkParam(final DetailAST param) {
         if (param.findFirstToken(TokenTypes.MODIFIERS).findFirstToken(TokenTypes.FINAL) == null
                 && !isIgnoredParam(param)
                 && !CheckUtil.isReceiverParameter(param)) {
