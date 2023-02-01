@@ -324,7 +324,7 @@ public class NoWhitespaceAfterCheck extends AbstractCheck {
      *        , line number of a possible whitespace.
      * @return true if whitespace found.
      */
-    private boolean hasTrailingWhitespace(DetailAST ast,
+    protected boolean hasTrailingWhitespace(DetailAST ast,
         int whitespaceColumnNo, int whitespaceLineNo) {
         final boolean result;
         final int astLineNo = ast.getLineNo();
