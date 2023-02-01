@@ -324,9 +324,11 @@ public class LineWrappingHandler {
                     && (parentNode.getParent().getType() == TokenTypes.MODIFIERS
                         || parentNode.getParent().getType() == TokenTypes.ANNOTATIONS)
                     || TokenUtil.areOnSameLine(node, atNode))) {
+                indentCheck.notifyLineWrappingLog(this, node, atNode, firstNodeIndent, expandedTabsColumnNo(node), firstNodeIndent);
                 logWarningMessage(node, firstNodeIndent);
             }
             else if (!isArrayInitPresentInAncestors) {
+                indentCheck.notifyLineWrappingLog(this, node, atNode, firstNodeIndent, expandedTabsColumnNo(node), firstNodeIndent);
                 logWarningMessage(node, currentIndent);
             }
             itr.remove();
