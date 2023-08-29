@@ -282,18 +282,20 @@ public class Checker extends AutomaticBean implements MessageDispatcher, RootMod
             String fileName = null;
             try {
                 fileName = file.getAbsolutePath();
-                final long timestamp = file.lastModified();
-                if (cacheFile != null && cacheFile.isInCache(fileName, timestamp)
-                        || !acceptFileStarted(fileName)) {
-                    continue;
+                if (isFileProcessable(file)) {
+                    final long timestamp = file.lastModified();
+                    if (cacheFile != null && cacheFile.isInCache(fileName, timestamp)
+                            || !acceptFileStarted(fileName)) {
+                        continue;
+                    }
+                    if (cacheFile != null) {
+                        cacheFile.put(fileName, timestamp);
+                    }
+                    fireFileStarted(fileName);
+                    final SortedSet<Violation> fileMessages = processFile(file);
+                    fireErrors(fileName, fileMessages);
+                    fireFileFinished(fileName);
                 }
-                if (cacheFile != null) {
-                    cacheFile.put(fileName, timestamp);
-                }
-                fireFileStarted(fileName);
-                final SortedSet<Violation> fileMessages = processFile(file);
-                fireErrors(fileName, fileMessages);
-                fireFileFinished(fileName);
             }
             // -@cs[IllegalCatch] There is no other way to deliver filename that was under
             // processing. See https://github.com/checkstyle/checkstyle/issues/2285
@@ -315,6 +317,11 @@ public class Checker extends AutomaticBean implements MessageDispatcher, RootMod
                 throw new Error("Error was thrown while processing " + file.getPath(), error);
             }
         }
+    }
+
+    protected boolean isFileProcessable(File f)
+    {
+        return true;
     }
 
     /**

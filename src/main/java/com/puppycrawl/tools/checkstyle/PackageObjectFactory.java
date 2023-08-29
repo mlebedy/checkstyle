@@ -95,7 +95,7 @@ public class PackageObjectFactory implements ModuleFactory {
     public static final String STRING_SEPARATOR = ", ";
 
     /** Map of Checkstyle module names to their fully qualified names. */
-    private static final Map<String, String> NAME_TO_FULL_MODULE_NAME = new HashMap<>();
+    public static final Map<String, String> NAME_TO_FULL_MODULE_NAME = new HashMap<>();
 
     /** Package names to prepend to class names. */
     private final Set<String> packages;
