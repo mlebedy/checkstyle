@@ -205,12 +205,17 @@ public class AnnotationOnSameLineCheck extends AbstractCheck {
             for (DetailAST annotationNode = modifiersNode.getFirstChild();
                     annotationNode != null;
                     annotationNode = annotationNode.getNextSibling()) {
-                if (annotationNode.getType() == TokenTypes.ANNOTATION
-                        && !TokenUtil.areOnSameLine(annotationNode, getNextNode(annotationNode))) {
-                    log(annotationNode, MSG_KEY_ANNOTATION_ON_SAME_LINE,
-                          getAnnotationName(annotationNode));
+                if (annotationNode.getType() == TokenTypes.ANNOTATION) {
+                    checkAnnotation(annotationNode);
                 }
             }
+        }
+    }
+
+    protected void checkAnnotation(DetailAST annotationNode)
+    {
+        if (!TokenUtil.areOnSameLine(annotationNode, getNextNode(annotationNode))) {
+            log(annotationNode, MSG_KEY_ANNOTATION_ON_SAME_LINE, getAnnotationName(annotationNode));
         }
     }
 
