@@ -66,7 +66,7 @@ public class TreeWalker extends AbstractFileSetCheck implements ExternalResource
     protected final Set<AbstractCheck> ordinaryChecks = createNewCheckSortedSet();
 
     /** Registered comment checks. */
-    private final Set<AbstractCheck> commentChecks = createNewCheckSortedSet();
+    protected final Set<AbstractCheck> commentChecks = createNewCheckSortedSet();
 
     /** The ast filters. */
     private final Set<TreeWalkerFilter> filters = new HashSet<>();

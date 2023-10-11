@@ -507,7 +507,7 @@ public class RequireThisCheck extends AbstractCheck {
      * @return the frame where the field is declared, if the given field is used without
      *         'this' and null otherwise.
      */
-    private AbstractFrame getFieldWithoutThis(DetailAST ast, int parentType) {
+    protected AbstractFrame getFieldWithoutThis(DetailAST ast, int parentType) {
         final boolean importOrPackage = ScopeUtil.getSurroundingScope(ast) == null;
         final boolean typeName = parentType == TokenTypes.TYPE
                 || parentType == TokenTypes.LITERAL_NEW;
@@ -1104,7 +1104,7 @@ public class RequireThisCheck extends AbstractCheck {
      * @return the frame where the method is declared, if the given method is used without
      *         'this' and null otherwise.
      */
-    private AbstractFrame getMethodWithoutThis(DetailAST ast) {
+    protected AbstractFrame getMethodWithoutThis(DetailAST ast) {
         AbstractFrame result = null;
         if (!validateOnlyOverlapping) {
             final AbstractFrame frame = findFrame(ast, true);
@@ -1277,7 +1277,7 @@ public class RequireThisCheck extends AbstractCheck {
     /**
      * A declaration frame.
      */
-    private abstract static class AbstractFrame {
+    protected abstract static class AbstractFrame {
 
         /** Set of name of variables declared in this frame. */
         private final Set<DetailAST> varIdents;
