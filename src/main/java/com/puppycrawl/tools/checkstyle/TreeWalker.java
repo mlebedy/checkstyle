@@ -268,7 +268,7 @@ public class TreeWalker extends AbstractFileSetCheck implements ExternalResource
      * @param contents the contents of the file the AST was generated from.
      * @param astState state of AST.
      */
-    private void walk(DetailAST ast, FileContents contents,
+    protected void walk(DetailAST ast, FileContents contents,
             AstState astState) {
         notifyBegin(ast, contents, astState);
         processIter(ast, astState);
@@ -433,7 +433,7 @@ public class TreeWalker extends AbstractFileSetCheck implements ExternalResource
      * State of AST.
      * Indicates whether tree contains certain nodes.
      */
-    private enum AstState {
+    protected enum AstState {
 
         /**
          * Ordinary tree.
