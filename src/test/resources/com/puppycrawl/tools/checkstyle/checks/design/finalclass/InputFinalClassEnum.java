@@ -28,15 +28,16 @@ public enum InputFinalClassEnum {
         return initial;
     }
 
-    static final class FinalClass { // ok
+    static final class FinalClass {
         private FinalClass() {}
     }
 
-    static class DerivedClass extends SuperClass { // violation
+    static class DerivedClass extends SuperClass {
+        // violation above 'Class DerivedClass should be declared as final'
         private DerivedClass() {}
     }
 
-    static class SuperClass { // ok
+    static class SuperClass {
         private SuperClass() {}
     }
 

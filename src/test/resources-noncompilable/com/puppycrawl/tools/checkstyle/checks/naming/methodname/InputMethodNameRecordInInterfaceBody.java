@@ -9,7 +9,7 @@ applyToPrivate = (default)true
 
 */
 
-//non-compiled with javac: Compilable with Java14
+//non-compiled with javac: Compilable with Java17
 package com.puppycrawl.tools.checkstyle.checks.naming.methodname;
 
 public interface InputMethodNameRecordInInterfaceBody {
@@ -18,7 +18,7 @@ public interface InputMethodNameRecordInInterfaceBody {
     record MyRecord1(){}
     record MyRecord2(int x, int y, int z){}
     record MyRecord3(int[][] x, String... z){
-        String record() { // ok
+        String record() {
             return null;
         }
         void VIOLATION() { // violation

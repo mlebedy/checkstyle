@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -41,7 +41,7 @@ import com.puppycrawl.tools.checkstyle.api.SeverityLevel;
  * SARIF stands for the static analysis results interchange format.
  * See <a href="https://sarifweb.azurewebsites.net/">reference</a>
  */
-public class SarifLogger extends AutomaticBean implements AuditListener {
+public class SarifLogger extends AbstractAutomaticBean implements AuditListener {
 
     /** The length of unicode placeholder. */
     private static final int UNICODE_LENGTH = 4;
@@ -99,6 +99,23 @@ public class SarifLogger extends AutomaticBean implements AuditListener {
 
     /** Content for result representing an error without filename or location. */
     private final String resultErrorOnly;
+
+    /**
+     * Creates a new {@code SarifLogger} instance.
+     *
+     * @param outputStream where to log audit events
+     * @param outputStreamOptions if {@code CLOSE} that should be closed in auditFinished()
+     * @throws IllegalArgumentException if outputStreamOptions is null
+     * @throws IOException if there is reading errors.
+     * @noinspection deprecation
+     * @noinspectionreason We are forced to keep AutomaticBean compatability
+     *     because of maven-checkstyle-plugin. Until #12873.
+     */
+    public SarifLogger(
+        OutputStream outputStream,
+        AutomaticBean.OutputStreamOptions outputStreamOptions) throws IOException {
+        this(outputStream, OutputStreamOptions.valueOf(outputStreamOptions.name()));
+    }
 
     /**
      * Creates a new {@code SarifLogger} instance.

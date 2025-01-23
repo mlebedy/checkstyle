@@ -1,7 +1,7 @@
 /*
 CustomImportOrder
 customImportOrderRules = SAME_PACKAGE(INT_IS_REQUIRED_HERE)
-standardPackageRegExp = (default)^(java|javax)\.
+standardPackageRegExp = (default)^(java|javax)\\.
 thirdPartyPackageRegExp = (default).*
 specialImportsRegExp = (default)^$
 separateLineBetweenGroups = (default)true
@@ -29,10 +29,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 
-import com.puppycrawl.tools.checkstyle.*;
-
 import com.google.common.collect.*;
 import org.junit.*;
 
-public class InputCustomImportOrderDefault8 { // ok
+public class InputCustomImportOrderDefault8 {
 }

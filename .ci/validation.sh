@@ -4,6 +4,7 @@ set -e
 source ./.ci/util.sh
 
 addCheckstyleBundleToAntResolvers() {
+  # shellcheck disable=2016 # we do not want to expand properties in this command
   xmlstarlet ed --inplace \
     -s '/ivysettings/resolvers' -t elem -n filesystem \
     -i '/ivysettings/resolvers/filesystem[last()]' -t attr -n name -v local-checkstyle \
@@ -17,12 +18,16 @@ addCheckstyleBundleToAntResolvers() {
     ivysettings.xml
 }
 
+function list_tasks() {
+  cat "${0}" | sed -E -n 's/^([a-zA-Z0-9\-]*)\)$/\1/p' | sort
+}
+
 case $1 in
 
 all-sevntu-checks)
   working_dir=.ci-temp/all-sevntu-checks
   mkdir -p $working_dir
-  xmlstarlet sel --net --template -m .//module -v "@name" -n config/checkstyle_sevntu_checks.xml \
+  xmlstarlet sel --net --template -m .//module -v "@name" -n config/checkstyle-sevntu-checks.xml \
     | grep -vE "Checker|TreeWalker|Filter|Holder" | grep -v "^$" \
     | sed "s/com\.github\.sevntu\.checkstyle\.checks\..*\.//" \
     | sort | uniq | sed "s/Check$//" > $working_dir/file.txt
@@ -42,11 +47,14 @@ check-missing-pitests)
 
   list=($(cat pom.xml | \
     xmlstarlet sel --ps -N pom="http://maven.apache.org/POM/4.0.0" \
-    -t -v '//pom:profile[./pom:id[contains(text(),'pitest')]]//pom:targetClasses/pom:param'))
+    -t -v "//pom:profile[./pom:id[contains(text(),'pitest')]]//pom:targetClasses/pom:param"))
 
   #  Temporary skip for Metadata generator related files for
   #  https://github.com/checkstyle/checkstyle/issues/8761
-  list=("com.puppycrawl.tools.checkstyle.meta.*" "${list[@]}")
+  #  Coverage for site package is skipped
+  #  until https://github.com/checkstyle/checkstyle/issues/13393
+  list=("com.puppycrawl.tools.checkstyle.meta.*"
+    "com.puppycrawl.tools.checkstyle.site.*" "${list[@]}")
 
   CMD="find src/main/java -type f ! -name 'package-info.java'"
 
@@ -84,15 +92,20 @@ eclipse-static-analysis)
   ;;
 
 nondex)
-  # Below we exclude test that fails due to picocli library usage
-  mvn -e --no-transfer-progress --fail-never clean nondex:nondex -DargLine='-Xms1024m -Xmx2048m' \
-    -Dtest=!JavadocPropertiesGeneratorTest#testNonExistentArgument
+  # Exclude test that fails due to picocli library usage
+  SKIPPED_TESTS='!JavadocPropertiesGeneratorTest#testNonExistentArgument,'
+  # Exclude test that fails due to stackoverflow error
+  SKIPPED_TESTS+='!SingleSpaceSeparatorCheckTest#testNoStackoverflowError'
+  mvn -e --no-transfer-progress \
+    --fail-never clean nondex:nondex -DargLine='-Xms1024m -Xmx2048m' \
+    -Dtest="$SKIPPED_TESTS"
+
   mkdir -p .ci-temp
-  cat "$(grep -RlE 'td class=.x' .nondex/ | cat)" < /dev/null > .ci-temp/output.txt
+  grep -RlE 'td class=.x' .nondex/ | cat > .ci-temp/output.txt
   RESULT=$(cat .ci-temp/output.txt | wc -c)
   cat .ci-temp/output.txt
   echo 'Size of output:'"$RESULT"
-  if [[ $RESULT != 0 ]]; then sleep 5s; false; fi
+  if [[ $RESULT != 0 ]]; then false; fi
   rm .ci-temp/output.txt
   ;;
 
@@ -115,7 +128,6 @@ pr-age)
   if (( $COMMITS_SINCE_MASTER > $MAX_ALLOWED ));
   then
     echo "This PR is too old and should be rebased on origin/master."
-    sleep 5s
     false
   fi
   ;;
@@ -127,47 +139,52 @@ test)
 
 test-de)
   mvn -e --no-transfer-progress clean integration-test failsafe:verify \
-    -DargLine='-Duser.language=de -Duser.country=DE -Xms1024m -Xmx2048m'
+    -Dsurefire.options='-Duser.language=de -Duser.country=DE -Xms1024m -Xmx2048m'
   ;;
 
 test-es)
   mvn -e --no-transfer-progress clean integration-test failsafe:verify \
-    -DargLine='-Duser.language=es -Duser.country=ES -Xms1024m -Xmx2048m'
+    -Dsurefire.options='-Duser.language=es -Duser.country=ES -Xms1024m -Xmx2048m'
   ;;
 
 test-fi)
   mvn -e --no-transfer-progress clean integration-test failsafe:verify \
-    -DargLine='-Duser.language=fi -Duser.country=FI -Xms1024m -Xmx2048m'
+    -Dsurefire.options='-Duser.language=fi -Duser.country=FI -Xms1024m -Xmx2048m'
   ;;
 
 test-fr)
   mvn -e --no-transfer-progress clean integration-test failsafe:verify \
-    -DargLine='-Duser.language=fr -Duser.country=FR -Xms1024m -Xmx2048m'
+    -Dsurefire.options='-Duser.language=fr -Duser.country=FR -Xms1024m -Xmx2048m'
   ;;
 
 test-zh)
   mvn -e --no-transfer-progress clean integration-test failsafe:verify \
-    -DargLine='-Duser.language=zh -Duser.country=CN -Xms1024m -Xmx2048m'
+    -Dsurefire.options='-Duser.language=zh -Duser.country=CN -Xms1024m -Xmx2048m'
   ;;
 
 test-ja)
   mvn -e --no-transfer-progress clean integration-test failsafe:verify \
-    -DargLine='-Duser.language=ja -Duser.country=JP -Xms1024m -Xmx2048m'
+    -Dsurefire.options='-Duser.language=ja -Duser.country=JP -Xms1024m -Xmx2048m'
   ;;
 
 test-pt)
   mvn -e --no-transfer-progress clean integration-test failsafe:verify \
-    -DargLine='-Duser.language=pt -Duser.country=PT -Xms1024m -Xmx2048m'
+    -Dsurefire.options='-Duser.language=pt -Duser.country=PT -Xms1024m -Xmx2048m'
   ;;
 
 test-tr)
   mvn -e --no-transfer-progress clean integration-test failsafe:verify \
-    -DargLine='-Duser.language=tr -Duser.country=TR -Xms1024m -Xmx2048m'
+    -Dsurefire.options='-Duser.language=tr -Duser.country=TR -Xms1024m -Xmx2048m'
   ;;
 
 test-ru)
   mvn -e --no-transfer-progress clean integration-test failsafe:verify \
-    -DargLine='-Duser.language=ru -Duser.country=RU -Xms1024m -Xmx2048m'
+    -Dsurefire.options='-Duser.language=ru -Duser.country=RU -Xms1024m -Xmx2048m'
+  ;;
+
+test-al)
+  mvn -e --no-transfer-progress clean integration-test failsafe:verify \
+    -Dsurefire.options='-Duser.language=sq -Duser.country=AL -Xms1024m -Xmx2048m'
   ;;
 
 versions)
@@ -184,7 +201,6 @@ versions)
     echo "New plugin versions:"
     grep -B 4 -A 7 "<nextVersion>" target/plugin-updates-report.xml | cat
     echo "Verification is failed."
-    sleep 5s
     false
   else
     echo "No new versions found"
@@ -198,6 +214,8 @@ markdownlint)
 no-error-pmd)
   CS_POM_VERSION="$(getCheckstylePomVersion)"
   echo "CS_version: ${CS_POM_VERSION}"
+  mvn -e --no-transfer-progress clean install -Pno-validations
+  echo "Checkout target sources ..."
   checkout_from "https://github.com/pmd/build-tools.git"
   cd .ci-temp/build-tools/
   mvn -e --no-transfer-progress install
@@ -219,6 +237,8 @@ no-error-pmd)
 no-violation-test-configurate)
   CS_POM_VERSION="$(getCheckstylePomVersion)"
   echo "CS_version: ${CS_POM_VERSION}"
+  mvn -e --no-transfer-progress clean install -Pno-validations
+  echo "Checkout target sources ..."
   mkdir -p .ci-temp
   cd .ci-temp
   git clone https://github.com/SpongePowered/Configurate.git
@@ -231,6 +251,8 @@ no-violation-test-configurate)
 no-violation-test-josm)
   CS_POM_VERSION="$(getCheckstylePomVersion)"
   echo "CS_version: ${CS_POM_VERSION}"
+  mvn -e --no-transfer-progress clean install -Pno-validations
+  echo "Checkout target sources ..."
   mkdir -p .ci-temp
   cd .ci-temp
   TESTED=$(wget -q -O - https://josm.openstreetmap.de/wiki/TestedVersion?format=txt)
@@ -256,6 +278,7 @@ no-error-xwiki)
   ANTLR4_VERSION="$(getMavenProperty 'antlr4.version')"
   echo "version:${CS_POM_VERSION} antlr4:${ANTLR4_VERSION}"
   mvn -e --no-transfer-progress clean install -Pno-validations
+  echo "Checkout target sources ..."
   checkout_from "https://github.com/xwiki/xwiki-commons.git"
   cd .ci-temp/xwiki-commons
   # Build custom Checkstyle rules
@@ -300,6 +323,7 @@ no-error-test-sbe)
   CS_POM_VERSION="$(getCheckstylePomVersion)"
   echo version:"$CS_POM_VERSION"
   mvn -e --no-transfer-progress clean install -Pno-validations
+  echo "Checkout target sources ..."
   checkout_from https://github.com/real-logic/simple-binary-encoding.git
   cd .ci-temp/simple-binary-encoding
   sed -i'' \
@@ -322,15 +346,24 @@ verify-no-exception-configs)
     --no-clobber \
     https://raw.githubusercontent.com/checkstyle/contribution/master/checkstyle-tester/checks-only-javadoc-error.xml
   MODULES_WITH_EXTERNAL_FILES="Filter|ImportControl"
-  xmlstarlet sel --net --template -m .//module -v "@name" \
-    -n $working_dir/checks-nonjavadoc-error.xml -n $working_dir/checks-only-javadoc-error.xml \
-    | grep -vE $MODULES_WITH_EXTERNAL_FILES | grep -v "^$" \
-    | sort | uniq | sed "s/Check$//" > $working_dir/web.txt
-  xmlstarlet sel --net --template -m .//module -v "@name" -n config/checkstyle_checks.xml \
+  xmlstarlet fo -D \
+    -n $working_dir/checks-nonjavadoc-error.xml \
+    | xmlstarlet sel --net --template -m .//module -n -v "@name" \
+    | grep -vE $MODULES_WITH_EXTERNAL_FILES | grep -v "^$" > $working_dir/temp.txt
+  xmlstarlet fo -D \
+     -n $working_dir/checks-only-javadoc-error.xml \
+    | xmlstarlet sel --net --template -m .//module -n -v "@name" \
+    | grep -vE $MODULES_WITH_EXTERNAL_FILES | grep -v "^$" >> $working_dir/temp.txt
+  sort $working_dir/temp.txt | uniq | sed "s/Check$//" > $working_dir/web.txt
+
+  xmlstarlet fo -D -n config/checkstyle-checks.xml \
+    | xmlstarlet sel --net --template -m .//module -n -v "@name" \
     | grep -vE $MODULES_WITH_EXTERNAL_FILES | grep -v "^$" \
     | sort | uniq | sed "s/Check$//" > $working_dir/file.txt
+
   DIFF_TEXT=$(diff -u $working_dir/web.txt $working_dir/file.txt | cat)
   fail=0
+
   if [[ $DIFF_TEXT != "" ]]; then
     echo "Diff is detected."
     if [[ $PULL_REQUEST =~ ^([0-9]+)$ ]]; then
@@ -352,12 +385,14 @@ verify-no-exception-configs)
       fi
     else
       diff -u $working_dir/web.txt $working_dir/file.txt | cat
-      echo 'file config/checkstyle_checks.xml contains Check that is not present at:'
+      echo 'file config/checkstyle-checks.xml contains Check that is not present at:'
       echo 'https://github.com/checkstyle/contribution/blob/master/checkstyle-tester/checks-nonjavadoc-error.xml'
       echo 'https://github.com/checkstyle/contribution/blob/master/checkstyle-tester/checks-only-javadoc-error.xml'
       echo 'Please add new Check to one of such files to let Check participate in auto testing'
       fail=1;
     fi
+  else
+    echo "No Diff detected."
   fi
   removeFolderWithProtectedFiles .ci-temp/verify-no-exception-configs
   sleep 5
@@ -370,7 +405,7 @@ verify-regexp-id)
   do
     a=$(grep -c "<module name=\"Regexp.*" "$FILE") || a=0
     b=$(grep "<module name=\"Regexp" -A 1 "$FILE" | grep -c "<property name=\"id\"") || b=0
-    if [ ${a} != ${b} ]
+    if [ "${a}" != "${b}" ]
     then
       echo "Error: $FILE has Regexp modules without id property immediately after module name."
       fail=1
@@ -419,12 +454,12 @@ release-dry-run)
   ;;
 
 assembly-run-all-jar)
-  mvn -e --no-transfer-progress clean package -Passembly
+  mvn -e --no-transfer-progress clean package -Passembly,no-validations
   CS_POM_VERSION="$(getCheckstylePomVersion)"
   echo version:"$CS_POM_VERSION"
   mkdir -p .ci-temp
   FOLDER=src/it/resources/com/google/checkstyle/test/chapter7javadoc/rule73wherejavadocrequired
-  FILE=InputMissingJavadocTypeCheckNoViolations.java
+  FILE=InputMissingJavadocTypeCorrect.java
   java -jar target/checkstyle-"$CS_POM_VERSION"-all.jar -c /google_checks.xml \
         $FOLDER/$FILE > .ci-temp/output.log
   fail=0
@@ -464,11 +499,19 @@ check-since-version)
 
   if [ -f "$NEW_CHECK_FILE" ]; then
     echo "New Check detected: $NEW_CHECK_FILE"
-    CS_POM_VERSION="$(getCheckstylePomVersion)"
-    CS_RELEASE_VERSION=$(echo "$CS_POM_VERSION" | cut -d '-' -f 1)
+    CS_RELEASE_VERSION="$(getCheckstylePomVersionWithoutSnapshot)"
     echo "CS Release version: $CS_RELEASE_VERSION"
+
+    if [[ $CS_RELEASE_VERSION != *.0 ]]; then
+      echo "Next release version is bug fix '$CS_RELEASE_VERSION', we will bump second digit in it";
+      MAJOR=$(echo "$CS_RELEASE_VERSION" | cut -d. -f1)
+      MINOR=$(echo "$CS_RELEASE_VERSION" | cut -d. -f2)
+      PATCH=$(echo "$CS_RELEASE_VERSION" | cut -d. -f3)
+      CS_RELEASE_VERSION="$MAJOR""."$((MINOR+1))".0"
+      echo "Expected CS Release version after merge of target commit: $CS_RELEASE_VERSION"
+    fi
+
     echo "Grep for @since $CS_RELEASE_VERSION"
-    sleep 5s
     grep "* @since $CS_RELEASE_VERSION" "$NEW_CHECK_FILE"
   else
     echo "No new Check, all is good."
@@ -484,7 +527,8 @@ javac11)
         --exclude='InputIllegalTypePackageClassName.java' \
         --exclude='InputVisibilityModifierPackageClassName.java' \
         '//non-compiled (syntax|with javac)?\:' \
-        src/test/resources-noncompilable))
+        src/test/resources-noncompilable \
+        src/xdocs-examples/resources-noncompilable))
   mkdir -p target
   for file in "${files[@]}"
   do
@@ -492,51 +536,10 @@ javac11)
   done
   ;;
 
-javac14)
-  files=($(grep -Rl --include='*.java' ': Compilable with Java14' \
-        src/test/resources-noncompilable || true))
-  if [[  ${#files[@]} -eq 0 ]]; then
-    echo "No Java14 files to process"
-  else
-      mkdir -p target
-      for file in "${files[@]}"
-      do
-        javac --release 14 --enable-preview -d target "${file}"
-      done
-  fi
-  ;;
-
-javac15)
-  files=($(grep -Rl --include='*.java' ': Compilable with Java15' \
-        src/test/resources-noncompilable || true))
-  if [[  ${#files[@]} -eq 0 ]]; then
-    echo "No Java15 files to process"
-  else
-      mkdir -p target
-      for file in "${files[@]}"
-      do
-        javac --release 15 --enable-preview -d target "${file}"
-      done
-  fi
-  ;;
-
-javac16)
-  files=($(grep -Rl --include='*.java' ': Compilable with Java16' \
-        src/test/resources-noncompilable || true))
-  if [[  ${#files[@]} -eq 0 ]]; then
-    echo "No Java16 files to process"
-  else
-      mkdir -p target
-      for file in "${files[@]}"
-      do
-        javac --release 16 --enable-preview -d target "${file}"
-      done
-  fi
-  ;;
-
 javac17)
   files=($(grep -Rl --include='*.java' ': Compilable with Java17' \
-        src/test/resources-noncompilable || true))
+        src/test/resources-noncompilable \
+        src/xdocs-examples/resources-noncompilable || true))
   if [[  ${#files[@]} -eq 0 ]]; then
     echo "No Java17 files to process"
   else
@@ -548,53 +551,96 @@ javac17)
   fi
   ;;
 
-jdk14-assembly-site)
-  mvn -e --no-transfer-progress package -Passembly
-  mvn -e --no-transfer-progress site -Pno-validations
+javac19)
+  files=($(grep -Rl --include='*.java' ': Compilable with Java19' \
+        src/test/resources-noncompilable \
+        src/xdocs-examples/resources-noncompilable || true))
+  if [[  ${#files[@]} -eq 0 ]]; then
+    echo "No Java19 files to process"
+  else
+      mkdir -p target
+      for file in "${files[@]}"
+      do
+        javac --release 19 --enable-preview -d target "${file}"
+      done
+  fi
   ;;
 
-# executed only in wercker for security reasons
+javac20)
+  files=($(grep -Rl --include='*.java' ': Compilable with Java20' \
+        src/test/resources-noncompilable \
+        src/xdocs-examples/resources-noncompilable || true))
+  if [[  ${#files[@]} -eq 0 ]]; then
+    echo "No Java20 files to process"
+  else
+      mkdir -p target
+      for file in "${files[@]}"
+      do
+        javac --release 20 --enable-preview -d target "${file}"
+      done
+  fi
+  ;;
+
+javac21)
+  files=($(grep -Rl --include='*.java' ': Compilable with Java21' \
+        src/test/resources-noncompilable \
+        src/xdocs-examples/resources-noncompilable || true))
+  if [[  ${#files[@]} -eq 0 ]]; then
+    echo "No Java21 files to process"
+  else
+    mkdir -p target
+    for file in "${files[@]}"
+    do
+      javac --release 21 --enable-preview -d target "${file}"
+    done
+  fi
+  ;;
+
+package-site)
+  mvn -e --no-transfer-progress package -Passembly,no-validations
+  mvn -e --no-transfer-progress site -Dlinkcheck.skip=true
+  ;;
+
 sonarqube)
   # token could be generated at https://sonarcloud.io/account/security/
   # execution on local for master:
-  # SONAR_TOKEN=xxxxxx ./.ci/wercker.sh sonarqube
+  # SONAR_TOKEN=xxxxxx ./.ci/validation.sh sonarqube
   # execution on local for non-master:
-  # SONAR_TOKEN=xxxxxx PR=xxxxxx WERCKER_GIT_BRANCH=xxxxxx ./.ci/wercker.sh sonarqube
-  if [[ $PR && $PR =~ ^([0-9]*)$ ]]; then
-      SONAR_PR_VARIABLES="-Dsonar.pullrequest.key=$PR"
-      SONAR_PR_VARIABLES+=" -Dsonar.pullrequest.branch=$WERCKER_GIT_BRANCH"
+  # SONAR_TOKEN=xxxxxx PR_NUMBER=xxxxxx PR_BRANCH_NAME=xxxxxx ./.ci/validation.sh sonarqube
+  checkForVariable "SONAR_TOKEN"
+
+  if [[ $PR_NUMBER =~ ^([0-9]+)$ ]]; then
+      SONAR_PR_VARIABLES="-Dsonar.pullrequest.key=$PR_NUMBER"
+      SONAR_PR_VARIABLES+=" -Dsonar.pullrequest.branch=$PR_BRANCH_NAME"
       SONAR_PR_VARIABLES+=" -Dsonar.pullrequest.base=master"
       echo "SONAR_PR_VARIABLES: ""$SONAR_PR_VARIABLES"
   fi
-  if [[ -z $SONAR_TOKEN ]]; then echo "SONAR_TOKEN is not set"; sleep 5s; exit 1; fi
+
   export MAVEN_OPTS='-Xmx2000m'
   # until https://github.com/checkstyle/checkstyle/issues/11637
   # shellcheck disable=SC2086
-  mvn -e --no-transfer-progress -Pno-validations clean package sonar:sonar $SONAR_PR_VARIABLES \
+  mvn -e --no-transfer-progress -Pno-validations clean package sonar:sonar \
+       $SONAR_PR_VARIABLES \
        -Dsonar.host.url=https://sonarcloud.io \
-       -Dsonar.login=$SONAR_TOKEN \
+       -Dsonar.login="$SONAR_TOKEN" \
        -Dsonar.projectKey=org.checkstyle:checkstyle \
        -Dsonar.organization=checkstyle
   echo "report-task.txt:"
   cat target/sonar/report-task.txt
   echo "Verification of sonar gate status"
-  checkout_from https://github.com/viesure/blog-sonar-build-breaker.git
-  sed -i'' "s|our.sonar.server|sonarcloud.io|" \
-    .ci-temp/blog-sonar-build-breaker/sonar_break_build.sh
-  sed -i'' "s|curl |curl -k |" \
-    .ci-temp/blog-sonar-build-breaker/sonar_break_build.sh
   export SONAR_API_TOKEN=$SONAR_TOKEN
-  .ci-temp/blog-sonar-build-breaker/sonar_break_build.sh
-  removeFolderWithProtectedFiles .ci-temp/blog-sonar-build-breaker
+  .ci/sonar-break-build.sh
   ;;
 
 no-error-pgjdbc)
   CS_POM_VERSION="$(getCheckstylePomVersion)"
   echo CS_version: "${CS_POM_VERSION}"
+  mvn -e --no-transfer-progress clean install -Pno-validations
+  echo "Checkout target sources ..."
   checkout_from https://github.com/pgjdbc/pgjdbc.git
   cd .ci-temp/pgjdbc
   # pgjdbc easily damage build, we should use stable versions
-  git checkout "261181f31c0eb""e2deb593c1cc51174898ad6c50c"
+  git checkout "fcc13e70e6b6bb64b848df4b4ba6b3566b5""e95a3"
   ./gradlew --no-parallel --no-daemon checkstyleAll \
             -PenableMavenLocal -Pcheckstyle.version="${CS_POM_VERSION}"
   cd ../
@@ -604,10 +650,12 @@ no-error-pgjdbc)
 no-error-orekit)
   CS_POM_VERSION="$(getCheckstylePomVersion)"
   echo CS_version: "${CS_POM_VERSION}"
+  mvn -e --no-transfer-progress clean install -Pno-validations
+  echo "Checkout target sources ..."
   checkout_from https://github.com/Hipparchus-Math/hipparchus.git
   cd .ci-temp/hipparchus
   # checkout to version that Orekit expects
-  SHA_HIPPARCHUS="1fb""fb8a2a259a9""7a23e2a387e8fd""c5e0a8402e77"
+  SHA_HIPPARCHUS="815ad2bf9ce764e4498911d2145c49165f5f3333"
   git checkout $SHA_HIPPARCHUS
   mvn -e --no-transfer-progress install -DskipTests
   cd -
@@ -616,7 +664,7 @@ no-error-orekit)
   # no CI is enforced in project, so to make our build stable we should
   # checkout to latest release/development (annotated tag or hash) or sha that have fix we need
   # git checkout $(git describe --abbrev=0 --tags)
-  git checkout "851de782c6""d16d""f725fa""bb4646ff0dd086723415"
+  git checkout "a32b4629b2890fc198b19a95a714d67b87d7943d"
   mvn -e --no-transfer-progress compile checkstyle:check \
     -Dorekit.checkstyle.version="${CS_POM_VERSION}"
   cd ..
@@ -627,6 +675,8 @@ no-error-orekit)
 no-error-hibernate-search)
   CS_POM_VERSION="$(getCheckstylePomVersion)"
   echo CS_version: "${CS_POM_VERSION}"
+  mvn -e --no-transfer-progress clean install -Pno-validations
+  echo "Checkout target sources ..."
   checkout_from https://github.com/hibernate/hibernate-search.git
   cd .ci-temp/hibernate-search
   mvn -e --no-transfer-progress clean install -pl build/config -am \
@@ -643,9 +693,10 @@ no-error-checkstyles-sevntu)
   set -e
   CS_POM_VERSION="$(getCheckstylePomVersion)"
   echo CS_version: "${CS_POM_VERSION}"
-  mvn -e --no-transfer-progress compile verify \
+  mvn -e --no-transfer-progress clean install -Pno-validations
+  mvn -e --no-transfer-progress compile verify -Psevntu \
     -Dmaven.sevntu-checkstyle-check.checkstyle.version="${CS_POM_VERSION}" \
-    -Dmaven.test.skip=true -Dcheckstyle.ant.skip=true -Dpmd.skip=true -Dspotbugs.skip=true \
+    -Dmaven.test.skip=true -Dpmd.skip=true -Dspotbugs.skip=true \
     -Djacoco.skip=true -Dforbiddenapis.skip=true -Dxml.skip=true
   ;;
 
@@ -653,11 +704,15 @@ no-error-sevntu-checks)
   set -e
   CS_POM_VERSION="$(getCheckstylePomVersion)"
   echo CS_version: "${CS_POM_VERSION}"
+  mvn -e --no-transfer-progress clean install -Pno-validations
+  echo "Checkout target sources ..."
   checkout_from https://github.com/sevntu-checkstyle/sevntu.checkstyle.git
   cd .ci-temp/sevntu.checkstyle/sevntu-checks
-  mvn -e --no-transfer-progress -Pno-validations verify  -Dcheckstyle.skip=false \
+  mvn -e --no-transfer-progress -Pno-validations verify  -Dcheckstyle.ant.skip=false \
      -Dcheckstyle.version="${CS_POM_VERSION}" \
-     -Dcheckstyle.configLocation=../../../config/checkstyle_checks.xml
+     -Dcheckstyle.configLocation=../../../config/checkstyle-checks.xml \
+     -Dcheckstyle.nonMain.configLocation=../../../config/checkstyle-non-main-files-checks.xml \
+     -Dcheckstyle.non-main-files-suppressions.file=config/checkstyle-non-main-files-suppressions.xml
   cd ../../
   removeFolderWithProtectedFiles sevntu.checkstyle
   ;;
@@ -666,15 +721,17 @@ no-error-contribution)
   set -e
   CS_POM_VERSION="$(getCheckstylePomVersion)"
   echo CS_version: "${CS_POM_VERSION}"
+  mvn -e --no-transfer-progress clean install -Pno-validations
+  echo "Checkout target sources ..."
   checkout_from https://github.com/checkstyle/contribution.git
   cd .ci-temp/contribution
   cd patch-diff-report-tool
   mvn -e --no-transfer-progress verify -DskipTests -Dcheckstyle.version="${CS_POM_VERSION}" \
-     -Dcheckstyle.configLocation=../../../config/checkstyle_checks.xml
+     -Dcheckstyle.configLocation=../../../config/checkstyle-checks.xml
   cd ../
   cd releasenotes-builder
   mvn -e --no-transfer-progress verify -DskipTests -Dcheckstyle.version="${CS_POM_VERSION}" \
-     -Dcheckstyle.configLocation=../../../config/checkstyle_checks.xml
+     -Dcheckstyle.configLocation=../../../config/checkstyle-checks.xml
   cd ../../
   removeFolderWithProtectedFiles contribution
   ;;
@@ -683,10 +740,12 @@ no-error-methods-distance)
   set -e
   CS_POM_VERSION="$(getCheckstylePomVersion)"
   echo CS_version: "${CS_POM_VERSION}"
+  mvn -e --no-transfer-progress clean install -Pno-validations
+  echo "Checkout target sources ..."
   checkout_from https://github.com/sevntu-checkstyle/methods-distance.git
   cd .ci-temp/methods-distance
   mvn -e --no-transfer-progress verify -DskipTests -Dcheckstyle-version="${CS_POM_VERSION}" \
-     -Dcheckstyle.configLocation=../../config/checkstyle_checks.xml
+     -Dcheckstyle.configLocation=../../config/checkstyle-checks.xml
   cd ..
   removeFolderWithProtectedFiles  methods-distance
   ;;
@@ -695,6 +754,8 @@ no-error-spring-cloud-gcp)
   set -e
   CS_POM_VERSION="$(getCheckstylePomVersion)"
   echo CS_version: "${CS_POM_VERSION}"
+  mvn -e --no-transfer-progress clean install -Pno-validations
+  echo "Checkout target sources ..."
   checkout_from https://github.com/googlecloudplatform/spring-cloud-gcp
   cd .ci-temp/spring-cloud-gcp
   git checkout "7c99f37087ac8f""eb""db""f7e185375a217b744895a4"
@@ -708,6 +769,8 @@ no-error-spring-cloud-gcp)
 no-error-equalsverifier)
   CS_POM_VERSION="$(getCheckstylePomVersion)"
   echo CS_version: "${CS_POM_VERSION}"
+  mvn -e --no-transfer-progress clean install -Pno-validations
+  echo "Checkout target sources ..."
   checkout_from https://github.com/jqno/equalsverifier.git
   cd .ci-temp/equalsverifier
   mvn -e --no-transfer-progress -Pstatic-analysis-checkstyle compile \
@@ -716,22 +779,15 @@ no-error-equalsverifier)
   removeFolderWithProtectedFiles equalsverifier
   ;;
 
-no-error-apex-core)
-  CS_POM_VERSION="$(getCheckstylePomVersion)"
-  echo CS_version: "${CS_POM_VERSION}"
-  checkout_from https://github.com/checkstyle/apex-core
-  cd .ci-temp/apex-core
-  mvn -e --no-transfer-progress compile checkstyle:check -Dcheckstyle.version="${CS_POM_VERSION}"
-  cd ../
-  removeFolderWithProtectedFiles apex-core
-  ;;
-
 no-error-strata)
   set -e
   CS_POM_VERSION="$(getCheckstylePomVersion)"
   echo CS_version: "${CS_POM_VERSION}"
+  mvn -e --no-transfer-progress clean install -Pno-validations
+  echo "Checkout target sources ..."
   checkout_from https://github.com/OpenGamma/Strata.git
   cd .ci-temp/Strata
+  # shellcheck disable=2016 # we do not want to expand properties in this command
   STRATA_CS_POM_VERSION=$(mvn -e --no-transfer-progress -q -Dexec.executable='echo' \
                      -Dexec.args='${checkstyle.version}' \
                      --non-recursive org.codehaus.mojo:exec-maven-plugin:1.3.1:exec)
@@ -746,6 +802,8 @@ no-error-spring-integration)
   set -e
   CS_POM_VERSION="$(getCheckstylePomVersion)"
   echo CS_version: "${CS_POM_VERSION}"
+  mvn -e --no-transfer-progress clean install -Pno-validations
+  echo "Checkout target sources ..."
   checkout_from https://github.com/spring-projects/spring-integration.git
   cd .ci-temp/spring-integration
   PROP_MAVEN_LOCAL="mavenLocal"
@@ -759,11 +817,27 @@ no-error-spring-integration)
 no-error-htmlunit)
   CS_POM_VERSION="$(getCheckstylePomVersion)"
   echo CS_version: "${CS_POM_VERSION}"
+  mvn -e --no-transfer-progress clean install -Pno-validations
+  echo "Checkout target sources ..."
   checkout_from https://github.com/HtmlUnit/htmlunit
   cd .ci-temp/htmlunit
   mvn -e --no-transfer-progress compile checkstyle:check -Dcheckstyle.version="${CS_POM_VERSION}"
   cd ../
   removeFolderWithProtectedFiles htmlunit
+  ;;
+
+no-error-spotbugs)
+  CS_POM_VERSION="$(getCheckstylePomVersion)"
+  echo CS_version: "${CS_POM_VERSION}"
+  mvn -e --no-transfer-progress clean install -Pno-validations
+  echo "Checkout target sources ..."
+  checkout_from https://github.com/spotbugs/spotbugs
+  cd .ci-temp/spotbugs
+  sed -i'' "s/mavenCentral()/mavenLocal(); mavenCentral()/" build.gradle
+  sed -i'' "s/toolVersion.*$/toolVersion '${CS_POM_VERSION}'/" gradle/checkstyle.gradle
+  ./gradlew :eclipsePlugin-junit:checkstyleTest -Dcheckstyle.version="${CS_POM_VERSION}"
+  cd ../
+  removeFolderWithProtectedFiles spotbugs
   ;;
 
 no-exception-struts)
@@ -776,8 +850,8 @@ no-exception-struts)
   sed -i'' 's/#apache-struts/apache-struts/' projects-to-test-on.properties
   groovy ./diff.groovy --listOfProjects projects-to-test-on.properties \
       --patchConfig checks-nonjavadoc-error.xml  -p "$BRANCH" -r ../../..  \
-      --allowExcludes --mode single -xm "-Dcheckstyle.failsOnError=false \
-      -Dcheckstyle.version=${CS_POM_VERSION}"
+      --useShallowClone \
+      --allowExcludes --mode single -xm "-Dcheckstyle.failsOnError=false"
   cd ../../
   removeFolderWithProtectedFiles contribution
   ;;
@@ -795,8 +869,8 @@ no-exception-checkstyle-sevntu)
   sed -i'' 's/#sevntu-checkstyle/sevntu-checkstyle/' projects-to-test-on.properties
   groovy ./diff.groovy --listOfProjects projects-to-test-on.properties \
       --patchConfig checks-nonjavadoc-error.xml  -p "$BRANCH" -r ../../..  \
-      --allowExcludes --mode single -xm "-Dcheckstyle.failsOnError=false \
-      -Dcheckstyle.version=${CS_POM_VERSION}"
+      --useShallowClone \
+      --allowExcludes --mode single -xm "-Dcheckstyle.failsOnError=false"
   cd ../../
   removeFolderWithProtectedFiles contribution
   ;;
@@ -813,8 +887,8 @@ no-exception-checkstyle-sevntu-javadoc)
   sed -i'' 's/#sevntu-checkstyle/sevntu-checkstyle/' projects-to-test-on.properties
   groovy ./diff.groovy --listOfProjects projects-to-test-on.properties \
       --patchConfig checks-only-javadoc-error.xml  -p "$BRANCH" -r ../../..  \
-      --allowExcludes --mode single -xm "-Dcheckstyle.failsOnError=false \
-      -Dcheckstyle.version=${CS_POM_VERSION}"
+      --useShallowClone \
+      --allowExcludes --mode single -xm "-Dcheckstyle.failsOnError=false"
   cd ../../
   removeFolderWithProtectedFiles contribution
   ;;
@@ -830,8 +904,8 @@ no-exception-guava)
   sed -i'' 's/#guava/guava/' projects-to-test-on.properties
   groovy ./diff.groovy --listOfProjects projects-to-test-on.properties \
       --patchConfig checks-nonjavadoc-error.xml  -p "$BRANCH" -r ../../..  \
-      --allowExcludes --mode single -xm "-Dcheckstyle.failsOnError=false \
-      -Dcheckstyle.version=${CS_POM_VERSION}"
+      --useShallowClone \
+      --allowExcludes --mode single -xm "-Dcheckstyle.failsOnError=false"
   cd ../../
   removeFolderWithProtectedFiles contribution
   ;;
@@ -846,8 +920,8 @@ no-exception-hibernate-orm)
   sed -i.'' 's/#hibernate-orm/hibernate-orm/' projects-to-test-on.properties
   groovy ./diff.groovy --listOfProjects projects-to-test-on.properties \
       --patchConfig checks-nonjavadoc-error.xml  -p "$BRANCH" -r ../../..  \
-       --allowExcludes --mode single -xm "-Dcheckstyle.failsOnError=false \
-      -Dcheckstyle.version=${CS_POM_VERSION}"
+      --useShallowClone \
+      --allowExcludes --mode single -xm "-Dcheckstyle.failsOnError=false"
   cd ../../
   removeFolderWithProtectedFiles contribution
   ;;
@@ -862,8 +936,8 @@ no-exception-spotbugs)
   sed -i.'' 's/#spotbugs/spotbugs/' projects-to-test-on.properties
   groovy ./diff.groovy --listOfProjects projects-to-test-on.properties \
       --patchConfig checks-nonjavadoc-error.xml  -p "$BRANCH" -r ../../..  \
-      --allowExcludes --mode single -xm "-Dcheckstyle.failsOnError=false \
-      -Dcheckstyle.version=${CS_POM_VERSION}"
+      --useShallowClone \
+      --allowExcludes --mode single -xm "-Dcheckstyle.failsOnError=false"
   cd ../../
   removeFolderWithProtectedFiles contribution
   ;;
@@ -878,8 +952,8 @@ no-exception-spoon)
   sed -i.'' 's/#spoon/spoon/' projects-to-test-on.properties
   groovy ./diff.groovy --listOfProjects projects-to-test-on.properties \
       --patchConfig checks-nonjavadoc-error.xml  -p "$BRANCH" -r ../../..  \
-      --allowExcludes --mode single -xm "-Dcheckstyle.failsOnError=false \
-      -Dcheckstyle.version=${CS_POM_VERSION}"
+      --useShallowClone \
+      --allowExcludes --mode single -xm "-Dcheckstyle.failsOnError=false"
   cd ../../
   removeFolderWithProtectedFiles contribution
   ;;
@@ -894,8 +968,8 @@ no-exception-spring-framework)
   sed -i.'' 's/#spring-framework/spring-framework/' projects-to-test-on.properties
   groovy ./diff.groovy --listOfProjects projects-to-test-on.properties \
       --patchConfig checks-nonjavadoc-error.xml  -p "$BRANCH" -r ../../..  \
-       --allowExcludes --mode single -xm "-Dcheckstyle.failsOnError=false \
-      -Dcheckstyle.version=${CS_POM_VERSION}"
+      --useShallowClone \
+      --allowExcludes --mode single -xm "-Dcheckstyle.failsOnError=false"
   cd ../../
   removeFolderWithProtectedFiles contribution
   ;;
@@ -910,8 +984,8 @@ no-exception-hbase)
   sed -i.'' 's/#Hbase/Hbase/' projects-to-test-on.properties
   groovy ./diff.groovy --listOfProjects projects-to-test-on.properties \
       --patchConfig checks-nonjavadoc-error.xml  -p "$BRANCH" -r ../../..  \
-      --allowExcludes --mode single -xm "-Dcheckstyle.failsOnError=false \
-      -Dcheckstyle.version=${CS_POM_VERSION}"
+      --useShallowClone \
+      --allowExcludes --mode single -xm "-Dcheckstyle.failsOnError=false"
   cd ../../
   removeFolderWithProtectedFiles contribution
   ;;
@@ -928,8 +1002,8 @@ no-exception-Pmd-elasticsearch-lombok-ast)
   sed -i.'' 's/#lombok-ast/lombok-ast/' projects-to-test-on.properties
   groovy ./diff.groovy --listOfProjects projects-to-test-on.properties \
       --patchConfig checks-nonjavadoc-error.xml  -p "$BRANCH" -r ../../..  \
-      --allowExcludes --mode single -xm "-Dcheckstyle.failsOnError=false \
-      -Dcheckstyle.version=${CS_POM_VERSION}"
+      --useShallowClone \
+      --allowExcludes --mode single -xm "-Dcheckstyle.failsOnError=false"
   cd ../../
   removeFolderWithProtectedFiles contribution
   ;;
@@ -949,8 +1023,8 @@ no-exception-alot-of-projects)
   sed -i.'' 's/#android-launcher/android-launcher/' projects-to-test-on.properties
   groovy ./diff.groovy --listOfProjects projects-to-test-on.properties \
       --patchConfig checks-nonjavadoc-error.xml  -p "$BRANCH" -r ../../.. \
-      --allowExcludes --mode single -xm "-Dcheckstyle.failsOnError=false \
-      -Dcheckstyle.version=${CS_POM_VERSION}"
+      --useShallowClone \
+      --allowExcludes --mode single -xm "-Dcheckstyle.failsOnError=false"
   cd ../../
   removeFolderWithProtectedFiles contribution
   ;;
@@ -966,7 +1040,8 @@ no-warning-imports-guava)
   cd .ci-temp/contribution/checkstyle-tester
   groovy ./diff.groovy --listOfProjects $PROJECTS --patchConfig $CONFIG \
       --allowExcludes -p "$BRANCH" -r ../../.. \
-      --mode single -xm "-Dcheckstyle.failsOnError=false -Dcheckstyle.version=${CS_POM_VERSION}"
+      --useShallowClone \
+      --mode single -xm "-Dcheckstyle.failsOnError=false"
   RESULT=$(grep -A 5 "&#160;Warning</td>" $REPORT | cat)
   cd ../../
   removeFolderWithProtectedFiles contribution
@@ -991,7 +1066,8 @@ no-warning-imports-java-design-patterns)
   cd .ci-temp/contribution/checkstyle-tester
   groovy ./diff.groovy --listOfProjects $PROJECTS --patchConfig $CONFIG \
       --allowExcludes -p "$BRANCH" -r ../../..\
-      --mode single -xm "-Dcheckstyle.version=${CS_POM_VERSION}"
+      --useShallowClone \
+      --mode single
   RESULT=$(grep -A 5 "&#160;Warning</td>" $REPORT | cat)
   cd ../../
   removeFolderWithProtectedFiles contribution
@@ -1015,9 +1091,147 @@ git-diff)
   fi
   ;;
 
+git-no-merge-commits)
+  MERGE_COMMITS=$(git rev-list --merges master.."$PR_HEAD_SHA")
+
+  if [ -n "$MERGE_COMMITS" ]; then
+    for MERGE_COMMIT in $MERGE_COMMITS; do
+      echo "Merge commit found in PR: $MERGE_COMMIT"
+    done
+    echo "To learn how to clean up your commit history, visit:"
+    echo "https://checkstyle.org/beginning_development.html#Starting_Development"
+    exit 1
+  fi
+  ;;
+
+git-check-pull-number)
+  COMMITS="$(git log --format=format:%B master.."$PR_HEAD_SHA")"
+
+  echo "$COMMITS" | while read -r COMMIT ; do
+    if [[ $COMMIT =~ 'Pull #' ]]; then
+      PULL_MESSAGE_NUMBER=$(echo "$COMMIT" | cut -d'#' -f 2 | cut -d':' -f 1)
+      if [[ $PULL_MESSAGE_NUMBER != "$PR_NUMBER" ]]; then
+        echo "Referenced PR and this PR number do not match."
+        echo "Commit message should reference $PR_NUMBER"
+        exit 1
+      fi
+    fi
+  done
+  ;;
+
+jacoco)
+  export MAVEN_OPTS='-Xmx2000m'
+  mvn -e --no-transfer-progress clean test \
+    jacoco:restore-instrumented-classes \
+    jacoco:report@default-report \
+    jacoco:check@default-check
+  # if launch is not from CI, we skip this step
+  if [[ $CI == 'true' ]]; then
+    echo "Reporting to codecov"
+    bash <(curl --fail-with-body -s https://codecov.io/bash)
+  else
+    echo "Result is at target/site/jacoco/index.html"
+  fi
+  ;;
+
+ci-temp-check)
+    fail=0
+    mkdir -p .ci-temp
+    if [ -z "$(ls -A .ci-temp)" ]; then
+        echo "Folder .ci-temp/ is empty."
+    else
+        echo "Folder .ci-temp/ is not empty. Verification failed."
+        echo "Contents of .ci-temp/:"
+        fail=1
+    fi
+    ls -A .ci-temp
+    exit $fail
+  ;;
+
+  check-github-workflows-concurrency)
+    GITHUB_WORKFLOW_FILES=$(find .github/workflows -maxdepth 1 -not -type d -name "*.y*ml")
+
+    FILES_NO_CONCURRENCY=()
+    for f in $GITHUB_WORKFLOW_FILES; do
+      if ! grep -wq "concurrency:" "$f"; then
+            FILES_NO_CONCURRENCY+=( $f )
+      fi
+    done
+
+    if [[ ${#FILES_NO_CONCURRENCY[@]} -gt 0 ]]; then
+      echo "The following Github workflows are missing a concurrency block:"
+    fi
+
+    for value in "${FILES_NO_CONCURRENCY[@]}"; do
+      echo "$value"
+    done
+
+    exit ${#FILES_NO_CONCURRENCY[@]}
+    ;;
+
+check-wildcards-on-pitest-target-classes)
+  ALL_CLASSES=$(xmlstarlet sel \
+    -N x=http://maven.apache.org/POM/4.0.0 \
+    -t -v "/x:project/x:profiles/x:profile//x:targetClasses/x:param" \
+    -n pom.xml)
+
+  CLASSES_NO_WILDCARD=$(echo "$ALL_CLASSES" | grep -v ".*\*\$" | grep -v -e '^\s*$' || echo)
+  CLASSES_NO_WILDCARD_COUNT=$(echo "$CLASSES_NO_WILDCARD" | grep -v -e '^\s*$' | wc -l)
+
+  if [[ "$CLASSES_NO_WILDCARD_COUNT" -gt 0 ]]; then
+    echo "Append asterisks to the following pitest target classes in pom.xml:"
+    echo "$CLASSES_NO_WILDCARD"
+  fi
+  exit "$CLASSES_NO_WILDCARD_COUNT"
+  ;;
+
+verify)
+  mvn -e --no-transfer-progress clean verify
+  ;;
+
+package-all-jar)
+  mvn -e --no-transfer-progress clean package -Passembly
+  ;;
+
+website-only)
+  mvn -e --no-transfer-progress clean site -Pno-validations
+  ;;
+
+pmd)
+  mvn -e --no-transfer-progress clean test-compile pmd:check
+  ;;
+
+spotbugs)
+  mvn -e --no-transfer-progress clean test-compile spotbugs:check
+  ;;
+
+checkstyle)
+  mvn -e --no-transfer-progress clean compile antrun:run@ant-phase-verify
+  ;;
+
+forbiddenapis)
+  mvn -e --no-transfer-progress \
+    clean compile test-compile forbiddenapis:testCheck@forbiddenapis-test
+  ;;
+
+run-test)
+  if [[ -z "$2" ]] ; then
+    echo "Error: test class is not defined."
+    echo "Example: mvn -e --no-transfer-progress clean test -Dtest=XdocsPagesTest,XdocsJavaDocsTest"
+    echo "Example: mvn -e --no-transfer-progress clean test -Dtest=CheckerTest#testDestroy"
+    exit 1
+  fi
+  mvn -e --no-transfer-progress clean test -Dtest="$2"
+  ;;
+
+sevntu)
+  mvn -e --no-transfer-progress clean compile checkstyle:check@sevntu-checkstyle-check
+  ;;
+
 *)
   echo "Unexpected argument: $1"
-  sleep 5s
+  echo "Supported tasks:"
+  list_tasks "${0}"
   false
   ;;
 

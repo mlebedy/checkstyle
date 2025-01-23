@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -40,9 +40,9 @@ public class XpathRegressionLambdaBodyLengthTest
     }
 
     @Test
-    public void testDefault() throws Exception {
+    public void testDefaultMax() throws Exception {
         final File fileToProcess = new File(getPath(
-            "SuppressionXpathRegressionLambdaBodyLength1.java"));
+            "InputXpathLambdaBodyLengthDefaultMax.java"));
         final DefaultConfiguration moduleConfig = createModuleConfig(CLASS);
         final String[] expectedViolation = {
             "7:48: " + getCheckMessage(CLASS, LambdaBodyLengthCheck.MSG_KEY, 11, 10),
@@ -50,7 +50,7 @@ public class XpathRegressionLambdaBodyLengthTest
 
         final List<String> expectedXpathQueries = Collections.singletonList(
             "/COMPILATION_UNIT/CLASS_DEF"
-                + "[./IDENT[@text='SuppressionXpathRegressionLambdaBodyLength1']]"
+                + "[./IDENT[@text='InputXpathLambdaBodyLengthDefaultMax']]"
                 + "/OBJBLOCK/METHOD_DEF[./IDENT[@text='test']]/SLIST"
                 + "/VARIABLE_DEF[./IDENT[@text='trimmer']]/ASSIGN/LAMBDA");
 
@@ -58,9 +58,9 @@ public class XpathRegressionLambdaBodyLengthTest
     }
 
     @Test
-    public void testMaxIsNotDefault() throws Exception {
+    public void testCustomMax() throws Exception {
         final File fileToProcess = new File(getPath(
-            "SuppressionXpathRegressionLambdaBodyLength2.java"));
+            "InputXpathLambdaBodyLengthCustomMax.java"));
         final DefaultConfiguration moduleConfig = createModuleConfig(CLASS);
         moduleConfig.addProperty("max", "5");
         final String[] expectedViolation = {
@@ -69,7 +69,7 @@ public class XpathRegressionLambdaBodyLengthTest
 
         final List<String> expectedXpathQueries = Collections.singletonList(
             "/COMPILATION_UNIT/CLASS_DEF"
-                + "[./IDENT[@text='SuppressionXpathRegressionLambdaBodyLength2']]"
+                + "[./IDENT[@text='InputXpathLambdaBodyLengthCustomMax']]"
                 + "/OBJBLOCK/METHOD_DEF[./IDENT[@text='test']]/SLIST"
                 + "/VARIABLE_DEF[./IDENT[@text='r']]/ASSIGN/LAMBDA");
 

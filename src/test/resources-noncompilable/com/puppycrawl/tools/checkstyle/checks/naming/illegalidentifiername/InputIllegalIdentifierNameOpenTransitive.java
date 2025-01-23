@@ -8,13 +8,13 @@ tokens = (default)CLASS_DEF, INTERFACE_DEF, ENUM_DEF, ANNOTATION_DEF, ANNOTATION
 
 */
 
-//non-compiled with javac: Compilable with Java14
+//non-compiled with javac: Compilable with Java17
 package com.puppycrawl.tools.checkstyle.checks.naming.illegalidentifiername;
 
 import java.util.logging.LogRecord;
 
 public class InputIllegalIdentifierNameOpenTransitive {
-    public Class<Record[]> getRecordType() { // ok
+    public Class<Record[]> getRecordType() {
         return Record[].class;
     }
 
@@ -24,7 +24,7 @@ public class InputIllegalIdentifierNameOpenTransitive {
         }
     }
 
-    class openClass { // ok
+    class openClass {
         int open = 6; // violation
 
         public void transitive() { // violation
@@ -71,7 +71,7 @@ public class InputIllegalIdentifierNameOpenTransitive {
         var variable = 2; // ok, part of another word
 
         String Transitive = "record"; // violation
-        Transitive = Transitive.substring(record, 20); // ok
+        Transitive = Transitive.substring(record, 20);
 
         record MyOtherRecord(String transitive, String yield, String...var) { // 3 violations
         }

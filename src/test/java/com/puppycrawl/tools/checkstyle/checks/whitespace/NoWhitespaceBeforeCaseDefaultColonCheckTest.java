@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -86,6 +86,22 @@ public class NoWhitespaceBeforeCaseDefaultColonCheckTest
         assertWithMessage("Acceptable token should be colon")
                 .that(new int[] {TokenTypes.COLON})
                 .isEqualTo(check.getAcceptableTokens());
+    }
+
+    @Test
+    public void testPatternMatchingForSwitch() throws Exception {
+        final String[] expected = {
+            "14:62: " + getCheckMessage(MSG_KEY, ":"),
+            "16:21: " + getCheckMessage(MSG_KEY, ":"),
+            "18:21: " + getCheckMessage(MSG_KEY, ":"),
+            "20:67: " + getCheckMessage(MSG_KEY, ":"),
+            "23:36: " + getCheckMessage(MSG_KEY, ":"),
+            "25:21: " + getCheckMessage(MSG_KEY, ":"),
+        };
+        verifyWithInlineConfigParser(
+                getNonCompilablePath(
+                        "InputNoWhitespaceBeforeCaseDefaultColonPatternMatchingForSwitch.java"),
+                expected);
     }
 
 }

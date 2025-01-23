@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -29,9 +29,10 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
 
 /**
- * <p>
+ * <div>
  * Detects double brace initialization.
- * </p>
+ * </div>
+ *
  * <p>
  * Rationale: Double brace initialization (set of
  * <a href="https://docs.oracle.com/javase/specs/jls/se12/html/jls-8.html#jls-8.6">
@@ -48,50 +49,11 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * article</a> for more details.
  * Check ignores any comments and semicolons in class body.
  * </p>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;AvoidDoubleBraceInitialization&quot;/&gt;
- * </pre>
- * <p>
- * Which results in the following violations:
- * </p>
- * <pre>
- * class MyClass {
- *     List&lt;Integer&gt; list1 = new ArrayList&lt;&gt;() { // violation
- *         {
- *             add(1);
- *         }
- *     };
- *     List&lt;String&gt; list2 = new ArrayList&lt;&gt;() { // violation
- *         ;
- *         // comments and semicolons are ignored
- *         {
- *             add("foo");
- *         }
- *     };
- * }
- * </pre>
- * <p>
- * Check only looks for double brace initialization and it ignores cases
- * where the anonymous class has fields or methods.
- * Though these might create the same memory issues as double brace,
- * the extra class members can produce side effects if changed incorrectly.
- * </p>
- * <pre>
- * class MyClass {
- *     List&lt;Object&gt; list = new ArrayList&lt;&gt;() { // OK, not pure double brace pattern
- *         private int field;
- *         {
- *             add(new Object());
- *         }
- *     };
- * }
- * </pre>
+ *
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>

@@ -8,21 +8,21 @@ package com.puppycrawl.tools.checkstyle.checks.design.finalclass;
 
 public class InputFinalClassInnerAndNestedClass {
 
-    private class SuperClass { // ok
+    private class SuperClass {
         private SuperClass() {
         }
     }
 
     private class SubClass extends SuperClass {
-    }
+    } // violation above 'Class SubClass should be declared as final'
 
-    class SameName { // violation
+    class SameName { // violation 'Class SameName should be declared as final'
         private SameName() {
         }
     }
 
     static class Test {
-        static class SameName { // ok
+        static class SameName {
             private SameName() {
             }
             class Test3 {
@@ -31,7 +31,7 @@ public class InputFinalClassInnerAndNestedClass {
     }
 
     class TestInnerClass {
-        class SameName { // ok
+        class SameName {
             class Test3 {
                 class Test4 extends SameName {
                 }
@@ -42,7 +42,7 @@ public class InputFinalClassInnerAndNestedClass {
     }
 
     class TestNestedClasses {
-        class SameName { // violation
+        class SameName { // violation 'Class SameName should be declared as final'
             private SameName() {
             }
             class Test3 {
@@ -57,7 +57,7 @@ enum foo {
     VALUE_1, VALUE_2;
 
     class A {
-        class B { // ok
+        class B {
             private B() {
             }
         }
@@ -66,7 +66,7 @@ enum foo {
         }
 
         class D {
-            class B { // violation
+            class B { // violation 'Class B should be declared as final'
                 private B() {
                 }
             }
@@ -75,13 +75,13 @@ enum foo {
 }
 
 class foo2 {
-    class c { // ok
+    class c {
         private c() {
         }
     }
 
     class a extends c {
-        class c { // violation
+        class c { // violation 'Class c should be declared as final'
             private c() {
             }
         }

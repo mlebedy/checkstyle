@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -24,7 +24,6 @@ import static com.puppycrawl.tools.checkstyle.meta.JavadocMetadataScraper.MSG_DE
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -47,7 +46,8 @@ public final class MetadataGeneratorUtilTest extends AbstractModuleTestSupport {
     private final Set<String> modulesContainingNoMetadataFile = Set.of(
             "Checker",
             "TreeWalker",
-            "JavadocMetadataScraper"
+            "JavadocMetadataScraper",
+            "ClassAndPropertiesSettersJavadocScraper"
     );
 
     @Override
@@ -78,7 +78,7 @@ public final class MetadataGeneratorUtilTest extends AbstractModuleTestSupport {
 
         final String[] expectedErrorMessages = {
             "31: " + getCheckMessage(MSG_DESC_MISSING, "AbstractSuperCheck"),
-            "45: " + getCheckMessage(MSG_DESC_MISSING, "AbstractHeaderCheck"),
+            "43: " + getCheckMessage(MSG_DESC_MISSING, "AbstractHeaderCheck"),
             "42: " + getCheckMessage(MSG_DESC_MISSING, "AbstractJavadocCheck"),
             "45: " + getCheckMessage(MSG_DESC_MISSING, "AbstractClassCouplingCheck"),
             "26: " + getCheckMessage(MSG_DESC_MISSING, "AbstractAccessControlNameCheck"),
@@ -102,7 +102,7 @@ public final class MetadataGeneratorUtilTest extends AbstractModuleTestSupport {
 
         final Set<String> metaFiles;
         try (Stream<Path> fileStream = Files.walk(
-                Paths.get(System.getProperty("user.dir") + "/src/main/resources/com/puppycrawl"
+                Path.of(System.getProperty("user.dir") + "/src/main/resources/com/puppycrawl"
                         + "/tools/checkstyle/meta"))) {
             metaFiles = fileStream
                     .filter(Files::isRegularFile)

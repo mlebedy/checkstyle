@@ -9,60 +9,77 @@
   </description>
   <exclude-pattern>.*/src/it/.*</exclude-pattern>
   <exclude-pattern>.*/src/test/.*</exclude-pattern>
+  <exclude-pattern>.*/src/xdocs-examples/.*</exclude-pattern>
   <rule ref="config/pmd.xml"/>
 
   <rule ref="category/java/design.xml/ImmutableField">
     <properties>
-      <!-- Fields with these annotations will have their value injected by picocli.
-           These fields should not be marked final. -->
-      <property name="ignoredAnnotations"
-               value="picocli.CommandLine$Option
-                     |picocli.CommandLine$Parameters"/>
       <!-- final modifier prevent us from reaching full test coverage,
-             we value full coverage more than final modifier. -->
+             we value full coverage more than final modifier.
+           Picocli fields will have their value injected and should not be marked final. -->
       <property name="violationSuppressXPath"
-               value="//ClassOrInterfaceDeclaration[@SimpleName='FileText']
-                        //FieldDeclaration//VariableDeclarator[@Name='fullText']"/>
-    </properties>
-  </rule>
-  <rule ref="category/java/bestpractices.xml/UnusedPrivateField">
-    <properties>
-      <!-- Some fields with picocli annotations will be only used by
-       the picocli and not by the application.
-       They may appear unused by static code analysis tools. -->
-      <property name="ignoredAnnotations"
-               value="picocli.CommandLine.Option
-                     |picocli.CommandLine.Parameters
-                     |picocli.CommandLine.Spec"/>
+               value="//ClassDeclaration[@SimpleName='FileText']
+                        //FieldDeclaration//VariableDeclarator[@Name='fullText']
+                    | //ClassDeclaration[@SimpleName='CliOptions']"/>
     </properties>
   </rule>
   <rule ref="category/java/errorprone.xml/CloseResource">
     <properties>
       <property name="allowedResourceTypes"
-               value="java.io.ByteArrayOutputStream|java.io.ByteArrayInputStream"/>
-      <property name="allowedResourceTypes"
-               value="java.io.StringWriter|java.io.CharArrayWriter|java.io.StringReader"/>
+               value="java.io.ByteArrayOutputStream,java.io.ByteArrayInputStream,
+                      java.io.StringWriter,java.io.CharArrayWriter,java.io.StringReader"/>
       <!-- we do close streams in special methods -->
       <property name="violationSuppressXPath"
-               value="//ClassOrInterfaceDeclaration[@SimpleName='DefaultLogger']
-                    | //ClassOrInterfaceDeclaration[@SimpleName='Main']
+               value="//ClassDeclaration[@SimpleName='DefaultLogger']
+                    | //ClassDeclaration[@SimpleName='Main']
                         //MethodDeclaration[@Name='createListener']
-                    | //ClassOrInterfaceDeclaration[@SimpleName='PropertyCacheFile']
+                    | //ClassDeclaration[@SimpleName='PropertyCacheFile']
                         //MethodDeclaration[@Name='persist' or @Name='serialize']
-                    | //ClassOrInterfaceDeclaration[@SimpleName='XmlLoader']
+                    | //ClassDeclaration[@SimpleName='XmlLoader']
                         //MethodDeclaration[@Name='resolveEntity']
-                    | //ClassOrInterfaceDeclaration[@SimpleName='CheckstyleAntTask']
+                    | //ClassDeclaration[@SimpleName='CheckstyleAntTask']
                         //MethodDeclaration[@Name='getListeners' or @Name='createDefaultLogger']
-                    | //ClassOrInterfaceDeclaration[@SimpleName='AbstractNode']
+                    | //ClassDeclaration[@SimpleName='AbstractNode']
                         //MethodDeclaration[@Name='iterateAxis']"/>
     </properties>
   </rule>
-  <rule ref="category/java/design.xml/ExcessiveMethodLength">
+  <rule ref="category/java/design.xml/AbstractClassWithoutAnyMethod">
     <properties>
-      <!-- unfortunate cases -->
+      <!-- until https://github.com/checkstyle/checkstyle/issues/12873 -->
       <property name="violationSuppressXPath"
-               value="//ClassOrInterfaceDeclaration[@SimpleName='PackageObjectFactory']
-                        //MethodDeclaration[@Name='fillChecksFromCodingPackage']"/>
+         value="//ClassDeclaration[@SimpleName='AutomaticBean']"/>
+    </properties>
+  </rule>
+  <rule ref="category/java/design.xml/AvoidCatchingGenericException">
+    <properties>
+      <!-- we allow catching Exception in certain cases to provide more details in wrapper -->
+      <property name="violationSuppressXPath"
+         value="//ClassDeclaration[@SimpleName='PropertiesMacro']
+                        //MethodDeclaration[@Name='writeTablePropertiesRows']
+                    | //ClassDeclaration[@SimpleName='Checker']
+                        //MethodDeclaration[@Name='processFiles']
+                    | //ClassDeclaration[@SimpleName='Checker']
+                        //MethodDeclaration[@Name='processFile']
+                    | //ClassDeclaration[@SimpleName='TranslationCheck']
+                        //MethodDeclaration[@Name='getTranslationKeys']
+                    | //ClassDeclaration[@SimpleName='TreeWalker']
+                        //MethodDeclaration[@Name='processFiltered']"/>
+    </properties>
+  </rule>
+  <rule ref="category/java/multithreading.xml/AvoidSynchronizedStatement" >
+    <properties>
+      <!-- until https://github.com/checkstyle/checkstyle/issues/15821 -->
+      <property name="violationSuppressXPath"
+         value="//ClassDeclaration[@SimpleName='DefaultLogger']
+                        //MethodDeclaration[@Name='addException']
+                    | //ClassDeclaration[@SimpleName='MetadataGeneratorLogger']
+                        //MethodDeclaration[@Name='addException']
+                    | //ClassDeclaration[@SimpleName='XMLLogger']
+                        //MethodDeclaration[@Name='fileFinished']
+                    | //ClassDeclaration[@SimpleName='XMLLogger']
+                        //MethodDeclaration[@Name='addError']
+                    | //ClassDeclaration[@SimpleName='XMLLogger']
+                        //MethodDeclaration[@Name='addException']"/>
     </properties>
   </rule>
 </ruleset>

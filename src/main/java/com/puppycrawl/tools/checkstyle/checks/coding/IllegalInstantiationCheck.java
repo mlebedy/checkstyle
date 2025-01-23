@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -32,25 +32,29 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 
 /**
- * <p>
+ * <div>
  * Checks for illegal instantiations where a factory method is preferred.
- * </p>
+ * </div>
+ *
  * <p>
  * Rationale: Depending on the project, for some classes it might be
  * preferable to create instances through factory methods rather than
  * calling the constructor.
  * </p>
+ *
  * <p>
  * A simple example is the {@code java.lang.Boolean} class.
  * For performance reasons, it is preferable to use the predefined constants
  * {@code TRUE} and {@code FALSE}.
  * Constructor invocations should be replaced by calls to {@code Boolean.valueOf()}.
  * </p>
+ *
  * <p>
  * Some extremely performance sensitive projects may require the use of factory
  * methods for other classes as well, to enforce the usage of number caches or
  * object pools.
  * </p>
+ *
  * <p>
  * There is a limitation that it is currently not possible to specify array classes.
  * </p>
@@ -60,132 +64,12 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * Type is {@code java.lang.String[]}.
  * Default value is {@code ""}.
  * </li>
- * <li>
- * Property {@code tokens} - tokens to check
- * Type is {@code java.lang.String[]}.
- * Validation type is {@code tokenSet}.
- * Default value is:
- * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#CLASS_DEF">
- * CLASS_DEF</a>.
- * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;IllegalInstantiation&quot;/&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public class MyTest {
- *   public class Boolean {
- *     boolean a;
  *
- *     public Boolean (boolean a) { this.a = a; }
- *   }
- *
- *   public void myTest (boolean a, int b) {
- *     Boolean c = new Boolean(a); // OK
- *     java.lang.Boolean d = new java.lang.Boolean(a); // OK
- *
- *     Integer e = new Integer(b); // OK
- *     Integer f = Integer.valueOf(b); // OK
- *   }
- * }
- * </pre>
- * <p>
- * To configure the check to find instantiations of {@code java.lang.Boolean}
- * and {@code java.lang.Integer}. NOTE: Even if property {@code tokens}
- * is completely removed from the following configuration, Checkstyle will produce
- * the same results for violation. This is because if property {@code tokens} is not
- * defined in the configuration, Checkstyle will supply it with list of default tokens
- * {@code CLASS_DEF, LITERAL_NEW, PACKAGE_DEF, IMPORT} for this check. The property is
- * defined in this example only to provide clarity:
- * </p>
- * <pre>
- * &lt;module name=&quot;IllegalInstantiation&quot;&gt;
- *   &lt;property name=&quot;classes&quot; value=&quot;java.lang.Boolean,
- *     java.lang.Integer&quot;/&gt;
- *   &lt;property name=&quot;tokens&quot; value=&quot;CLASS_DEF, LITERAL_NEW,
- *     PACKAGE_DEF, IMPORT&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public class MyTest {
- *   public class Boolean {
- *     boolean a;
- *
- *     public Boolean (boolean a) { this.a = a; }
- *   }
- *
- *   public void myTest (boolean a, int b) {
- *     Boolean c = new Boolean(a); // OK
- *     java.lang.Boolean d = new java.lang.Boolean(a); // violation, instantiation of
- *                                                     // java.lang.Boolean should be avoided
- *
- *     Integer e = new Integer(b); // violation, instantiation of
- *                                 // java.lang.Integer should be avoided
- *     Integer f = Integer.valueOf(b); // OK
- *   }
- * }
- * </pre>
- * <p>
- * To configure the check to allow violations for local classes vs classes
- * defined in the check, for example {@code java.lang.Boolean}, property
- * {@code tokens} must be defined to not mention {@code CLASS_DEF}, so its
- * value should be {@code LITERAL_NEW, PACKAGE_DEF, IMPORT}:
- * </p>
- * <pre>
- * &lt;module name=&quot;IllegalInstantiation&quot;&gt;
- *   &lt;property name=&quot;classes&quot; value=&quot;java.lang.Boolean,
- *     java.lang.Integer&quot;/&gt;
- *   &lt;property name=&quot;tokens&quot; value=&quot;LITERAL_NEW, PACKAGE_DEF,
- *     IMPORT&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public class MyTest {
- *   public class Boolean {
- *     boolean a;
- *
- *     public Boolean (boolean a) { this.a = a; }
- *   }
- *
- *   public void myTest (boolean a, int b) {
- *     Boolean c = new Boolean(a); // violation, instantiation of
- *                                 // java.lang.Boolean should be avoided
- *     java.lang.Boolean d = new java.lang.Boolean(a); // violation, instantiation of
- *                                                     // java.lang.Boolean should be avoided
- *
- *     Integer e = new Integer(b); // violation, instantiation of
- *                                 // java.lang.Integer should be avoided
- *     Integer f = Integer.valueOf(b); // OK
- *   }
- * }
- * </pre>
- * <p>
- * Finally, there is a limitation that it is currently not possible to specify array classes:
- * </p>
- * <pre>
- * &lt;module name=&quot;IllegalInstantiation&quot;&gt;
- *   &lt;property name=&quot;classes&quot; value=&quot;java.lang.Boolean[],
- *      Boolean[], java.lang.Integer[], Integer[]&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public class MyTest {
- *   public void myTest () {
- *     Boolean[] newBoolArray = new Boolean[]{true,true,false}; // OK
- *     Integer[] newIntArray = new Integer[]{1,2,3}; // OK
- *   }
- * }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -227,17 +111,12 @@ public class IllegalInstantiationCheck
 
     @Override
     public int[] getDefaultTokens() {
-        return getAcceptableTokens();
+        return getRequiredTokens();
     }
 
     @Override
     public int[] getAcceptableTokens() {
-        return new int[] {
-            TokenTypes.IMPORT,
-            TokenTypes.LITERAL_NEW,
-            TokenTypes.PACKAGE_DEF,
-            TokenTypes.CLASS_DEF,
-        };
+        return getRequiredTokens();
     }
 
     @Override
@@ -246,6 +125,7 @@ public class IllegalInstantiationCheck
             TokenTypes.IMPORT,
             TokenTypes.LITERAL_NEW,
             TokenTypes.PACKAGE_DEF,
+            TokenTypes.CLASS_DEF,
         };
     }
 
@@ -469,9 +349,10 @@ public class IllegalInstantiationCheck
      * Setter to specify fully qualified class names that should not be instantiated.
      *
      * @param names class names
+     * @since 3.0
      */
     public void setClasses(String... names) {
-        classes = Arrays.stream(names).collect(Collectors.toSet());
+        classes = Arrays.stream(names).collect(Collectors.toUnmodifiableSet());
     }
 
 }

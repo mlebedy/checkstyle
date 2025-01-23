@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -25,12 +25,12 @@ import com.puppycrawl.tools.checkstyle.api.JavadocTokenTypes;
 import com.puppycrawl.tools.checkstyle.utils.JavadocUtil;
 
 /**
- * <p>
+ * <div>
  * Checks that there is at least one whitespace after the leading asterisk.
  * Although spaces after asterisks are optional in the Javadoc comments, their absence
  * makes the documentation difficult to read. It is the de facto standard to put at least
  * one whitespace after the leading asterisk.
- * </p>
+ * </div>
  * <ul>
  * <li>
  * Property {@code violateExecutionOnNonTightHtml} - Control when to print violations
@@ -40,38 +40,11 @@ import com.puppycrawl.tools.checkstyle.utils.JavadocUtil;
  * Default value is {@code false}.
  * </li>
  * </ul>
- * <p>
- * To configure the default check:
- * </p>
- * <pre>
- * &lt;module name="JavadocMissingWhitespaceAfterAsterisk"/&gt;
- * </pre>
- * <p>
- * Code Example:
- * </p>
- * <pre>
- * &#47;** This is valid single-line Javadoc. *&#47;
- * class TestClass {
- *   &#47;**
- *     *This is invalid Javadoc.
- *     *&#47;
- *   int invalidJavaDoc;
- *   &#47;**
- *     * This is valid Javadoc.
- *     *&#47;
- *   void validJavaDocMethod() {
- *   }
- *   &#47;**This is invalid single-line Javadoc. *&#47;
- *   void invalidSingleLineJavaDocMethod() {
- *   }
- *   &#47;** This is valid single-line Javadoc. *&#47;
- *   void validSingleLineJavaDocMethod() {
- *   }
- * }
- * </pre>
+ *
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -84,6 +57,9 @@ import com.puppycrawl.tools.checkstyle.utils.JavadocUtil;
  * </li>
  * <li>
  * {@code javadoc.parse.rule.error}
+ * </li>
+ * <li>
+ * {@code javadoc.unclosedHtml}
  * </li>
  * <li>
  * {@code javadoc.wrong.singleton.html.tag}

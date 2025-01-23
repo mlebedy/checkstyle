@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -42,7 +42,7 @@ public class XpathRegressionUnnecessarySemicolonAfterTypeMemberDeclarationTest
     @Test
     public void testDefault() throws Exception {
         final File fileToProcess = new File(getPath(
-            "SuppressionXpathRegressionUnnecessarySemicolonAfterTypeMemberDeclaration.java"));
+            "InputXpathUnnecessarySemicolonAfterTypeMemberDeclarationDefault.java"));
         final DefaultConfiguration moduleConfig = createModuleConfig(CLASS);
         final String[] expectedViolation = {
             "4:20: " + getCheckMessage(CLASS,
@@ -52,7 +52,7 @@ public class XpathRegressionUnnecessarySemicolonAfterTypeMemberDeclarationTest
         final List<String> expectedXpathQueries = Collections.singletonList(
             "/COMPILATION_UNIT/CLASS_DEF[./IDENT"
                 + "[@text="
-                + "'SuppressionXpathRegressionUnnecessarySemicolonAfterTypeMemberDeclaration']]"
+                + "'InputXpathUnnecessarySemicolonAfterTypeMemberDeclarationDefault']]"
                 + "/OBJBLOCK/SEMI"
         );
 
@@ -62,7 +62,7 @@ public class XpathRegressionUnnecessarySemicolonAfterTypeMemberDeclarationTest
     @Test
     public void testTokens() throws Exception {
         final File fileToProcess = new File(getPath(
-            "SuppressionXpathRegressionUnnecessarySemicolonAfterTypeMemberDeclarationTokens"
+            "InputXpathUnnecessarySemicolonAfterTypeMemberDeclarationTokens"
                 + ".java"));
         final DefaultConfiguration moduleConfig = createModuleConfig(CLASS);
         moduleConfig.addProperty("tokens", "METHOD_DEF");
@@ -74,7 +74,7 @@ public class XpathRegressionUnnecessarySemicolonAfterTypeMemberDeclarationTest
 
         final List<String> expectedXpathQueries = Collections.singletonList(
             "/COMPILATION_UNIT/CLASS_DEF[."
-                + "/IDENT[@text='SuppressionXpathRegressionUnnecessarySemicolonAfterTypeMember"
+                + "/IDENT[@text='InputXpathUnnecessarySemicolonAfterTypeMember"
                     + "DeclarationTokens']]"
                 + "/OBJBLOCK/SEMI[1]"
         );

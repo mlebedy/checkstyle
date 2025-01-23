@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -36,7 +36,6 @@ import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -58,8 +57,8 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import com.puppycrawl.tools.checkstyle.AbstractAutomaticBean.OutputStreamOptions;
 import com.puppycrawl.tools.checkstyle.api.AuditListener;
-import com.puppycrawl.tools.checkstyle.api.AutomaticBean;
 import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
 import com.puppycrawl.tools.checkstyle.api.Violation;
 import com.puppycrawl.tools.checkstyle.internal.testmodules.TestRootModuleChecker;
@@ -119,24 +118,20 @@ public class MainTest {
                   + " location can be%n"
                   + "                              specified with -o option.%n"
                   + "  -h, --help                Show this help message and exit.%n"
-                  + "  -j, --javadocTree         Prints Parse Tree of the Javadoc comment. The"
-                  + " file have to contain only%n"
-                  + "                              Javadoc comment content without including"
-                  + " '/**' and '*/' at the%n"
-                  + "                              beginning and at the end respectively. The"
-                  + " option cannot be used%n"
-                  + "                              other options and requires exactly one file"
-                  + " to run on to be specified.%n"
-                  + "  -J, --treeWithJavadoc     Prints Abstract Syntax Tree(AST) with Javadoc"
-                  + " nodes and comment nodes%n"
-                  + "                              of the checked file. Attention that line number"
-                  + " and columns will not%n"
-                  + "                              be the same as it is a file due to the fact"
-                  + " that each javadoc comment%n"
-                  + "                              is parsed separately from java file. The"
-                  + " option cannot be used with%n"
-                  + "                              other options and requires exactly one file to"
-                  + " run on to be specified.%n"
+                  + "  -j, --javadocTree         This option is used to print the Parse Tree of"
+                  + " the Javadoc comment. The%n"
+                  + "                              file has to contain only Javadoc comment"
+                  + " content excluding '/**' and%n"
+                  + "                              '*/' at the beginning and at the end"
+                  + " respectively. It can only be%n"
+                  + "                              used on a single file and cannot be"
+                  + " combined with other options.%n"
+                  + "  -J, --treeWithJavadoc     This option is used to display the Abstract"
+                  + " Syntax Tree (AST) with%n"
+                  + "                              Javadoc nodes of the specified file. It can"
+                  + " only be used on a single%n"
+                  + "                              file and cannot be combined"
+                  + " with other options.%n"
                   + "  -o=<outputPath>           Sets the output file. Defaults to stdout.%n"
                   + "  -p=<propertiesFile>       Sets the property files to load.%n"
                   + "  -s=<suppressionLineColumnNumber>%n"
@@ -148,8 +143,8 @@ public class MainTest {
                   + " for. The option cannot%n"
                   + "                              be used with other options and requires exactly"
                   + " one file to run on to%n"
-                  + "                              be specified. ATTENTION: generated result will"
-                  + " have few queries,%n"
+                  + "                              be specified. Note that the generated result"
+                  + " will have few queries,%n"
                   + "                              joined by pipe(|). Together they will match all"
                   + " AST nodes on%n"
                   + "                              specified line and column. You need to choose"
@@ -158,16 +153,18 @@ public class MainTest {
                   + " but might result in%n"
                   + "                              undesirable matching and suppress other"
                   + " issues.%n"
-                  + "  -t, --tree                Prints Abstract Syntax Tree(AST) of the checked"
-                  + " file. The option cannot%n"
-                  + "                              be used other options and requires exactly one"
-                  + " file to run on to be%n"
-                  + "                              specified.%n"
-                  + "  -T, --treeWithComments    Prints Abstract Syntax Tree(AST) with comment"
-                  + " nodes of the checked%n"
-                  + "                              file. The option cannot be used with other"
-                  + " options and requires%n"
-                  + "                              exactly one file to run on to be specified.%n"
+                  + "  -t, --tree                This option is used to display the Abstract"
+                  + " Syntax Tree (AST) without%n"
+                  + "                              any comments of the specified file. It can"
+                  + " only be used on a single%n"
+                  + "                              file and cannot be combined with"
+                  + " other options.%n"
+                  + "  -T, --treeWithComments    This option is used to display the Abstract"
+                  + " Syntax Tree (AST) with%n"
+                  + "                              comment nodes excluding Javadoc of the"
+                  + " specified file. It can only be%n"
+                  + "                              used on a single file and cannot be combined"
+                  + " with other options.%n"
                   + "  -V, --version             Print version information and exit.%n"
                   + "  -w, --tabWidth=<tabWidth> Sets the length of the tab character. Used only"
                   + " with -s option. Default%n"
@@ -186,16 +183,16 @@ public class MainTest {
     @TempDir
     public File temporaryFolder;
 
-    private final Violation auditStartMessage = new Violation(1,
-            Definitions.CHECKSTYLE_BUNDLE, "DefaultLogger.auditStarted", null, null,
-            getClass(), null);
+    private final LocalizedMessage auditStartMessage = new LocalizedMessage(
+            Definitions.CHECKSTYLE_BUNDLE, getClass(),
+            "DefaultLogger.auditStarted");
 
-    private final Violation auditFinishMessage = new Violation(1,
-            Definitions.CHECKSTYLE_BUNDLE, "DefaultLogger.auditFinished", null, null,
-            getClass(), null);
+    private final LocalizedMessage auditFinishMessage = new LocalizedMessage(
+            Definitions.CHECKSTYLE_BUNDLE, getClass(),
+            "DefaultLogger.auditFinished");
 
-    private final String noViolationsOutput = auditStartMessage.getViolation() + EOL
-                    + auditFinishMessage.getViolation() + EOL;
+    private final String noViolationsOutput = auditStartMessage.getMessage() + EOL
+                    + auditFinishMessage.getMessage() + EOL;
 
     private static String getPath(String filename) {
         return "src/test/resources/com/puppycrawl/tools/checkstyle/main/" + filename;
@@ -210,9 +207,10 @@ public class MainTest {
     }
 
     /**
-     * <p>Configures the environment for each test.</p>
+     * Configures the environment for each test.
      * <ul>
      * <li>Restore original logging level and HANDLERS to prevent bleeding into other tests;</li>
+     * <li>Turn off colors for picocli to not conflict with tests if they are auto turned on.</li>
      * <li>Start output capture for {@link System#err} and {@link System#out}</li>
      * </ul>
      *
@@ -223,6 +221,8 @@ public class MainTest {
     public void setUp(@SysErr Capturable systemErr, @SysOut Capturable systemOut) {
         systemErr.captureMuted();
         systemOut.captureMuted();
+
+        System.setProperty("picocli.ansi", "false");
 
         LOG.setLevel(ORIGINAL_LOG_LEVEL);
 
@@ -344,6 +344,45 @@ public class MainTest {
     }
 
     @Test
+    public void testCustomSeverityVariableForGoogleConfig(@SysOut Capturable systemOut) {
+        assertMainReturnCode(1, "-c", "/google_checks.xml",
+                "-p", getPath("InputMainCustomSeverityForGoogleConfig.properties"),
+                getPath("InputMainCustomSeverityForGoogleConfig.java"));
+
+        final String expectedOutputStart = addEndOfLine(auditStartMessage.getMessage())
+            + "[ERROR] ";
+        final String expectedOutputEnd = addEndOfLine(
+                "InputMainCustomSeverityForGoogleConfig.java:3:1:"
+                    + " Missing a Javadoc comment. [MissingJavadocType]",
+                auditFinishMessage.getMessage());
+        assertWithMessage("Unexpected output log")
+            .that(systemOut.getCapturedData())
+            .startsWith(expectedOutputStart);
+        assertWithMessage("Unexpected output log")
+            .that(systemOut.getCapturedData())
+            .endsWith(expectedOutputEnd);
+    }
+
+    @Test
+    public void testDefaultSeverityVariableForGoogleConfig(@SysOut Capturable systemOut) {
+        assertMainReturnCode(0, "-c", "/google_checks.xml",
+                getPath("InputMainCustomSeverityForGoogleConfig.java"));
+
+        final String expectedOutputStart = addEndOfLine(auditStartMessage.getMessage())
+                + "[WARN] ";
+        final String expectedOutputEnd = addEndOfLine(
+                "InputMainCustomSeverityForGoogleConfig.java:3:1:"
+                        + " Missing a Javadoc comment. [MissingJavadocType]",
+                auditFinishMessage.getMessage());
+        assertWithMessage("Unexpected output log")
+                .that(systemOut.getCapturedData())
+                .startsWith(expectedOutputStart);
+        assertWithMessage("Unexpected output log")
+                .that(systemOut.getCapturedData())
+                .endsWith(expectedOutputEnd);
+    }
+
+    @Test
     public void testNonExistentConfigFile(@SysErr Capturable systemErr,
             @SysOut Capturable systemOut) {
         assertMainReturnCode(-1, "-c", "src/main/resources/non_existent_config.xml",
@@ -378,8 +417,8 @@ public class MainTest {
         final String cause = "com.puppycrawl.tools.checkstyle.api.CheckstyleException:"
                 + " cannot initialize module TreeWalker - ";
         assertWithMessage("Unexpected system error log")
-                .that(systemErr.getCapturedData().startsWith(cause))
-                .isTrue();
+                .that(systemErr.getCapturedData())
+                .startsWith(cause);
     }
 
     @Test
@@ -388,8 +427,8 @@ public class MainTest {
                 getPath("InputMain.java"));
         assertWithMessage("Unexpected output log")
             .that(systemOut.getCapturedData())
-            .isEqualTo(addEndOfLine(auditStartMessage.getViolation(),
-                auditFinishMessage.getViolation()));
+            .isEqualTo(addEndOfLine(auditStartMessage.getMessage(),
+                auditFinishMessage.getMessage()));
         assertWithMessage("Unexpected system error log")
             .that(systemErr.getCapturedData())
             .isEqualTo("");
@@ -456,11 +495,11 @@ public class MainTest {
     @Test
     public void testGetOutputStreamOptionsMethod() throws Exception {
         final Path path = new File(getPath("InputMain.java")).toPath();
-        final AutomaticBean.OutputStreamOptions option =
+        final OutputStreamOptions option =
                 TestUtil.invokeStaticMethod(Main.class, "getOutputStreamOptions", path);
         assertWithMessage("Main.getOutputStreamOptions return CLOSE on not null Path")
                 .that(option)
-                .isEqualTo(AutomaticBean.OutputStreamOptions.CLOSE);
+                .isEqualTo(OutputStreamOptions.CLOSE);
     }
 
     @Test
@@ -470,8 +509,8 @@ public class MainTest {
                 getPath("InputMain.java"));
         assertWithMessage("Unexpected output log")
             .that(systemOut.getCapturedData())
-            .isEqualTo(addEndOfLine(auditStartMessage.getViolation(),
-                auditFinishMessage.getViolation()));
+            .isEqualTo(addEndOfLine(auditStartMessage.getMessage(),
+                auditFinishMessage.getMessage()));
         assertWithMessage("Unexpected system error log")
             .that(systemErr.getCapturedData())
             .isEqualTo("");
@@ -493,14 +532,14 @@ public class MainTest {
         final String expectedPath = getFilePath("InputMain.java");
         assertWithMessage("Unexpected output log")
             .that(systemOut.getCapturedData())
-            .isEqualTo(addEndOfLine(auditStartMessage.getViolation(),
+            .isEqualTo(addEndOfLine(auditStartMessage.getMessage(),
                     "[WARN] " + expectedPath + ":3:14: "
                         + invalidPatternMessageMain.getViolation()
                         + " [TypeName]",
                     "[WARN] " + expectedPath + ":5:7: "
                         + invalidPatternMessageMainInner.getViolation()
                         + " [TypeName]",
-                    auditFinishMessage.getViolation()));
+                    auditFinishMessage.getMessage()));
         assertWithMessage("Unexpected system error log")
             .that(systemErr.getCapturedData())
             .isEqualTo("");
@@ -555,12 +594,12 @@ public class MainTest {
         final String expectedPath = getFilePath("InputMain.java");
         assertWithMessage("Unexpected output log")
             .that(systemOut.getCapturedData())
-            .isEqualTo(addEndOfLine(auditStartMessage.getViolation(),
+            .isEqualTo(addEndOfLine(auditStartMessage.getMessage(),
                     "[ERROR] " + expectedPath + ":3:14: "
                         + invalidPatternMessageMain.getViolation() + " [TypeName]",
                     "[ERROR] " + expectedPath + ":5:7: "
                         + invalidPatternMessageMainInner.getViolation() + " [TypeName]",
-                    auditFinishMessage.getViolation()));
+                    auditFinishMessage.getMessage()));
         assertWithMessage("Unexpected system error log")
             .that(systemErr.getCapturedData())
             .isEqualTo(addEndOfLine(errorCounterTwoMessage.getViolation()));
@@ -588,10 +627,10 @@ public class MainTest {
         final String expectedPath = getFilePath("InputMain1.java");
         assertWithMessage("Unexpected output log")
             .that(systemOut.getCapturedData())
-            .isEqualTo(addEndOfLine(auditStartMessage.getViolation(),
+            .isEqualTo(addEndOfLine(auditStartMessage.getMessage(),
                     "[ERROR] " + expectedPath + ":3:14: "
                         + invalidPatternMessageMain.getViolation() + " [TypeName]",
-                    auditFinishMessage.getViolation()));
+                    auditFinishMessage.getMessage()));
         assertWithMessage("Unexpected system error log")
             .that(systemErr.getCapturedData())
             .isEqualTo(addEndOfLine(errorCounterTwoMessage.getViolation()));
@@ -611,9 +650,9 @@ public class MainTest {
         final String expectedPath = getFilePath("InputMain1.java");
         assertWithMessage("Unexpected output log")
             .that(systemOut.getCapturedData())
-            .isEqualTo(addEndOfLine(auditStartMessage.getViolation(),
+            .isEqualTo(addEndOfLine(auditStartMessage.getMessage(),
                 "[ERROR] " + expectedPath + ":1: " + message.getViolation() + " [JavadocPackage]",
-                auditFinishMessage.getViolation()));
+                auditFinishMessage.getMessage()));
         assertWithMessage("Unexpected system error log")
             .that(systemErr.getCapturedData())
             .isEqualTo(addEndOfLine(errorCounterTwoMessage.getViolation()));
@@ -670,8 +709,8 @@ public class MainTest {
                 "-p", getPath("InputMainMycheckstyle.properties"), getPath("InputMain.java"));
         assertWithMessage("Unexpected output log")
             .that(systemOut.getCapturedData())
-            .isEqualTo(addEndOfLine(auditStartMessage.getViolation(),
-                auditFinishMessage.getViolation()));
+            .isEqualTo(addEndOfLine(auditStartMessage.getMessage(),
+                auditFinishMessage.getMessage()));
         assertWithMessage("Unexpected system error log")
             .that(systemErr.getCapturedData())
             .isEqualTo("");
@@ -685,8 +724,8 @@ public class MainTest {
 
         assertWithMessage("Unexpected output log")
             .that(systemOut.getCapturedData())
-            .isEqualTo(addEndOfLine(auditStartMessage.getViolation(),
-                auditFinishMessage.getViolation()));
+            .isEqualTo(addEndOfLine(auditStartMessage.getMessage(),
+                auditFinishMessage.getMessage()));
         assertWithMessage("Unexpected system error log")
             .that(systemErr.getCapturedData())
             .isEqualTo("");
@@ -728,8 +767,8 @@ public class MainTest {
         final String errorOutput = "com.puppycrawl.tools.checkstyle.api."
             + "CheckstyleException: unable to parse configuration stream - ";
         assertWithMessage("Unexpected system error log")
-                .that(systemErr.getCapturedData().startsWith(errorOutput))
-                .isTrue();
+                .that(systemErr.getCapturedData())
+                .startsWith(errorOutput);
     }
 
     @Test
@@ -740,8 +779,8 @@ public class MainTest {
                 + "CheckstyleException: cannot initialize module RegexpSingleline"
                 + " - RegexpSingleline is not allowed as a child in RegexpSingleline";
         assertWithMessage("Unexpected system error log")
-                .that(systemErr.getCapturedData().startsWith(errorOutput))
-                .isTrue();
+                .that(systemErr.getCapturedData())
+                .startsWith(errorOutput);
     }
 
     @Test
@@ -753,8 +792,8 @@ public class MainTest {
                 + "cannot initialize module JavadocMethod - "
                 + "JavadocVariable is not allowed as a child in JavadocMethod";
         assertWithMessage("Unexpected system error log")
-                .that(systemErr.getCapturedData().startsWith(errorOutput))
-                .isTrue();
+                .that(systemErr.getCapturedData())
+                .startsWith(errorOutput);
     }
 
     @Test
@@ -792,8 +831,8 @@ public class MainTest {
                     .that(samePrefix || sameSuffix)
                     .isTrue();
             assertWithMessage("Invalid violation")
-                    .that(causeMessage.contains(".'"))
-                    .isTrue();
+                    .that(causeMessage)
+                    .contains(".'");
         }
     }
 
@@ -813,7 +852,7 @@ public class MainTest {
                 getPath(""));
         final String expectedPath = getFilePath("") + File.separator;
         final StringBuilder sb = new StringBuilder(28);
-        sb.append(auditStartMessage.getViolation())
+        sb.append(auditStartMessage.getMessage())
                 .append(EOL);
         final String format = "[WARN] " + expectedPath + outputValues[0][0] + ".java:"
                 + outputValues[0][1] + ": ";
@@ -824,7 +863,7 @@ public class MainTest {
             final String line = format + violation + " [FileLength]";
             sb.append(line).append(EOL);
         }
-        sb.append(auditFinishMessage.getViolation())
+        sb.append(auditFinishMessage.getMessage())
                 .append(EOL);
         assertWithMessage("Unexpected output log")
             .that(systemOut.getCapturedData())
@@ -863,7 +902,7 @@ public class MainTest {
         };
 
         final List<File> result = TestUtil.invokeStaticMethod(Main.class, "listFiles",
-                fileMock, new ArrayList<Pattern>());
+                fileMock, new ArrayList<>());
         assertWithMessage("Invalid result size")
             .that(result)
             .isEmpty();
@@ -899,7 +938,7 @@ public class MainTest {
         };
 
         final List<File> result = TestUtil.invokeStaticMethod(Main.class, "listFiles",
-                fileMock, new ArrayList<Pattern>());
+                fileMock, new ArrayList<>());
         assertWithMessage("Invalid result size")
             .that(result)
             .isEmpty();
@@ -914,8 +953,8 @@ public class MainTest {
                 + "CheckstyleException: Exception was thrown while processing "
                 + new File(getNonCompilablePath("InputMainIncorrectClass.java")).getPath());
         assertWithMessage("Unexpected system error log")
-                .that(systemErr.getCapturedData().contains(exceptionMessage))
-                .isTrue();
+                .that(systemErr.getCapturedData())
+                .contains(exceptionMessage);
     }
 
     @Test
@@ -1165,7 +1204,7 @@ public class MainTest {
     @Test
     public void testPrintTreeJavadocOption(@SysErr Capturable systemErr,
             @SysOut Capturable systemOut) throws IOException {
-        final String expected = Files.readString(Paths.get(
+        final String expected = Files.readString(Path.of(
             getPath("InputMainExpectedInputJavadocComment.txt")))
             .replaceAll("\\\\r\\\\n", "\\\\n").replaceAll("\r\n", "\n");
 
@@ -1315,90 +1354,10 @@ public class MainTest {
                     + "/METHOD_DEF[./IDENT[@text='provokeNpathIntegerOverflow']]\"/>",
                 "<suppress-xpath",
                 "       files=\"InputMainComplexityOverflow.java\"",
-                "       checks=\"LeftCurlyCheck\"",
+                "       id=\"LeftCurlyEol\"",
                 "       query=\"/COMPILATION_UNIT/CLASS_DEF"
                     + "[./IDENT[@text='InputMainComplexityOverflow']]/OBJBLOCK"
                     + "/METHOD_DEF[./IDENT[@text='provokeNpathIntegerOverflow']]/SLIST\"/>",
-                "<suppress-xpath",
-                "       files=\"InputMainComplexityOverflow.java\"",
-                "       checks=\"EmptyBlockCheck\"",
-                "       query=\"/COMPILATION_UNIT/CLASS_DEF"
-                    + "[./IDENT[@text='InputMainComplexityOverflow']]/OBJBLOCK"
-                    + "/METHOD_DEF[./IDENT[@text='provokeNpathIntegerOverflow']]/SLIST/LITERAL_IF"
-                    + "/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST"
-                    + "/LITERAL_IF/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST\"/>",
-                "<suppress-xpath",
-                "       files=\"InputMainComplexityOverflow.java\"",
-                "       checks=\"EmptyBlockCheck\"",
-                "       query=\"/COMPILATION_UNIT/CLASS_DEF"
-                    + "[./IDENT[@text='InputMainComplexityOverflow']]/OBJBLOCK"
-                    + "/METHOD_DEF[./IDENT[@text='provokeNpathIntegerOverflow']]/SLIST/LITERAL_IF"
-                    + "/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST"
-                    + "/LITERAL_IF/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST\"/>",
-                "<suppress-xpath",
-                "       files=\"InputMainComplexityOverflow.java\"",
-                "       checks=\"EmptyBlockCheck\"",
-                "       query=\"/COMPILATION_UNIT/CLASS_DEF"
-                    + "[./IDENT[@text='InputMainComplexityOverflow']]/OBJBLOCK"
-                    + "/METHOD_DEF[./IDENT[@text='provokeNpathIntegerOverflow']]/SLIST/LITERAL_IF"
-                    + "/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST"
-                    + "/LITERAL_IF/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST\"/>",
-                "<suppress-xpath",
-                "       files=\"InputMainComplexityOverflow.java\"",
-                "       checks=\"EmptyBlockCheck\"",
-                "       query=\"/COMPILATION_UNIT/CLASS_DEF"
-                    + "[./IDENT[@text='InputMainComplexityOverflow']]/OBJBLOCK"
-                    + "/METHOD_DEF[./IDENT[@text='provokeNpathIntegerOverflow']]/SLIST/LITERAL_IF"
-                    + "/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST"
-                    + "/LITERAL_IF/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST\"/>",
-                "<suppress-xpath",
-                "       files=\"InputMainComplexityOverflow.java\"",
-                "       checks=\"EmptyBlockCheck\"",
-                "       query=\"/COMPILATION_UNIT/CLASS_DEF"
-                    + "[./IDENT[@text='InputMainComplexityOverflow']]/OBJBLOCK"
-                    + "/METHOD_DEF[./IDENT[@text='provokeNpathIntegerOverflow']]/SLIST/LITERAL_IF"
-                    + "/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST"
-                    + "/LITERAL_IF/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST\"/>",
-                "<suppress-xpath",
-                "       files=\"InputMainComplexityOverflow.java\"",
-                "       checks=\"EmptyBlockCheck\"",
-                "       query=\"/COMPILATION_UNIT/CLASS_DEF"
-                    + "[./IDENT[@text='InputMainComplexityOverflow']]/OBJBLOCK"
-                    + "/METHOD_DEF[./IDENT[@text='provokeNpathIntegerOverflow']]/SLIST/LITERAL_IF"
-                    + "/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST"
-                    + "/LITERAL_IF/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST\"/>",
-                "<suppress-xpath",
-                "       files=\"InputMainComplexityOverflow.java\"",
-                "       checks=\"EmptyBlockCheck\"",
-                "       query=\"/COMPILATION_UNIT/CLASS_DEF"
-                    + "[./IDENT[@text='InputMainComplexityOverflow']]/OBJBLOCK"
-                    + "/METHOD_DEF[./IDENT[@text='provokeNpathIntegerOverflow']]/SLIST/LITERAL_IF"
-                    + "/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST"
-                    + "/LITERAL_IF/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST\"/>",
-                "<suppress-xpath",
-                "       files=\"InputMainComplexityOverflow.java\"",
-                "       checks=\"EmptyBlockCheck\"",
-                "       query=\"/COMPILATION_UNIT/CLASS_DEF"
-                    + "[./IDENT[@text='InputMainComplexityOverflow']]/OBJBLOCK"
-                    + "/METHOD_DEF[./IDENT[@text='provokeNpathIntegerOverflow']]/SLIST/LITERAL_IF"
-                    + "/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST"
-                    + "/LITERAL_IF/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST\"/>",
-                "<suppress-xpath",
-                "       files=\"InputMainComplexityOverflow.java\"",
-                "       checks=\"EmptyBlockCheck\"",
-                "       query=\"/COMPILATION_UNIT/CLASS_DEF"
-                    + "[./IDENT[@text='InputMainComplexityOverflow']]/OBJBLOCK"
-                    + "/METHOD_DEF[./IDENT[@text='provokeNpathIntegerOverflow']]/SLIST/LITERAL_IF"
-                    + "/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST"
-                    + "/LITERAL_IF/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST\"/>",
-                "<suppress-xpath",
-                "       files=\"InputMainComplexityOverflow.java\"",
-                "       checks=\"EmptyBlockCheck\"",
-                "       query=\"/COMPILATION_UNIT/CLASS_DEF"
-                    + "[./IDENT[@text='InputMainComplexityOverflow']]/OBJBLOCK"
-                    + "/METHOD_DEF[./IDENT[@text='provokeNpathIntegerOverflow']]/SLIST/LITERAL_IF"
-                    + "/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST"
-                    + "/LITERAL_IF/SLIST/LITERAL_IF/SLIST/LITERAL_IF/SLIST\"/>",
                 "</suppressions>");
 
         assertMainReturnCode(0, "-c", "/google_checks.xml", "--generate-xpath-suppression",
@@ -1558,7 +1517,7 @@ public class MainTest {
     @Test
     public void testPrintFullTreeOption(@SysErr Capturable systemErr, @SysOut Capturable systemOut)
             throws IOException {
-        final String expected = Files.readString(Paths.get(
+        final String expected = Files.readString(Path.of(
             getPath("InputMainExpectedInputAstTreeStringPrinterJavadoc.txt")))
                 .replaceAll("\\\\r\\\\n", "\\\\n")
                 .replaceAll("\r\n", "\n");
@@ -1639,11 +1598,15 @@ public class MainTest {
     }
 
     @Test
-    public void testDebugOption(@SysErr Capturable systemErr) {
+    public void testDebugOption(@SysErr Capturable systemErr, @SysOut Capturable systemOut) {
         assertMainReturnCode(0, "-c", "/google_checks.xml", getPath("InputMain.java"), "-d");
         assertWithMessage("Unexpected system error log")
             .that(systemErr.getCapturedData())
-            .isNotEqualTo("");
+            .contains("FINE: Checkstyle debug logging enabled");
+        assertWithMessage("Unexpected system error log")
+            .that(systemOut.getCapturedData())
+            .contains("Audit done.");
+
     }
 
     @Test
@@ -1740,20 +1703,20 @@ public class MainTest {
         assertMainReturnCode(-2, "-c", getPath("InputMainConfig-custom-simple-root-module.xml"),
                 getPath("InputMain.java"));
         final String checkstylePackage = "com.puppycrawl.tools.checkstyle.";
-        final Violation unableToInstantiateExceptionMessage = new Violation(1,
+        final LocalizedMessage unableToInstantiateExceptionMessage = new LocalizedMessage(
                 Definitions.CHECKSTYLE_BUNDLE,
+                getClass(),
                 "PackageObjectFactory.unableToInstantiateExceptionMessage",
-                new String[] {"TestRootModuleChecker", checkstylePackage
+                "TestRootModuleChecker",
+                checkstylePackage
                         + "TestRootModuleChecker, "
                         + "TestRootModuleCheckerCheck, " + checkstylePackage
-                        + "TestRootModuleCheckerCheck"},
-                null, getClass(), null);
+                        + "TestRootModuleCheckerCheck");
         assertWithMessage(
                 "Unexpected system error log")
-                        .that(systemErr.getCapturedData()
-                                .startsWith(checkstylePackage + "api.CheckstyleException: "
-                                        + unableToInstantiateExceptionMessage.getViolation()))
-                        .isTrue();
+                        .that(systemErr.getCapturedData())
+                        .startsWith(checkstylePackage + "api.CheckstyleException: "
+                                + unableToInstantiateExceptionMessage.getMessage());
         assertWithMessage("Invalid checker state")
                 .that(TestRootModuleChecker.isProcessed())
                 .isFalse();
@@ -1767,8 +1730,8 @@ public class MainTest {
         final String cause = "com.puppycrawl.tools.checkstyle.api.CheckstyleException:"
                 + " cannot initialize module TreeWalker - ";
         assertWithMessage("Unexpected system error log")
-                .that(systemErr.getCapturedData().startsWith(cause))
-                .isTrue();
+                .that(systemErr.getCapturedData())
+                .startsWith(cause);
     }
 
     @Test
@@ -1780,11 +1743,11 @@ public class MainTest {
                 + " cannot initialize module TreeWalker - ";
         final String causeDetail = "it is not a boolean";
         assertWithMessage("Unexpected system error log")
-                .that(systemErr.getCapturedData().startsWith(cause))
-                .isTrue();
+                .that(systemErr.getCapturedData())
+                .startsWith(cause);
         assertWithMessage("Unexpected system error log")
-                .that(systemErr.getCapturedData().contains(causeDetail))
-                .isTrue();
+                .that(systemErr.getCapturedData())
+                .contains(causeDetail);
     }
 
     @Test
@@ -1823,30 +1786,30 @@ public class MainTest {
     public void testXmlOutputFormatCreateListener() throws IOException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final AuditListener listener = Main.OutputFormat.XML.createListener(out,
-                AutomaticBean.OutputStreamOptions.CLOSE);
+                OutputStreamOptions.CLOSE);
         assertWithMessage("listener is XMLLogger")
-                .that(listener instanceof XMLLogger)
-                .isTrue();
+                .that(listener)
+                .isInstanceOf(XMLLogger.class);
     }
 
     @Test
     public void testSarifOutputFormatCreateListener() throws IOException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final AuditListener listener = Main.OutputFormat.SARIF.createListener(out,
-                AutomaticBean.OutputStreamOptions.CLOSE);
+                OutputStreamOptions.CLOSE);
         assertWithMessage("listener is SarifLogger")
-                .that(listener instanceof SarifLogger)
-                .isTrue();
+                .that(listener)
+                .isInstanceOf(SarifLogger.class);
     }
 
     @Test
     public void testPlainOutputFormatCreateListener() throws IOException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final AuditListener listener = Main.OutputFormat.PLAIN.createListener(out,
-                AutomaticBean.OutputStreamOptions.CLOSE);
+                OutputStreamOptions.CLOSE);
         assertWithMessage("listener is DefaultLogger")
-                .that(listener instanceof DefaultLogger)
-                .isTrue();
+                .that(listener)
+                .isInstanceOf(DefaultLogger.class);
     }
 
     /**
@@ -1859,10 +1822,11 @@ public class MainTest {
      * @noinspection CallToSystemExit, ResultOfMethodCallIgnored
      * @noinspectionreason CallToSystemExit - test helper method requires workaround to
      *      verify exit code
-     * @noinspectionreason ResultOfMethodCallIgnored - temporary suppression until #11589
+     * @noinspectionreason ResultOfMethodCallIgnored - Setup for mockito to only
+     *                     mock getRuntime to avoid VM termination.
      */
     private static void assertMainReturnCode(int expectedExitCode, String... arguments) {
-        final Runtime mock = mock(Runtime.class);
+        final Runtime mock = mock();
         try (MockedStatic<Runtime> runtime = mockStatic(Runtime.class)) {
             runtime.when(Runtime::getRuntime)
                     .thenReturn(mock);
@@ -1878,11 +1842,11 @@ public class MainTest {
      * Print stream that shouldn't be closed. The purpose of this class is to ensure that
      * {@code System.out} and {@code System.err} are not closed by Checkstyle.
      */
-    private static class ShouldNotBeClosedStream extends PrintStream {
+    private static final class ShouldNotBeClosedStream extends PrintStream {
 
         private boolean isClosed;
 
-        /* package */ ShouldNotBeClosedStream() {
+        private ShouldNotBeClosedStream() {
             super(new ByteArrayOutputStream(), false, StandardCharsets.UTF_8);
         }
 

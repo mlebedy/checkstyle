@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -212,9 +212,17 @@ public class NewlineAtEndOfFileCheckTest
         }
     }
 
-    private static class ReadZeroRandomAccessFile extends RandomAccessFile {
+    @Test
+    public void testTrimOptionProperty() throws Exception {
+        final String[] expected = CommonUtil.EMPTY_STRING_ARRAY;
+        verifyWithInlineConfigParser(
+                getPath("InputNewlineAtEndOfFileTestTrimProperty.java"),
+                expected);
+    }
 
-        /* package */ ReadZeroRandomAccessFile(String name, String mode)
+    private static final class ReadZeroRandomAccessFile extends RandomAccessFile {
+
+        private ReadZeroRandomAccessFile(String name, String mode)
                 throws FileNotFoundException {
             super(name, mode);
         }

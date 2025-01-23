@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -27,14 +27,14 @@ import com.puppycrawl.tools.checkstyle.utils.CodePointUtil;
 import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 
 /**
- * <p>
+ * <div>
  * Checks that there is no whitespace before a token.
  * More specifically, it checks that it is not preceded with whitespace,
  * or (if linebreaks are allowed) all characters on the line before are
  * whitespace. To allow linebreaks before a token, set property
  * {@code allowLineBreaks} to {@code true}. No check occurs before semicolons in empty
  * for loop initializers or conditions.
- * </p>
+ * </div>
  * <ul>
  * <li>
  * Property {@code allowLineBreaks} - Control whether whitespace is allowed
@@ -61,96 +61,11 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * LABELED_STAT</a>.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;NoWhitespaceBefore&quot;/&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * int foo;
- * foo ++; // violation, whitespace before '++' is not allowed
- * foo++; // OK
- * for (int i = 0 ; i &lt; 5; i++) {}  // violation
- *            // ^ whitespace before ';' is not allowed
- * for (int i = 0; i &lt; 5; i++) {} // OK
- * int[][] array = { { 1, 2 }
- *                 , { 3, 4 } }; // violation, whitespace before ',' is not allowed
- * int[][] array2 = { { 1, 2 },
- *                    { 3, 4 } }; // OK
- * Lists.charactersOf("foo").listIterator()
- *        .forEachRemaining(System.out::print)
- *        ; // violation, whitespace before ';' is not allowed
- *   {
- *     label1 : // violation, whitespace before ':' is not allowed
- *     for (int i = 0; i &lt; 10; i++) {}
- *   }
  *
- *   {
- *     label2: // OK
- *     while (true) {}
- *   }
- * </pre>
- * <p>To configure the check to allow linebreaks before default tokens:</p>
- * <pre>
- * &lt;module name=&quot;NoWhitespaceBefore&quot;&gt;
- *   &lt;property name=&quot;allowLineBreaks&quot; value=&quot;true&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * int[][] array = { { 1, 2 }
- *                 , { 3, 4 } }; // OK, linebreak is allowed before ','
- * int[][] array2 = { { 1, 2 },
- *                    { 3, 4 } }; // OK, ideal code
- * void ellipsisExample(String ...params) {}; // violation, whitespace before '...' is not allowed
- * void ellipsisExample2(String
- *                         ...params) {}; //OK, linebreak is allowed before '...'
- * Lists.charactersOf("foo")
- *        .listIterator()
- *        .forEachRemaining(System.out::print); // OK
- * </pre>
- * <p>
- *     To Configure the check to restrict the use of whitespace before METHOD_REF and DOT tokens:
- * </p>
- * <pre>
- * &lt;module name=&quot;NoWhitespaceBefore&quot;&gt;
- *   &lt;property name=&quot;tokens&quot; value=&quot;METHOD_REF&quot;/&gt;
- *   &lt;property name=&quot;tokens&quot; value=&quot;DOT&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * Lists.charactersOf("foo").listIterator()
- *        .forEachRemaining(System.out::print); // violation, whitespace before '.' is not allowed
- * Lists.charactersOf("foo").listIterator().forEachRemaining(System.out ::print); // violation,
- *                           // whitespace before '::' is not allowed  ^
- * Lists.charactersOf("foo").listIterator().forEachRemaining(System.out::print); // OK
- * </pre>
- * <p>
- *     To configure the check to allow linebreak before METHOD_REF and DOT tokens:
- * </p>
- * <pre>
- * &lt;module name=&quot;NoWhitespaceBefore&quot;&gt;
- *   &lt;property name=&quot;tokens&quot; value=&quot;METHOD_REF&quot;/&gt;
- *   &lt;property name=&quot;tokens&quot; value=&quot;DOT&quot;/&gt;
- *   &lt;property name=&quot;allowLineBreaks&quot; value=&quot;true&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * Lists .charactersOf("foo") //violation, whitespace before '.' is not allowed
- *         .listIterator()
- *         .forEachRemaining(System.out ::print); // violation,
- *                                  // ^ whitespace before '::' is not allowed
- * Lists.charactersOf("foo")
- *        .listIterator()
- *        .forEachRemaining(System.out::print); // OK
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -249,6 +164,7 @@ public class NoWhitespaceBeforeCheck
      *
      * @param allowLineBreaks whether whitespace should be
      *     flagged at line breaks.
+     * @since 3.0
      */
     public void setAllowLineBreaks(boolean allowLineBreaks) {
         this.allowLineBreaks = allowLineBreaks;

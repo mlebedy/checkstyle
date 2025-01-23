@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -40,7 +40,7 @@ public class XpathRegressionNestedTryDepthTest extends AbstractXpathTestSupport 
     @Test
     public void testCorrect() throws Exception {
         final File fileToProcess =
-                new File(getPath("SuppressionXpathRegressionNestedTryDepth.java"));
+                new File(getPath("InputXpathNestedTryDepth.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(NestedTryDepthCheck.class);
@@ -52,7 +52,7 @@ public class XpathRegressionNestedTryDepthTest extends AbstractXpathTestSupport 
 
         final List<String> expectedXpathQueries = Collections.singletonList(
             "/COMPILATION_UNIT/CLASS_DEF"
-                + "[./IDENT[@text='SuppressionXpathRegressionNestedTryDepth']]/OBJBLOCK"
+                + "[./IDENT[@text='InputXpathNestedTryDepth']]/OBJBLOCK"
                 + "/METHOD_DEF[./IDENT[@text='test']]/SLIST/LITERAL_TRY/SLIST"
                 + "/LITERAL_TRY/SLIST/LITERAL_TRY"
         );
@@ -64,7 +64,7 @@ public class XpathRegressionNestedTryDepthTest extends AbstractXpathTestSupport 
     @Test
     public void testMax() throws Exception {
         final File fileToProcess =
-            new File(getPath("SuppressionXpathRegressionNestedTryDepthMax.java"));
+            new File(getPath("InputXpathNestedTryDepthMax.java"));
 
         final DefaultConfiguration moduleConfig =
             createModuleConfig(NestedTryDepthCheck.class);
@@ -77,7 +77,7 @@ public class XpathRegressionNestedTryDepthTest extends AbstractXpathTestSupport 
 
         final List<String> expectedXpathQueries = Collections.singletonList(
             "/COMPILATION_UNIT/CLASS_DEF"
-                + "[./IDENT[@text='SuppressionXpathRegressionNestedTryDepthMax']]"
+                + "[./IDENT[@text='InputXpathNestedTryDepthMax']]"
                 + "/OBJBLOCK/METHOD_DEF[./IDENT[@text='test']]"
                 + "/SLIST/LITERAL_TRY"
                 + "/SLIST/LITERAL_TRY"

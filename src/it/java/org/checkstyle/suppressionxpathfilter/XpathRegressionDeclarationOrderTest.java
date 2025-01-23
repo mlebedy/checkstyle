@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -38,9 +38,9 @@ public class XpathRegressionDeclarationOrderTest extends AbstractXpathTestSuppor
     }
 
     @Test
-    public void testOne() throws Exception {
+    public void testNonStatic() throws Exception {
         final File fileToProcess =
-                new File(getPath("SuppressionXpathRegressionDeclarationOrderOne.java"));
+                new File(getPath("InputXpathDeclarationOrderNonStatic.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(DeclarationOrderCheck.class);
@@ -52,13 +52,13 @@ public class XpathRegressionDeclarationOrderTest extends AbstractXpathTestSuppor
 
         final List<String> expectedXpathQueries = Arrays.asList(
                 "/COMPILATION_UNIT/CLASS_DEF"
-                        + "[./IDENT[@text='SuppressionXpathRegressionDeclarationOrderOne']]"
+                        + "[./IDENT[@text='InputXpathDeclarationOrderNonStatic']]"
                         + "/OBJBLOCK/VARIABLE_DEF[./IDENT[@text='name']]",
                 "/COMPILATION_UNIT/CLASS_DEF"
-                        + "[./IDENT[@text='SuppressionXpathRegressionDeclarationOrderOne']]"
+                        + "[./IDENT[@text='InputXpathDeclarationOrderNonStatic']]"
                         + "/OBJBLOCK/VARIABLE_DEF[./IDENT[@text='name']]/MODIFIERS",
                 "/COMPILATION_UNIT/CLASS_DEF"
-                        + "[./IDENT[@text='SuppressionXpathRegressionDeclarationOrderOne']]"
+                        + "[./IDENT[@text='InputXpathDeclarationOrderNonStatic']]"
                         + "/OBJBLOCK/VARIABLE_DEF[./IDENT[@text='name']]/MODIFIERS/LITERAL_PUBLIC"
         );
 
@@ -67,9 +67,9 @@ public class XpathRegressionDeclarationOrderTest extends AbstractXpathTestSuppor
     }
 
     @Test
-    public void testTwo() throws Exception {
+    public void testStatic() throws Exception {
         final File fileToProcess =
-                new File(getPath("SuppressionXpathRegressionDeclarationOrderTwo.java"));
+                new File(getPath("InputXpathDeclarationOrderStatic.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(DeclarationOrderCheck.class);
@@ -81,13 +81,13 @@ public class XpathRegressionDeclarationOrderTest extends AbstractXpathTestSuppor
 
         final List<String> expectedXpathQueries = Arrays.asList(
                 "/COMPILATION_UNIT/CLASS_DEF"
-                        + "[./IDENT[@text='SuppressionXpathRegressionDeclarationOrderTwo']]"
+                        + "[./IDENT[@text='InputXpathDeclarationOrderStatic']]"
                         + "/OBJBLOCK/VARIABLE_DEF[./IDENT[@text='MAX']]",
                 "/COMPILATION_UNIT/CLASS_DEF"
-                        + "[./IDENT[@text='SuppressionXpathRegressionDeclarationOrderTwo']]"
+                        + "[./IDENT[@text='InputXpathDeclarationOrderStatic']]"
                         + "/OBJBLOCK/VARIABLE_DEF[./IDENT[@text='MAX']]/MODIFIERS",
                 "/COMPILATION_UNIT/CLASS_DEF"
-                        + "[./IDENT[@text='SuppressionXpathRegressionDeclarationOrderTwo']]"
+                        + "[./IDENT[@text='InputXpathDeclarationOrderStatic']]"
                         + "/OBJBLOCK/VARIABLE_DEF[./IDENT[@text='MAX']]/MODIFIERS/LITERAL_PUBLIC"
         );
 

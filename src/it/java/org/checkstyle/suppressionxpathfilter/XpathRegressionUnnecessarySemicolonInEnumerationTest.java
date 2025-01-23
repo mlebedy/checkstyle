@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -40,9 +40,9 @@ public class XpathRegressionUnnecessarySemicolonInEnumerationTest
     }
 
     @Test
-    public void testOne() throws Exception {
+    public void testSimple() throws Exception {
         final File fileToProcess = new File(
-                getPath("SuppressionXpathRegressionUnnecessarySemicolonInEnumeration.java"));
+                getPath("InputXpathUnnecessarySemicolonInEnumerationSimple.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(UnnecessarySemicolonInEnumerationCheck.class);
@@ -60,9 +60,9 @@ public class XpathRegressionUnnecessarySemicolonInEnumerationTest
     }
 
     @Test
-    public void testTwo() throws Exception {
+    public void testAll() throws Exception {
         final File fileToProcess = new File(getPath(
-            "SuppressionXpathRegressionUnnecessarySemicolonInEnumerationAll.java"
+            "InputXpathUnnecessarySemicolonInEnumerationAll.java"
         ));
 
         final DefaultConfiguration moduleConfig =
@@ -75,7 +75,7 @@ public class XpathRegressionUnnecessarySemicolonInEnumerationTest
 
         final List<String> expectedXpathQueries = Collections.singletonList(
             "/COMPILATION_UNIT/ENUM_DEF[./IDENT[@text="
-                + "'SuppressionXpathRegressionUnnecessarySemicolonInEnumerationAll']]"
+                + "'InputXpathUnnecessarySemicolonInEnumerationAll']]"
                 + "/OBJBLOCK/SEMI"
         );
 

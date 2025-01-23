@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -40,7 +40,7 @@ public class XpathRegressionOuterTypeFilenameTest extends AbstractXpathTestSuppo
     @Test
     public void testNoPublic() throws Exception {
         final File fileToProcess = new File(getPath(
-                "SuppressionXpathRegressionOuterTypeFilename1.java"));
+                "InputXpathOuterTypeFilenameOne.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(OuterTypeFilenameCheck.class);
@@ -63,7 +63,7 @@ public class XpathRegressionOuterTypeFilenameTest extends AbstractXpathTestSuppo
     @Test
     public void testNested() throws Exception {
         final File fileToProcess = new File(getPath(
-                "SuppressionXpathRegressionOuterTypeFilename2.java"));
+                "InputXpathOuterTypeFilenameTwo.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(OuterTypeFilenameCheck.class);

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -80,21 +80,21 @@ public class AuditEventDefaultFormatterTest {
                 "messages.properties", "key", null, SeverityLevel.ERROR, null,
                 getClass(), null);
         final AuditEvent auditEvent = new AuditEvent(new Object(), "fileName", violation);
-        final int result = TestUtil.invokeStaticMethod(AuditEventDefaultFormatter.class,
-                "calculateBufferLength", auditEvent, SeverityLevel.ERROR.ordinal());
+        final StringBuilder result = TestUtil.invokeStaticMethod(AuditEventDefaultFormatter.class,
+                "initStringBuilderWithOptimalBuffer", auditEvent, SeverityLevel.ERROR.toString());
 
         assertWithMessage("Buffer length is not expected")
-                .that(result)
-                .isEqualTo(54);
+                .that(result.capacity())
+                .isEqualTo(56);
     }
 
-    private static class TestModuleCheck {
+    private static final class TestModuleCheck {
 
         // no code
 
     }
 
-    private static class TestModule {
+    private static final class TestModule {
 
         // no code
 

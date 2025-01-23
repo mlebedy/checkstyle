@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -26,10 +26,10 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 /**
- * <p>
+ * <div>
  * This filter element is immutable and accepts an integer that matches a CSV value, where
  * each value is an integer or a range of integers.
- * </p>
+ * </div>
  */
 class CsvFilterElement implements IntFilterElement {
 

@@ -12,13 +12,13 @@ package com.puppycrawl.tools.checkstyle.checks.coding.variabledeclarationusagedi
 
 public class InputVariableDeclarationUsageDistanceLabels {
     public void method() {
-        boolean eol = false;
+        boolean eol = false; // violation 'Distance .* is 5.'
 
         nothing();
         nothing();
         nothing();
         nothing();
-        myLoop: // ok
+        myLoop:
         for (int i = 0; i < 5; i++) {
             if (i == 5) {
                 eol = true;

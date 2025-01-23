@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -58,7 +58,7 @@ public class CatchParameterNameCheckTest extends AbstractModuleTestSupport {
 
     @Test
     public void testDefaultConfigurationOnFileWithViolations() throws Exception {
-        final String defaultFormat = "^(e|t|ex|[a-z][a-z][a-zA-Z]+)$";
+        final String defaultFormat = "^(e|t|ex|[a-z][a-z][a-zA-Z]+|_)$";
 
         final String[] expected = {
             "25:28: " + getCheckMessage(MSG_INVALID_PATTERN, "exception1", defaultFormat),
@@ -96,4 +96,17 @@ public class CatchParameterNameCheckTest extends AbstractModuleTestSupport {
                 getPath("InputCatchParameterName3.java"), expected);
     }
 
+    @Test
+    public void testCatchParameterNameUnnamed() throws Exception {
+        final String defaultFormat = "^(e|t|ex|[a-z][a-z][a-zA-Z]+|_)$";
+
+        final String[] expected = {
+            "18:28: " + getCheckMessage(MSG_INVALID_PATTERN, "__", defaultFormat),
+            "24:28: " + getCheckMessage(MSG_INVALID_PATTERN, "_BAD", defaultFormat),
+            "27:28: " + getCheckMessage(MSG_INVALID_PATTERN, "BAD__", defaultFormat),
+        };
+
+        verifyWithInlineConfigParser(
+                getNonCompilablePath("InputCatchParameterNameUnnamed.java"), expected);
+    }
 }

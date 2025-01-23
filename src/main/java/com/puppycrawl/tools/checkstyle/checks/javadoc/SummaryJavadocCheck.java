@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -19,10 +19,13 @@
 
 package com.puppycrawl.tools.checkstyle.checks.javadoc;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import com.puppycrawl.tools.checkstyle.StatelessCheck;
 import com.puppycrawl.tools.checkstyle.api.DetailNode;
@@ -32,7 +35,7 @@ import com.puppycrawl.tools.checkstyle.utils.JavadocUtil;
 import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
 
 /**
- * <p>
+ * <div>
  * Checks that
  * <a href="https://www.oracle.com/technical-resources/articles/java/javadoc-tool.html#firstsentence">
  * Javadoc summary sentence</a> does not contain phrases that are not recommended to use.
@@ -40,8 +43,22 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * Summaries that contain a non-empty {@code {@return}} are allowed.
  * Check also violate Javadoc that does not contain first sentence, though with {@code {@return}} a
  * period is not required as the Javadoc tool adds it.
- * </p>
+ * </div>
+ *
  * <ul>
+ * <li>
+ * Property {@code forbiddenSummaryFragments} - Specify the regexp for forbidden summary fragments.
+ * Type is {@code java.util.regex.Pattern}.
+ * Default value is {@code "^$"}.
+ * </li>
+ * <li>
+ * Property {@code period} - Specify the period symbol. Used to check the first sentence ends with a
+ * period. Periods that are not followed by a whitespace character are ignored (eg. the period in
+ * v1.0). Because some periods include whitespace built into the character, if this is set to a
+ * non-default value any period will end the sentence, whether it is followed by whitespace or not.
+ * Type is {@code java.lang.String}.
+ * Default value is {@code "."}.
+ * </li>
  * <li>
  * Property {@code violateExecutionOnNonTightHtml} - Control when to print violations
  * if the Javadoc being examined by this check violates the tight html rules defined at
@@ -49,142 +66,12 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * Type is {@code boolean}.
  * Default value is {@code false}.
  * </li>
- * <li>
- * Property {@code forbiddenSummaryFragments} - Specify the regexp for forbidden summary fragments.
- * Type is {@code java.util.regex.Pattern}.
- * Default value is {@code "^$"}.
- * </li>
- * <li>
- * Property {@code period} - Specify the period symbol at the end of first javadoc sentence.
- * Type is {@code java.lang.String}.
- * Default value is {@code "."}.
- * </li>
  * </ul>
- * <p>
- * To configure the default check to validate that first sentence is not empty and first
- * sentence is not missing:
- * </p>
- * <pre>
- * &lt;module name=&quot;SummaryJavadocCheck&quot;/&gt;
- * </pre>
- * <p>
- * Example of {@code {@inheritDoc}} without summary.
- * </p>
- * <pre>
- * public class Test extends Exception {
- * //Valid
- *   &#47;**
- *    * {&#64;inheritDoc}
- *    *&#47;
- *   public String ValidFunction(){
- *     return "";
- *   }
- *   //Violation
- *   &#47;**
- *    *
- *    *&#47;
- *   public String InvalidFunction(){
- *     return "";
- *   }
- * }
- * </pre>
- * <p>
- * Example of non permitted empty javadoc for Inline Summary Javadoc.
- * </p>
- * <pre>
- * public class Test extends Exception {
- *   &#47;**
- *    * {&#64;summary  }
- *    *&#47;
- *   public String InvalidFunctionOne(){ // violation
- *     return "";
- *   }
  *
- *   &#47;**
- *    * {&#64;summary &lt;p&gt; &lt;p/&gt;}
- *    *&#47;
- *   public String InvalidFunctionTwo(){ // violation
- *     return "";
- *   }
- *
- *   &#47;**
- *    * {&#64;summary &lt;p&gt;This is summary for validFunctionThree.&lt;p/&gt;}
- *    *&#47;
- *   public void validFunctionThree(){} // ok
- * }
- * </pre>
- * <p>
- * To ensure that summary does not contain phrase like "This method returns",
- * use following config:
- * </p>
- * <pre>
- * &lt;module name="SummaryJavadocCheck"&gt;
- *   &lt;property name="forbiddenSummaryFragments"
- *     value="^This method returns.*"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * To specify period symbol at the end of first javadoc sentence:
- * </p>
- * <pre>
- * &lt;module name="SummaryJavadocCheck"&gt;
- *   &lt;property name="period" value="。"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * Example of period property.
- * </p>
- * <pre>
- * public class TestClass {
- *  &#47;**
- *   * This is invalid java doc.
- *   *&#47;
- *   void invalidJavaDocMethod() {
- *   }
- *  &#47;**
- *   * This is valid java doc。
- *   *&#47;
- *   void validJavaDocMethod() {
- *   }
- * }
- * </pre>
- * <p>
- * Example of period property for inline summary javadoc.
- * </p>
- * <pre>
- * public class TestClass {
- *  &#47;**
- *   * {&#64;summary This is invalid java doc.}
- *   *&#47;
- *   public void invalidJavaDocMethod() { // violation
- *   }
- *  &#47;**
- *   * {&#64;summary This is valid java doc。}
- *   *&#47;
- *   public void validJavaDocMethod() { // ok
- *   }
- * }
- * </pre>
- * <p>
- * Example of inline summary javadoc with HTML tags.
- * </p>
- * <pre>
- * public class Test {
- *  &#47;**
- *   * {&#64;summary First sentence is normally the summary.
- *   * Use of html tags:
- *   * &lt;ul&gt;
- *   * &lt;li&gt;Item one.&lt;/li&gt;
- *   * &lt;li&gt;Item two.&lt;/li&gt;
- *   * &lt;/ul&gt;}
- *   *&#47;
- *   public void validInlineJavadoc() { // ok
- *   }
- * }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -194,6 +81,9 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * </li>
  * <li>
  * {@code javadoc.parse.rule.error}
+ * </li>
+ * <li>
+ * {@code javadoc.unclosedHtml}
  * </li>
  * <li>
  * {@code javadoc.wrong.singleton.html.tag}
@@ -273,7 +163,10 @@ public class SummaryJavadocCheck extends AbstractJavadocCheck {
     private Pattern forbiddenSummaryFragments = CommonUtil.createPattern("^$");
 
     /**
-     * Specify the period symbol at the end of first javadoc sentence.
+     * Specify the period symbol. Used to check the first sentence ends with a period. Periods that
+     * are not followed by a whitespace character are ignored (eg. the period in v1.0). Because some
+     * periods include whitespace built into the character, if this is set to a non-default value
+     * any period will end the sentence, whether it is followed by whitespace or not.
      */
     private String period = DEFAULT_PERIOD;
 
@@ -281,15 +174,21 @@ public class SummaryJavadocCheck extends AbstractJavadocCheck {
      * Setter to specify the regexp for forbidden summary fragments.
      *
      * @param pattern a pattern.
+     * @since 6.0
      */
     public void setForbiddenSummaryFragments(Pattern pattern) {
         forbiddenSummaryFragments = pattern;
     }
 
     /**
-     * Setter to specify the period symbol at the end of first javadoc sentence.
+     * Setter to specify the period symbol. Used to check the first sentence ends with a period.
+     * Periods that are not followed by a whitespace character are ignored (eg. the period in v1.0).
+     * Because some periods include whitespace built into the character, if this is set to a
+     * non-default value any period will end the sentence, whether it is followed by whitespace or
+     * not.
      *
      * @param period period's value.
+     * @since 6.2
      */
     public void setPeriod(String period) {
         this.period = period;
@@ -309,17 +208,20 @@ public class SummaryJavadocCheck extends AbstractJavadocCheck {
 
     @Override
     public void visitJavadocToken(DetailNode ast) {
-        final Optional<DetailNode> inlineTag = getInlineTagNode(ast);
-        final DetailNode inlineTagNode = inlineTag.orElse(null);
-        if (inlineTag.isPresent()
-            && isSummaryTag(inlineTagNode)
-            && isDefinedFirst(inlineTagNode)) {
-            validateSummaryTag(inlineTagNode);
+        final Optional<DetailNode> inlineTagNode = getInlineTagNode(ast);
+        boolean shouldValidateUntaggedSummary = true;
+        if (inlineTagNode.isPresent()) {
+            final DetailNode node = inlineTagNode.get();
+            if (isSummaryTag(node) && isDefinedFirst(node)) {
+                shouldValidateUntaggedSummary = false;
+                validateSummaryTag(node);
+            }
+            else if (isInlineReturnTag(node)) {
+                shouldValidateUntaggedSummary = false;
+                validateInlineReturnTag(node);
+            }
         }
-        else if (inlineTag.isPresent() && isInlineReturnTag(inlineTagNode)) {
-            validateInlineReturnTag(inlineTagNode);
-        }
-        else if (!startsWithInheritDoc(ast)) {
+        if (shouldValidateUntaggedSummary && !startsWithInheritDoc(ast)) {
             validateUntaggedSummary(ast);
         }
     }
@@ -335,14 +237,20 @@ public class SummaryJavadocCheck extends AbstractJavadocCheck {
             log(ast.getLineNumber(), MSG_SUMMARY_JAVADOC_MISSING);
         }
         else if (!period.isEmpty()) {
-            final String firstSentence = getFirstSentence(ast);
-            final int endOfSentence = firstSentence.lastIndexOf(period);
-            if (!summaryDoc.contains(period)) {
-                log(ast.getLineNumber(), MSG_SUMMARY_FIRST_SENTENCE);
+            if (summaryDoc.contains(period)) {
+                final Optional<String> firstSentence = getFirstSentence(ast, period);
+
+                if (firstSentence.isPresent()) {
+                    if (containsForbiddenFragment(firstSentence.get())) {
+                        log(ast.getLineNumber(), MSG_SUMMARY_JAVADOC);
+                    }
+                }
+                else {
+                    log(ast.getLineNumber(), MSG_SUMMARY_FIRST_SENTENCE);
+                }
             }
-            if (endOfSentence != -1
-                    && containsForbiddenFragment(firstSentence.substring(0, endOfSentence))) {
-                log(ast.getLineNumber(), MSG_SUMMARY_JAVADOC);
+            else {
+                log(ast.getLineNumber(), MSG_SUMMARY_FIRST_SENTENCE);
             }
         }
     }
@@ -357,7 +265,7 @@ public class SummaryJavadocCheck extends AbstractJavadocCheck {
         return Arrays.stream(javadoc.getChildren())
             .filter(SummaryJavadocCheck::isInlineTagPresent)
             .findFirst()
-            .map(SummaryJavadocCheck::getInlineTagNodeWithinHtmlElement);
+            .map(SummaryJavadocCheck::getInlineTagNodeForAst);
     }
 
     /**
@@ -368,19 +276,19 @@ public class SummaryJavadocCheck extends AbstractJavadocCheck {
      */
     private static boolean isDefinedFirst(DetailNode inlineSummaryTag) {
         boolean isDefinedFirst = true;
-        DetailNode previousSibling = JavadocUtil.getPreviousSibling(inlineSummaryTag);
-        while (previousSibling != null && isDefinedFirst) {
-            switch (previousSibling.getType()) {
+        DetailNode currentAst = inlineSummaryTag;
+        while (currentAst != null && isDefinedFirst) {
+            switch (currentAst.getType()) {
                 case JavadocTokenTypes.TEXT:
-                    isDefinedFirst = previousSibling.getText().isBlank();
+                    isDefinedFirst = currentAst.getText().isBlank();
                     break;
                 case JavadocTokenTypes.HTML_ELEMENT:
-                    isDefinedFirst = !isTextPresentInsideHtmlTag(previousSibling);
+                    isDefinedFirst = !isTextPresentInsideHtmlTag(currentAst);
                     break;
                 default:
                     break;
             }
-            previousSibling = JavadocUtil.getPreviousSibling(previousSibling);
+            currentAst = JavadocUtil.getPreviousSibling(currentAst);
         }
         return isDefinedFirst;
     }
@@ -422,9 +330,7 @@ public class SummaryJavadocCheck extends AbstractJavadocCheck {
      * @return true, if the inline tag node is present.
      */
     private static boolean isInlineTagPresent(DetailNode ast) {
-        return ast.getType() == JavadocTokenTypes.JAVADOC_INLINE_TAG
-                || ast.getType() == JavadocTokenTypes.HTML_ELEMENT
-                && getInlineTagNodeWithinHtmlElement(ast) != null;
+        return getInlineTagNodeForAst(ast) != null;
     }
 
     /**
@@ -433,7 +339,7 @@ public class SummaryJavadocCheck extends AbstractJavadocCheck {
      * @param ast html tag node.
      * @return inline summary javadoc tag node or null if no node is found.
      */
-    private static DetailNode getInlineTagNodeWithinHtmlElement(DetailNode ast) {
+    private static DetailNode getInlineTagNodeForAst(DetailNode ast) {
         DetailNode node = ast;
         DetailNode result = null;
         // node can never be null as this method is called when there is a HTML_ELEMENT
@@ -443,14 +349,14 @@ public class SummaryJavadocCheck extends AbstractJavadocCheck {
         else if (node.getType() == JavadocTokenTypes.HTML_TAG) {
             // HTML_TAG always has more than 2 children.
             node = node.getChildren()[1];
-            result = getInlineTagNodeWithinHtmlElement(node);
+            result = getInlineTagNodeForAst(node);
         }
         else if (node.getType() == JavadocTokenTypes.HTML_ELEMENT
                 // Condition for SINGLETON html element which cannot contain summary node
                 && node.getChildren()[0].getChildren().length > 1) {
             // Html elements have one tested tag before actual content inside it
             node = node.getChildren()[0].getChildren()[1];
-            result = getInlineTagNodeWithinHtmlElement(node);
+            result = getInlineTagNodeForAst(node);
         }
         return result;
     }
@@ -489,8 +395,7 @@ public class SummaryJavadocCheck extends AbstractJavadocCheck {
         // Checking size of ast is not required, since ast contains
         // children of Inline Tag, as at least 2 children will be present which are
         // RCURLY and LCURLY.
-        return child[1].getType() == JavadocTokenTypes.CUSTOM_NAME
-            && name.equals(child[1].getText());
+        return name.equals(child[1].getText());
     }
 
     /**
@@ -505,7 +410,9 @@ public class SummaryJavadocCheck extends AbstractJavadocCheck {
             log(inlineSummaryTag.getLineNumber(), MSG_SUMMARY_JAVADOC_MISSING);
         }
         else if (!period.isEmpty()) {
-            if (isPeriodNotAtEnd(summaryVisible, period)) {
+            final boolean isPeriodNotAtEnd =
+                    summaryVisible.lastIndexOf(period) != summaryVisible.length() - 1;
+            if (isPeriodNotAtEnd) {
                 log(inlineSummaryTag.getLineNumber(), MSG_SUMMARY_MISSING_PERIOD);
             }
             else if (containsForbiddenFragment(inlineSummary)) {
@@ -583,18 +490,6 @@ public class SummaryJavadocCheck extends AbstractJavadocCheck {
     }
 
     /**
-     * Checks if the string does not end with period.
-     *
-     * @param sentence string to check for period at end.
-     * @param period string to check within sentence.
-     * @return {@code true} if sentence does not end with period.
-     */
-    private static boolean isPeriodNotAtEnd(String sentence, String period) {
-        final String summarySentence = sentence.trim();
-        return summarySentence.lastIndexOf(period) != summarySentence.length() - 1;
-    }
-
-    /**
      * Tests if first sentence contains forbidden summary fragment.
      *
      * @param firstSentence string with first sentence.
@@ -602,7 +497,7 @@ public class SummaryJavadocCheck extends AbstractJavadocCheck {
      */
     private boolean containsForbiddenFragment(String firstSentence) {
         final String javadocText = JAVADOC_MULTILINE_TO_SINGLELINE_PATTERN
-                .matcher(firstSentence).replaceAll(" ").trim();
+                .matcher(firstSentence).replaceAll(" ");
         return forbiddenSummaryFragments.matcher(trimExcessWhitespaces(javadocText)).find();
     }
 
@@ -645,15 +540,14 @@ public class SummaryJavadocCheck extends AbstractJavadocCheck {
      */
     private static boolean startsWithInheritDoc(DetailNode root) {
         boolean found = false;
-        final DetailNode[] children = root.getChildren();
 
-        for (int i = 0; !found; i++) {
-            final DetailNode child = children[i];
+        for (DetailNode child : root.getChildren()) {
             if (child.getType() == JavadocTokenTypes.JAVADOC_INLINE_TAG
                     && child.getChildren()[1].getType() == JavadocTokenTypes.INHERIT_DOC_LITERAL) {
                 found = true;
             }
-            else if (child.getType() != JavadocTokenTypes.LEADING_ASTERISK
+            if ((child.getType() == JavadocTokenTypes.TEXT
+                    || child.getType() == JavadocTokenTypes.HTML_ELEMENT)
                     && !CommonUtil.isBlank(child.getText())) {
                 break;
             }
@@ -671,9 +565,6 @@ public class SummaryJavadocCheck extends AbstractJavadocCheck {
     private static String getSummarySentence(DetailNode ast) {
         final StringBuilder result = new StringBuilder(256);
         for (DetailNode child : ast.getChildren()) {
-            if (child.getType() == JavadocTokenTypes.JAVADOC_TAG) {
-                break;
-            }
             if (child.getType() != JavadocTokenTypes.EOF
                     && ALLOWED_TYPES.get(child.getType())) {
                 result.append(child.getText());
@@ -710,31 +601,78 @@ public class SummaryJavadocCheck extends AbstractJavadocCheck {
     }
 
     /**
-     * Finds and returns first sentence.
+     * Finds the first sentence.
      *
-     * @param ast Javadoc root node.
-     * @return first sentence.
+     * @param ast The Javadoc root node.
+     * @param period The configured period symbol.
+     * @return An Optional containing the first sentence
+     *     up to and excluding the period, or an empty
+     *     Optional if no ending was found.
      */
-    private static String getFirstSentence(DetailNode ast) {
-        final StringBuilder result = new StringBuilder(256);
-        final String periodSuffix = DEFAULT_PERIOD + ' ';
-        for (DetailNode child : ast.getChildren()) {
-            final String text;
-            if (child.getChildren().length == 0) {
-                text = child.getText();
-            }
-            else {
-                text = getFirstSentence(child);
-            }
+    private static Optional<String> getFirstSentence(DetailNode ast, String period) {
+        final List<String> sentenceParts = new ArrayList<>();
+        Optional<String> result = Optional.empty();
+        for (String text : (Iterable<String>) streamTextParts(ast)::iterator) {
+            final Optional<String> sentenceEnding = findSentenceEnding(text, period);
 
-            if (text.contains(periodSuffix)) {
-                result.append(text, 0, text.indexOf(periodSuffix) + 1);
+            if (sentenceEnding.isPresent()) {
+                sentenceParts.add(sentenceEnding.get());
+                result = Optional.of(String.join("", sentenceParts));
                 break;
             }
-
-            result.append(text);
+            else {
+                sentenceParts.add(text);
+            }
         }
-        return result.toString();
+        return result;
     }
 
+    /**
+     * Streams through all the text under the given node.
+     *
+     * @param node The Javadoc node to examine.
+     * @return All the text in all nodes that have no child nodes.
+     */
+    private static Stream<String> streamTextParts(DetailNode node) {
+        final Stream<String> stream;
+        if (node.getChildren().length == 0) {
+            stream = Stream.of(node.getText());
+        }
+        else {
+            stream = Stream.of(node.getChildren())
+                .flatMap(SummaryJavadocCheck::streamTextParts);
+        }
+        return stream;
+    }
+
+    /**
+     * Finds the end of a sentence. The end of sentence detection here could be replaced in the
+     * future by Java's built-in BreakIterator class.
+     *
+     * @param text The string to search.
+     * @param period The period character to find.
+     * @return An Optional containing the string up to and excluding the period,
+     *     or empty Optional if no ending was found.
+     */
+    private static Optional<String> findSentenceEnding(String text, String period) {
+        int periodIndex = text.indexOf(period);
+        Optional<String> result = Optional.empty();
+        while (periodIndex >= 0) {
+            final int afterPeriodIndex = periodIndex + period.length();
+
+            // Handle western period separately as it is only the end of a sentence if followed
+            // by whitespace. Other period characters often include whitespace in the character.
+            if (!DEFAULT_PERIOD.equals(period)
+                || afterPeriodIndex >= text.length()
+                || Character.isWhitespace(text.charAt(afterPeriodIndex))) {
+                final String resultStr = text.substring(0, periodIndex);
+                result = Optional.of(resultStr);
+                break;
+            }
+            else {
+                periodIndex = text.indexOf(period, afterPeriodIndex);
+            }
+        }
+        return result;
+    }
 }

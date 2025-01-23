@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -41,12 +41,12 @@ public class XpathRegressionIllegalIdentifierNameTest extends AbstractXpathTestS
     @Test
     public void testOne() throws Exception {
         final File fileToProcess = new File(getNonCompilablePath(
-            "SuppressionXpathRegressionIllegalIdentifierNameTestOne.java"));
+            "InputXpathIllegalIdentifierNameOne.java"));
 
         final DefaultConfiguration moduleConfig =
             createModuleConfig(IllegalIdentifierNameCheck.class);
 
-        final String format = "(?i)^(?!(record|yield|var|permits|sealed|_)$).+$";
+        final String format = "(?i)^(?!(record|yield|var|permits|sealed)$).+$";
 
         final String[] expectedViolation = {
             "10:20: " + getCheckMessage(IllegalIdentifierNameCheck.class,
@@ -55,7 +55,7 @@ public class XpathRegressionIllegalIdentifierNameTest extends AbstractXpathTestS
 
         final List<String> expectedXpathQueries = Collections.singletonList(
             "/COMPILATION_UNIT/RECORD_DEF"
-                + "[./IDENT[@text='SuppressionXpathRegressionIllegalIdentifierNameTestOne'"
+                + "[./IDENT[@text='InputXpathIllegalIdentifierNameOne'"
                 + "]]/RECORD_COMPONENTS/RECORD_COMPONENT_DEF/IDENT[@text='yield']"
         );
 
@@ -66,12 +66,12 @@ public class XpathRegressionIllegalIdentifierNameTest extends AbstractXpathTestS
     @Test
     public void testTwo() throws Exception {
         final File fileToProcess = new File(getNonCompilablePath(
-            "SuppressionXpathRegressionIllegalIdentifierNameTestTwo.java"));
+            "InputXpathIllegalIdentifierNameTwo.java"));
 
         final DefaultConfiguration moduleConfig =
             createModuleConfig(IllegalIdentifierNameCheck.class);
 
-        final String format = "(?i)^(?!(record|yield|var|permits|sealed|_)$).+$";
+        final String format = "(?i)^(?!(record|yield|var|permits|sealed)$).+$";
 
         final String[] expectedViolation = {
             "9:17: " + getCheckMessage(IllegalIdentifierNameCheck.class,
@@ -80,7 +80,7 @@ public class XpathRegressionIllegalIdentifierNameTest extends AbstractXpathTestS
 
         final List<String> expectedXpathQueries = Collections.singletonList(
             "/COMPILATION_UNIT/CLASS_DEF"
-                + "[./IDENT[@text='SuppressionXpathRegressionIllegalIdentifierNameTestTwo']"
+                + "[./IDENT[@text='InputXpathIllegalIdentifierNameTwo']"
                 + "]/OBJBLOCK/METHOD_DEF[./IDENT[@text='foo']]/PARAMETERS/PARAMETER_DEF"
                 + "/IDENT[@text='yield']"
         );

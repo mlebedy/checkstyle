@@ -1,6 +1,6 @@
 /*
 UnusedLocalVariable
-
+allowUnnamedVariables = false
 
 */
 
@@ -11,15 +11,15 @@ public class InputUnusedLocalVariableAnonInnerClasses {
     static int a = 12, b = 13, c = 14;
 
     public void testAnonymousInnerClass() {
-        int a = 12; // violation
-        int b = 12; // violation
-        int k = 14; // ok
-        Test obj = new Test() { // violation
+        int a = 12; // violation, 'Unused local variable'
+        int b = 12; // violation, 'Unused local variable'
+        int k = 14;
+        Test obj = new Test() { // violation, 'Unused local variable'
             int a = 2;
 
             private void testSameName(int s) {
                 s = a + InputUnusedLocalVariable.a;
-                Test obj = new Test() { // violation
+                Test obj = new Test() { // violation, 'Unused local variable'
                     int b = 1;
 
                     private void testSameNameNested(int s) {
@@ -29,11 +29,11 @@ public class InputUnusedLocalVariableAnonInnerClasses {
             }
         };
 
-        Test obj2; // violation
+        Test obj2; // violation, 'Unused local variable'
         obj2 = new Test() {
             int a = 1;
             int b = 1;
-            int c = 0; // ok
+            int c = 0;
 
             private void testSameName(int s) {
                 s = a + b + this.a + this.b + InputUnusedLocalVariableAnonInnerClasses.a
@@ -43,8 +43,8 @@ public class InputUnusedLocalVariableAnonInnerClasses {
     }
 
     {
-        int m = 12; // violation
-        int l = 2; // violation
+        int m = 12; // violation, 'Unused local variable'
+        int l = 2; // violation, 'Unused local variable'
         d obj = new d() {
             void method() {
                 m += l;
@@ -56,10 +56,10 @@ public class InputUnusedLocalVariableAnonInnerClasses {
     static {
         int a = 1;
         int x = 2;
-        int h = 3; // violation
+        int h = 3; // violation, 'Unused local variable'
         m.Test obj = new m().new Test() {
             void method() {
-                boolean v = // violation
+                boolean v = // violation, 'Unused local variable'
                         a == x == (h == 2);
             }
         };

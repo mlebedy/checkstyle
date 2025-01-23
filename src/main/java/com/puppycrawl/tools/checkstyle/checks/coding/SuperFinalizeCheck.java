@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -22,10 +22,11 @@ package com.puppycrawl.tools.checkstyle.checks.coding;
 import com.puppycrawl.tools.checkstyle.StatelessCheck;
 
 /**
- * <p>
+ * <div>
  * Checks that an overriding {@code finalize()} method invokes {@code super.finalize()}.
  * Does not check native methods, as they have no possible java defined implementation.
- * </p>
+ * </div>
+ *
  * <p>
  * References:
  * <a href="https://www.oracle.com/technical-resources/articles/javase/finalization.html">
@@ -33,29 +34,11 @@ import com.puppycrawl.tools.checkstyle.StatelessCheck;
  * <a href="https://javarevisited.blogspot.com/2012/03/finalize-method-in-java-tutorial.html">
  * 10 points on finalize method in Java</a>.
  * </p>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;SuperFinalize&quot;/&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public class A {
- *      protected void finalize() throws Throwable {
- *         System.out.println("In finalize block");
- *          super.finalize(); // OK, calls super.finalize()
- *      }
- * }
- * public class B {
- *      protected void finalize() throws Throwable { // violation
- *          System.out.println("In finalize block");
- *      }
- * }
- * </pre>
+ *
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>

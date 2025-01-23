@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -24,7 +24,13 @@ import static com.google.common.truth.Truth.assertWithMessage;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.antlr.v4.runtime.VocabularyImpl;
 import org.junit.jupiter.api.Test;
 
 import com.puppycrawl.tools.checkstyle.grammar.java.JavaLanguageLexer;
@@ -39,11 +45,26 @@ import com.puppycrawl.tools.checkstyle.grammar.java.JavaLanguageLexer;
 public class GeneratedJavaTokenTypesTest {
 
     /**
-     * <p>
+     * The following tokens are not declared in the lexer's 'tokens' block,
+     * they will always appear last in the list of symbolic names provided
+     * by the vocabulary. They are not part of the public API and are only
+     * used as components of parser rules.
+     */
+    private static final List<String> INTERNAL_TOKENS = List.of(
+            "DECIMAL_LITERAL_LONG",
+            "DECIMAL_LITERAL",
+            "HEX_LITERAL_LONG",
+            "HEX_LITERAL",
+            "OCT_LITERAL_LONG",
+            "OCT_LITERAL",
+            "BINARY_LITERAL_LONG",
+            "BINARY_LITERAL"
+    );
+
+    /**
      * New tokens must be added onto the end of the list with new numbers, and
      * old tokens must remain and keep their current numbering. Old token
      * numberings are not allowed to change.
-     * </p>
      *
      * <p>
      * The reason behind this is Java inlines static final field values directly
@@ -68,6 +89,9 @@ public class GeneratedJavaTokenTypesTest {
         assertWithMessage(message)
             .that(JavaLanguageLexer.COMPILATION_UNIT)
             .isEqualTo(1);
+        assertWithMessage(message)
+            .that(JavaLanguageLexer.PLACEHOLDER1)
+            .isEqualTo(2);
         assertWithMessage(message)
             .that(JavaLanguageLexer.NULL_TREE_LOOKAHEAD)
             .isEqualTo(3);
@@ -701,17 +725,66 @@ public class GeneratedJavaTokenTypesTest {
         assertWithMessage(message)
              .that(JavaLanguageLexer.PATTERN_DEF)
              .isEqualTo(213);
+        assertWithMessage(message)
+             .that(JavaLanguageLexer.LITERAL_WHEN)
+             .isEqualTo(214);
+        assertWithMessage(message)
+             .that(JavaLanguageLexer.RECORD_PATTERN_DEF)
+             .isEqualTo(215);
+        assertWithMessage(message)
+             .that(JavaLanguageLexer.RECORD_PATTERN_COMPONENTS)
+             .isEqualTo(216);
+        assertWithMessage(message)
+            .that(JavaLanguageLexer.LITERAL_UNDERSCORE)
+            .isEqualTo(224);
+        assertWithMessage(message)
+            .that(JavaLanguageLexer.UNNAMED_PATTERN_DEF)
+            .isEqualTo(225);
+
+        final Set<String> modeNames = Set.of(JavaLanguageLexer.modeNames);
+        final Set<String> channelNames = Set.of(JavaLanguageLexer.channelNames);
 
         final int tokenCount = (int) Arrays.stream(JavaLanguageLexer.class.getDeclaredFields())
                 .filter(GeneratedJavaTokenTypesTest::isPublicStaticFinalInt)
+                .filter(field -> !modeNames.contains(field.getName()))
+                .filter(field -> !channelNames.contains(field.getName()))
+                .filter(field -> !INTERNAL_TOKENS.contains(field.getName()))
                 .count();
 
-        // Read JavaDoc before changing count below
+        // Read JavaDoc before changing count below, the count should be equal to
+        // the number of the last token asserted above.
         assertWithMessage("all tokens must be added to list in"
                         + " 'GeneratedJavaTokenTypesTest' and verified"
                         + " that their old numbering didn't change")
             .that(tokenCount)
             .isEqualTo(225);
+    }
+
+    /**
+     * This test was created to make sure that new tokens are added to the 'tokens'
+     * block in the lexer grammar. If a new token is not added at the end of the list,
+     * it will become "mixed in" with the unused tokens and cause
+     * Collections#lastIndexOfSubList to return a -1 and fail the test.
+     */
+    @Test
+    public void testTokenHasBeenAddedToTokensBlockInLexerGrammar() {
+        final VocabularyImpl vocabulary = (VocabularyImpl) JavaLanguageLexer.VOCABULARY;
+        final String[] nullableSymbolicNames = vocabulary.getSymbolicNames();
+        final List<String> allTokenNames = Arrays.stream(nullableSymbolicNames)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toUnmodifiableList());
+
+        // Get the starting index of the sublist of tokens, or -1 if sublist
+        // is not present.
+        final int lastIndexOfSublist =
+                Collections.lastIndexOfSubList(allTokenNames, INTERNAL_TOKENS);
+        final int expectedNumberOfUsedTokens = allTokenNames.size() - INTERNAL_TOKENS.size();
+        final String message = "New tokens must be added to the 'tokens' block in the"
+                + " lexer grammar.";
+
+        assertWithMessage(message)
+                .that(expectedNumberOfUsedTokens)
+                .isEqualTo(lastIndexOfSublist);
     }
 
     /**

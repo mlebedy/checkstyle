@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -42,7 +42,7 @@ public class XpathRegressionAvoidNoArgumentSuperConstructorCallTest
     @Test
     public void testDefault() throws Exception {
         final File fileToProcess = new File(getPath(
-            "SuppressionXpathRegressionAvoidNoArgumentSuperConstructorCall.java"));
+            "InputXpathAvoidNoArgumentSuperConstructorCallDefault.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(CLASS);
@@ -54,9 +54,9 @@ public class XpathRegressionAvoidNoArgumentSuperConstructorCallTest
 
         final List<String> expectedXpathQueries = Collections.singletonList(
                 "/COMPILATION_UNIT/CLASS_DEF[./IDENT"
-                    + "[@text='SuppressionXpathRegressionAvoidNoArgumentSuperConstructorCall']]"
+                    + "[@text='InputXpathAvoidNoArgumentSuperConstructorCallDefault']]"
                     + "/OBJBLOCK/CTOR_DEF[./IDENT["
-                    + "@text='SuppressionXpathRegressionAvoidNoArgumentSuperConstructorCall']]"
+                    + "@text='InputXpathAvoidNoArgumentSuperConstructorCallDefault']]"
                     + "/SLIST/SUPER_CTOR_CALL"
         );
 
@@ -66,7 +66,7 @@ public class XpathRegressionAvoidNoArgumentSuperConstructorCallTest
     @Test
     public void testInnerClass() throws Exception {
         final File fileToProcess = new File(getPath(
-            "SuppressionXpathRegressionAvoidNoArgumentSuperConstructorCallInnerClass.java"
+            "InputXpathAvoidNoArgumentSuperConstructorCallInnerClass.java"
         ));
 
         final DefaultConfiguration moduleConfig =
@@ -79,7 +79,7 @@ public class XpathRegressionAvoidNoArgumentSuperConstructorCallTest
 
         final List<String> expectedXpathQueries = Collections.singletonList(
             "/COMPILATION_UNIT/CLASS_DEF[./IDENT[@text="
-                + "'SuppressionXpathRegressionAvoidNoArgumentSuperConstructorCallInnerClass']]"
+                + "'InputXpathAvoidNoArgumentSuperConstructorCallInnerClass']]"
                 + "/OBJBLOCK/METHOD_DEF[./IDENT[@text='test']]"
                 + "/SLIST/CLASS_DEF[./IDENT[@text='Inner']]"
                 + "/OBJBLOCK/CTOR_DEF[./IDENT[@text='Inner']]"

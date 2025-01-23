@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -27,9 +27,10 @@ import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
 /**
- * <p>
+ * <div>
  * Checks the style of elements in annotations.
- * </p>
+ * </div>
+ *
  * <p>
  * Annotations have three element styles starting with the least verbose.
  * </p>
@@ -44,25 +45,30 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
  * {@code ElementStyleOption.EXPANDED}
  * </li>
  * </ul>
+ *
  * <p>
  * To not enforce an element style a {@code ElementStyleOption.IGNORE} type is provided.
  * The desired style can be set through the {@code elementStyle} property.
  * </p>
+ *
  * <p>
  * Using the {@code ElementStyleOption.EXPANDED} style is more verbose.
  * The expanded version is sometimes referred to as "named parameters" in other languages.
  * </p>
+ *
  * <p>
  * Using the {@code ElementStyleOption.COMPACT} style is less verbose.
  * This style can only be used when there is an element called 'value' which is either
  * the sole element or all other elements have default values.
  * </p>
+ *
  * <p>
  * Using the {@code ElementStyleOption.COMPACT_NO_ARRAY} style is less verbose.
  * It is similar to the {@code ElementStyleOption.COMPACT} style but single value arrays are
  * flagged.
  * With annotations a single value array does not need to be placed in an array initializer.
  * </p>
+ *
  * <p>
  * The ending parenthesis are optional when using annotations with no elements.
  * To always require ending parenthesis use the {@code ClosingParensOption.ALWAYS} type.
@@ -71,6 +77,7 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
  * provided.
  * Set this through the {@code closingParens} property.
  * </p>
+ *
  * <p>
  * Annotations also allow you to specify arrays of elements in a standard format.
  * As with normal arrays, a trailing comma is optional.
@@ -79,11 +86,13 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
  * To not enforce a trailing array comma preference a {@code TrailingArrayCommaOption.IGNORE} type
  * is provided. Set this through the {@code trailingArrayComma} property.
  * </p>
+ *
  * <p>
  * By default, the {@code ElementStyleOption} is set to {@code COMPACT_NO_ARRAY},
  * the {@code TrailingArrayCommaOption} is set to {@code NEVER},
  * and the {@code ClosingParensOption} is set to {@code NEVER}.
  * </p>
+ *
  * <p>
  * According to the JLS, it is legal to include a trailing comma
  * in arrays used in annotations but Sun's Java 5 &amp; 6 compilers will not
@@ -92,22 +101,23 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
  * defined in the JLS. Note: this was tested with compilers included with
  * JDK versions 1.5.0.17 and 1.6.0.11 and the compiler included with eclipse 3.4.1.
  * </p>
+ *
  * <p>
  * See <a href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-9.html#jls-9.7">
  * Java Language specification, &#167;9.7</a>.
  * </p>
  * <ul>
  * <li>
- * Property {@code elementStyle} - Define the annotation element styles.
- * Type is {@code
- * com.puppycrawl.tools.checkstyle.checks.annotation.AnnotationUseStyleCheck$ElementStyleOption}.
- * Default value is {@code compact_no_array}.
- * </li>
- * <li>
  * Property {@code closingParens} - Define the policy for ending parenthesis.
  * Type is {@code
  * com.puppycrawl.tools.checkstyle.checks.annotation.AnnotationUseStyleCheck$ClosingParensOption}.
  * Default value is {@code never}.
+ * </li>
+ * <li>
+ * Property {@code elementStyle} - Define the annotation element styles.
+ * Type is {@code
+ * com.puppycrawl.tools.checkstyle.checks.annotation.AnnotationUseStyleCheck$ElementStyleOption}.
+ * Default value is {@code compact_no_array}.
  * </li>
  * <li>
  * Property {@code trailingArrayComma} - Define the policy for trailing comma in arrays.
@@ -116,65 +126,11 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
  * Default value is {@code never}.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name="AnnotationUseStyle"/&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <pre>
- * &#64;Deprecated // OK
- * &#64;SomeArrays(pooches={DOGS.LEO}) // Violation - COMPACT_NO_ARRAY
- * &#64;SuppressWarnings({""}) // Violation - COMPACT_NO_ARRAY
- * public class TestOne
- * {
  *
- * }
- *
- * &#64;SomeArrays(pooches={DOGS.LEO}, um={}, test={"bleh"}) // Violation - COMPACT_NO_ARRAY
- * &#64;SuppressWarnings("") // OK
- * &#64;Deprecated() // Violation - cannot have closing parenthesis
- * class TestTwo {
- *
- * }
- * </pre>
- * <p>
- * To configure the check to enforce an {@code expanded} style,
- * with a trailing array comma set to {@code never}
- * and always including the closing parenthesis.
- * </p>
- * <pre>
- * &lt;module name=&quot;AnnotationUseStyle&quot;&gt;
- *   &lt;property name=&quot;elementStyle&quot; value=&quot;expanded&quot;/&gt;
- *   &lt;property name=&quot;trailingArrayComma&quot; value=&quot;never&quot;/&gt;
- *   &lt;property name=&quot;closingParens&quot; value=&quot;always&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <pre>
- * &#64;Deprecated // Violation - must have closing parenthesis
- * &#64;SomeArrays(pooches={DOGS.LEO}) // OK
- * &#64;SuppressWarnings({""}) // Violation - EXPANDED
- * public class TestOne
- * {
- *
- * }
- *
- * &#64;SomeArrays(pooches={DOGS.LEO}, um={}, test={"bleh"}) // OK
- * &#64;SuppressWarnings("") // Violation - EXPANDED
- * &#64;Deprecated() // OK
- * class TestTwo {
- *
- * }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -355,6 +311,7 @@ public class AnnotationUseStyleCheck extends AbstractCheck {
      * Setter to define the annotation element styles.
      *
      * @param style string representation
+     * @since 5.0
      */
     public void setElementStyle(final String style) {
         elementStyle = getOption(ElementStyleOption.class, style);
@@ -364,6 +321,7 @@ public class AnnotationUseStyleCheck extends AbstractCheck {
      * Setter to define the policy for trailing comma in arrays.
      *
      * @param comma string representation
+     * @since 5.0
      */
     public void setTrailingArrayComma(final String comma) {
         trailingArrayComma = getOption(TrailingArrayCommaOption.class, comma);
@@ -373,6 +331,7 @@ public class AnnotationUseStyleCheck extends AbstractCheck {
      * Setter to define the policy for ending parenthesis.
      *
      * @param parens string representation
+     * @since 5.0
      */
     public void setClosingParens(final String parens) {
         closingParens = getOption(ClosingParensOption.class, parens);

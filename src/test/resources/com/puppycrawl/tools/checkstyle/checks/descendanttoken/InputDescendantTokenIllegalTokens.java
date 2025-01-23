@@ -8,14 +8,14 @@ maximumNumber = (default)2147483647
 sumTokenCounts = (default)false
 minimumMessage = (default)null
 maximumMessage = (default)null
-tokens = (default)empty
+tokens = (default)
 
 
 */
 
 package com.puppycrawl.tools.checkstyle.checks.descendanttoken;
 
-public class InputDescendantTokenIllegalTokens // ok
+public class InputDescendantTokenIllegalTokens
 {
     public void methodWithPreviouslyIllegalTokens()
     {

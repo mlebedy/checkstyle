@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -156,6 +156,10 @@ public class CommonUtilTest extends AbstractPathTestSupport {
         assertWithMessage("Invalid file extension")
                 .that(CommonUtil.matchesFileExtension(javaFile, fileExtensions))
                 .isTrue();
+        final File invalidJavaFile = new File("file,java");
+        assertWithMessage("Invalid file extension")
+                .that(CommonUtil.matchesFileExtension(invalidJavaFile, fileExtensions))
+                .isFalse();
         final File emptyExtensionFile = new File("file.");
         assertWithMessage("Invalid file extension")
                 .that(CommonUtil.matchesFileExtension(emptyExtensionFile, ""))
@@ -197,7 +201,7 @@ public class CommonUtilTest extends AbstractPathTestSupport {
 
     @Test
     public void testRelativeNormalizedPath() {
-        final String relativePath = CommonUtil.relativizeAndNormalizePath("/home", "/home/test");
+        final String relativePath = CommonUtil.relativizePath("/home", "/home/test");
 
         assertWithMessage("Invalid relative path")
             .that(relativePath)
@@ -206,7 +210,7 @@ public class CommonUtilTest extends AbstractPathTestSupport {
 
     @Test
     public void testRelativeNormalizedPathWithNullBaseDirectory() {
-        final String relativePath = CommonUtil.relativizeAndNormalizePath(null, "/tmp");
+        final String relativePath = CommonUtil.relativizePath(null, "/tmp");
 
         assertWithMessage("Invalid relative path")
             .that(relativePath)
@@ -219,7 +223,7 @@ public class CommonUtilTest extends AbstractPathTestSupport {
         final String absoluteFilePath = sampleAbsolutePath + "/SampleFile.java";
         final String basePath = sampleAbsolutePath + PATH_DENORMALIZER;
 
-        final String relativePath = CommonUtil.relativizeAndNormalizePath(basePath,
+        final String relativePath = CommonUtil.relativizePath(basePath,
             absoluteFilePath);
 
         assertWithMessage("Invalid relative path")
@@ -481,34 +485,13 @@ public class CommonUtilTest extends AbstractPathTestSupport {
     }
 
     @Test
-    public void testIsIntValidString() {
-        assertWithMessage("Should return true when string is null")
-                .that(CommonUtil.isInt("42"))
-                .isTrue();
-    }
-
-    @Test
-    public void testIsIntInvalidString() {
-        assertWithMessage("Should return false when object passed is not integer")
-                .that(CommonUtil.isInt("foo"))
-                .isFalse();
-    }
-
-    @Test
-    public void testIsIntNull() {
-        assertWithMessage("Should return false when null is passed")
-                .that(CommonUtil.isInt(null))
-                .isFalse();
-    }
-
-    @Test
     public void testGetUriByFilenameFindsAbsoluteResourceOnClasspath() throws Exception {
         final String filename =
             "/" + getPackageLocation() + "/InputCommonUtilTest_empty_checks.xml";
         final URI uri = CommonUtil.getUriByFilename(filename);
 
         final Properties properties = System.getProperties();
-        final Configuration config = ConfigurationLoader.loadConfiguration(uri.toString(),
+        final Configuration config = ConfigurationLoader.loadConfiguration(uri.toASCIIString(),
             new PropertiesExpander(properties));
         assertWithMessage("Unexpected config name!")
             .that(config.getName())
@@ -522,7 +505,7 @@ public class CommonUtilTest extends AbstractPathTestSupport {
         final URI uri = CommonUtil.getUriByFilename(filename);
 
         final Properties properties = System.getProperties();
-        final Configuration config = ConfigurationLoader.loadConfiguration(uri.toString(),
+        final Configuration config = ConfigurationLoader.loadConfiguration(uri.toASCIIString(),
             new PropertiesExpander(properties));
         assertWithMessage("Unexpected config name!")
             .that(config.getName())
@@ -548,10 +531,10 @@ public class CommonUtilTest extends AbstractPathTestSupport {
                 "com/puppycrawl/tools/checkstyle/utils/"
                         + getPackageLocation() + "/InputCommonUtilTest_resource.txt";
         assertWithMessage("URI is relative to package " + uriRelativeToPackage)
-            .that(uri.toString())
+            .that(uri.toASCIIString())
             .doesNotContain(uriRelativeToPackage);
         final String content = IOUtils.toString(uri.toURL(), StandardCharsets.UTF_8);
-        assertWithMessage("Content mismatches for: " + uri)
+        assertWithMessage("Content mismatches for: " + uri.toASCIIString())
             .that(content)
             .startsWith("good");
     }
@@ -563,7 +546,7 @@ public class CommonUtilTest extends AbstractPathTestSupport {
         final URI uri = CommonUtil.getUriByFilename(filename);
 
         final Properties properties = System.getProperties();
-        final Configuration config = ConfigurationLoader.loadConfiguration(uri.toString(),
+        final Configuration config = ConfigurationLoader.loadConfiguration(uri.toASCIIString(),
             new PropertiesExpander(properties));
         assertWithMessage("Unexpected config name!")
             .that(config.getName())
@@ -577,7 +560,7 @@ public class CommonUtilTest extends AbstractPathTestSupport {
         final URI uri = CommonUtil.getUriByFilename(filename);
 
         final Properties properties = System.getProperties();
-        final Configuration config = ConfigurationLoader.loadConfiguration(uri.toString(),
+        final Configuration config = ConfigurationLoader.loadConfiguration(uri.toASCIIString(),
             new PropertiesExpander(properties));
         assertWithMessage("Unexpected config name!")
             .that(config.getName())
@@ -595,7 +578,7 @@ public class CommonUtilTest extends AbstractPathTestSupport {
 
     @Test
     public void testLoadSuppressionsUriSyntaxException() throws Exception {
-        final URL configUrl = mock(URL.class);
+        final URL configUrl = mock();
         when(configUrl.toURI()).thenThrow(URISyntaxException.class);
         try (MockedStatic<CommonUtil> utilities =
                      mockStatic(CommonUtil.class, CALLS_REAL_METHODS)) {
@@ -617,7 +600,7 @@ public class CommonUtilTest extends AbstractPathTestSupport {
         }
     }
 
-    private static class TestCloseable implements Closeable {
+    private static final class TestCloseable implements Closeable {
 
         private boolean closed;
 

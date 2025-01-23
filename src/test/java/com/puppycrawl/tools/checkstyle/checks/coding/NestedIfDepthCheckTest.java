@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -40,6 +40,9 @@ public class NestedIfDepthCheckTest extends AbstractModuleTestSupport {
         final String[] expected = {
             "26:17: " + getCheckMessage(MSG_KEY, 2, 1),
             "52:17: " + getCheckMessage(MSG_KEY, 2, 1),
+            "77:17: " + getCheckMessage(MSG_KEY, 2, 1),
+            "102:18: " + getCheckMessage(MSG_KEY, 2, 1),
+            "107:18: " + getCheckMessage(MSG_KEY, 2, 1),
         };
 
         verifyWithInlineConfigParser(
@@ -53,6 +56,17 @@ public class NestedIfDepthCheckTest extends AbstractModuleTestSupport {
 
         verifyWithInlineConfigParser(
                 getPath("InputNestedIfDepthMax.java"), expected);
+    }
+
+    @Test
+    public void testInsideCaseBody() throws Exception {
+
+        final String[] expected = {
+            "17:25: " + getCheckMessage(MSG_KEY, 2, 1),
+        };
+
+        verifyWithInlineConfigParser(
+                getNonCompilablePath("InputNestedIfDepthInsideCaseBody.java"), expected);
     }
 
     @Test

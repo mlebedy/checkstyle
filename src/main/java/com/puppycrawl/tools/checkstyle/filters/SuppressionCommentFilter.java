@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -29,19 +29,20 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import com.puppycrawl.tools.checkstyle.AbstractAutomaticBean;
 import com.puppycrawl.tools.checkstyle.PropertyType;
 import com.puppycrawl.tools.checkstyle.TreeWalkerAuditEvent;
 import com.puppycrawl.tools.checkstyle.TreeWalkerFilter;
 import com.puppycrawl.tools.checkstyle.XdocsPropertyType;
-import com.puppycrawl.tools.checkstyle.api.AutomaticBean;
 import com.puppycrawl.tools.checkstyle.api.FileContents;
 import com.puppycrawl.tools.checkstyle.api.TextBlock;
 import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 
 /**
- * <p>
+ * <div>
  * Filter {@code SuppressionCommentFilter} uses pairs of comments to suppress audit events.
- * </p>
+ * </div>
+ *
  * <p>
  * Rationale:
  * Sometimes there are legitimate reasons for violating a check. When
@@ -51,26 +52,55 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * This is sometimes superior to a separate suppressions file, which
  * must be kept up-to-date as the source file is edited.
  * </p>
+ *
  * <p>
  * Note that the suppression comment should be put before the violation.
  * You can use more than one suppression comment each on separate line.
  * </p>
+ *
  * <p>
  * Attention: This filter may only be specified within the TreeWalker module
  * ({@code &lt;module name="TreeWalker"/&gt;}) and only applies to checks which are also
  * defined within this module. To filter non-TreeWalker checks like {@code RegexpSingleline}, a
- * <a href="https://checkstyle.org/config_filters.html#SuppressWithPlainTextCommentFilter">
+ * <a href="https://checkstyle.org/filters/suppresswithplaintextcommentfilter.html#SuppressWithPlainTextCommentFilter">
  * SuppressWithPlainTextCommentFilter</a> or similar filter must be used.
  * </p>
+ *
  * <p>
  * {@code offCommentFormat} and {@code onCommentFormat} must have equal
  * <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/regex/Matcher.html#groupCount()">
  * paren counts</a>.
  * </p>
+ *
  * <p>
  * SuppressionCommentFilter can suppress Checks that have Treewalker as parent module.
  * </p>
  * <ul>
+ * <li>
+ * Property {@code checkC} - Control whether to check C style comments ({@code &#47;* ... *&#47;}).
+ * Type is {@code boolean}.
+ * Default value is {@code true}.
+ * </li>
+ * <li>
+ * Property {@code checkCPP} - Control whether to check C++ style comments ({@code //}).
+ * Type is {@code boolean}.
+ * Default value is {@code true}.
+ * </li>
+ * <li>
+ * Property {@code checkFormat} - Specify check pattern to suppress.
+ * Type is {@code java.util.regex.Pattern}.
+ * Default value is {@code ".*"}.
+ * </li>
+ * <li>
+ * Property {@code idFormat} - Specify check ID pattern to suppress.
+ * Type is {@code java.util.regex.Pattern}.
+ * Default value is {@code null}.
+ * </li>
+ * <li>
+ * Property {@code messageFormat} - Specify message pattern to suppress.
+ * Type is {@code java.util.regex.Pattern}.
+ * Default value is {@code null}.
+ * </li>
  * <li>
  * Property {@code offCommentFormat} - Specify comment pattern to
  * trigger filter to begin suppression.
@@ -82,246 +112,8 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * Type is {@code java.util.regex.Pattern}.
  * Default value is {@code "CHECKSTYLE:ON"}.
  * </li>
- * <li>
- * Property {@code checkFormat} - Specify check pattern to suppress.
- * Type is {@code java.util.regex.Pattern}.
- * Default value is {@code ".*"}.
- * </li>
- * <li>
- * Property {@code messageFormat} - Specify message pattern to suppress.
- * Type is {@code java.util.regex.Pattern}.
- * Default value is {@code null}.
- * </li>
- * <li>
- * Property {@code idFormat} - Specify check ID pattern to suppress.
- * Type is {@code java.util.regex.Pattern}.
- * Default value is {@code null}.
- * </li>
- * <li>
- * Property {@code checkCPP} - Control whether to check C++ style comments ({@code //}).
- * Type is {@code boolean}.
- * Default value is {@code true}.
- * </li>
- * <li>
- * Property {@code checkC} - Control whether to check C style comments ({@code &#47;* ... *&#47;}).
- * Type is {@code boolean}.
- * Default value is {@code true}.
- * </li>
  * </ul>
- * <p>
- * To configure a filter to suppress audit events between a comment containing
- * {@code CHECKSTYLE:OFF} and a comment containing {@code CHECKSTYLE:ON}:
- * </p>
- * <pre>
- * &lt;module name="TreeWalker"&gt;
- *               ...
- *   &lt;module name="SuppressionCommentFilter"/&gt;
- *               ...
- * &lt;/module&gt;
- * </pre>
- * <p>
- * To configure a filter to suppress audit events between a comment containing line
- * {@code BEGIN GENERATED CODE} and a comment containing line {@code END GENERATED CODE}:
- * </p>
- * <pre>
- * &lt;module name="SuppressionCommentFilter"&gt;
- *   &lt;property name="offCommentFormat" value="BEGIN GENERATED CODE"/&gt;
- *   &lt;property name="onCommentFormat" value="END GENERATED CODE"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <pre>
- * //BEGIN GENERATED CODE
- * &#64;Override
- * public boolean equals(Object obj) { ... } // No violation events will be reported
  *
- * &#64;Override
- * public int hashCode() { ... } // No violation events will be reported
- * //END GENERATED CODE
- * . . .
- * </pre>
- * <p>
- * To configure a filter so that {@code // stop constant check} and
- * {@code // resume constant check} marks legitimate constant names:
- * </p>
- * <pre>
- * &lt;module name="SuppressionCommentFilter"&gt;
- *   &lt;property name="offCommentFormat" value="stop constant check"/&gt;
- *   &lt;property name="onCommentFormat" value="resume constant check"/&gt;
- *   &lt;property name="checkFormat" value="ConstantNameCheck"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <pre>
- * //stop constant check
- * public static final int someConstant; // won't warn here
- * //resume constant check
- * public static final int someConstant; // will warn here as constant's name doesn't match the
- * // pattern "^[A-Z][A-Z0-9]*$"
- * </pre>
- * <p>
- * To configure a filter so that {@code UNUSED OFF: <i>var</i>} and
- * {@code UNUSED ON: <i>var</i>} marks a variable or parameter known not to be
- * used by the code by matching the variable name in the message:
- * </p>
- * <pre>
- * &lt;module name="SuppressionCommentFilter"&gt;
- *   &lt;property name="offCommentFormat" value="UNUSED OFF\: (\w+)"/&gt;
- *   &lt;property name="onCommentFormat" value="UNUSED ON\: (\w+)"/&gt;
- *   &lt;property name="checkFormat" value="Unused"/&gt;
- *   &lt;property name="messageFormat" value="^Unused \w+ '$1'.$"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <pre>
- * private static void foo(int a, int b) // UNUSED OFF: b
- * {
- * System.out.println(a);
- * }
- *
- * private static void foo1(int a, int b) // UNUSED ON: b
- * {
- * System.out.println(a);
- * }
- * </pre>
- * <p>
- * To configure a filter so that name of suppressed check mentioned in comment
- * {@code CSOFF: <i>regexp</i>} and {@code CSON: <i>regexp</i>} mark a matching check:
- * </p>
- * <pre>
- * &lt;module name="SuppressionCommentFilter"&gt;
- *   &lt;property name="offCommentFormat" value="CSOFF\: ([\w\|]+)"/&gt;
- *   &lt;property name="onCommentFormat" value="CSON\: ([\w\|]+)"/&gt;
- *   &lt;property name="checkFormat" value="$1"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <pre>
- * public static final int lowerCaseConstant; // CSOFF: ConstantNameCheck
- * public static final int lowerCaseConstant1; // CSON: ConstantNameCheck
- * </pre>
- * <p>
- * To configure a filter to suppress all audit events between a comment containing
- * {@code CHECKSTYLE_OFF: ALMOST_ALL} and a comment containing
- * {@code CHECKSTYLE_OFF: ALMOST_ALL} except for the <em>EqualsHashCode</em> check:
- * </p>
- * <pre>
- * &lt;module name="SuppressionCommentFilter"&gt;
- *   &lt;property name="offCommentFormat" value="CHECKSTYLE_OFF: ALMOST_ALL"/&gt;
- *   &lt;property name="onCommentFormat" value="CHECKSTYLE_ON: ALMOST_ALL"/&gt;
- *   &lt;property name="checkFormat" value="^((?!(EqualsHashCode)).)*$"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <pre>
- * public static final int array []; // CHECKSTYLE_OFF: ALMOST_ALL
- * private String [] strArray;
- * private int array1 []; // CHECKSTYLE_ON: ALMOST_ALL
- * </pre>
- * <p>
- * To configure a filter to suppress Check's violation message
- * <b>which matches specified message in messageFormat</b>
- * (so suppression will be not only by Check's name, but by message text
- * additionally, as the same Check could report different by message format violations)
- * between a comment containing {@code stop} and comment containing {@code resume}:
- * </p>
- * <pre>
- * &lt;module name="SuppressionCommentFilter"&gt;
- *   &lt;property name="offCommentFormat" value="stop"/&gt;
- *   &lt;property name="onCommentFormat" value="resume"/&gt;
- *   &lt;property name="checkFormat" value="IllegalTypeCheck"/&gt;
- *   &lt;property name="messageFormat"
- *       value="^Declaring variables, return values or parameters of type 'GregorianCalendar'
- *         is not allowed.$"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * Code before filter above is applied with Check's audit events:
- * </p>
- * <pre>
- * ...
- * // Warning below: Declaring variables, return values or parameters of type 'GregorianCalendar'
- * // is not allowed.
- * GregorianCalendar calendar;
- * // Warning below here: Declaring variables, return values or parameters of type 'HashSet'
- * // is not allowed.
- * HashSet hashSet;
- * ...
- * </pre>
- * <p>
- * Code after filter is applied:
- * </p>
- * <pre>
- * ...
- * //stop
- * GregorianCalendar calendar; // No warning here as it is suppressed by filter.
- * HashSet hashSet;
- * // Warning above here: Declaring variables, return values or parameters of type 'HashSet'
- * //is not allowed.
- *
- * //resume
- * ...
- * </pre>
- * <p>
- * It is possible to specify an ID of checks, so that it can be leveraged by the
- * SuppressionCommentFilter to skip validations. The following examples show how
- * to skip validations near code that is surrounded with {@code // CSOFF &lt;ID&gt; (reason)}
- * and {@code // CSON &lt;ID&gt;}, where ID is the ID of checks you want to suppress.
- * </p>
- * <p>
- * Examples of Checkstyle checks configuration:
- * </p>
- * <pre>
- * &lt;module name="RegexpSinglelineJava"&gt;
- *   &lt;property name="id" value="ignore"/&gt;
- *   &lt;property name="format" value="^.*@Ignore\s*$"/&gt;
- *   &lt;property name="message" value="@Ignore should have a reason."/&gt;
- * &lt;/module&gt;
- *
- * &lt;module name="RegexpSinglelineJava"&gt;
- *   &lt;property name="id" value="systemout"/&gt;
- *   &lt;property name="format" value="^.*System\.(out|err).*$"/&gt;
- *   &lt;property name="message" value="Don't use System.out/err, use SLF4J instead."/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * Example of SuppressionCommentFilter configuration (checkFormat which is set
- * to '$1' points that ID of the checks is in the first group of offCommentFormat
- * and onCommentFormat regular expressions):
- * </p>
- * <pre>
- * &lt;module name="SuppressionCommentFilter"&gt;
- *   &lt;property name="offCommentFormat" value="CSOFF (\w+) \(\w+\)"/&gt;
- *   &lt;property name="onCommentFormat" value="CSON (\w+)"/&gt;
- *   &lt;property name="idFormat" value="$1"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <pre>
- * // CSOFF ignore (test has not been implemented yet)
- * &#64;Ignore // should NOT fail RegexpSinglelineJava
- * &#64;Test
- * public void testMethod() { }
- * // CSON ignore
- *
- * // CSOFF systemout (debug)
- * public static void foo() {
- *   System.out.println("Debug info."); // should NOT fail RegexpSinglelineJava
- * }
- * // CSON systemout
- * </pre>
- * <p>
- * Example of how to configure the check to suppress more than one checks.
- * </p>
- * <pre>
- * &lt;module name="SuppressionCommentFilter"&gt;
- *   &lt;property name="offCommentFormat" value="@cs-\: ([\w\|]+)"/&gt;
- *   &lt;property name="checkFormat" value="$1"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <pre>
- * // @cs-: ClassDataAbstractionCoupling
- * // @cs-: MagicNumber
- * &#64;Service // no violations from ClassDataAbstractionCoupling here
- * &#64;Transactional
- * public class UserService {
- *   private int value = 10022; // no violations from MagicNumber here
- * }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
@@ -329,7 +121,7 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * @since 3.5
  */
 public class SuppressionCommentFilter
-    extends AutomaticBean
+    extends AbstractAutomaticBean
     implements TreeWalkerFilter {
 
     /**
@@ -399,6 +191,7 @@ public class SuppressionCommentFilter
      * Setter to specify comment pattern to trigger filter to begin suppression.
      *
      * @param pattern a pattern.
+     * @since 3.5
      */
     public final void setOffCommentFormat(Pattern pattern) {
         offCommentFormat = pattern;
@@ -408,6 +201,7 @@ public class SuppressionCommentFilter
      * Setter to specify comment pattern to trigger filter to end suppression.
      *
      * @param pattern a pattern.
+     * @since 3.5
      */
     public final void setOnCommentFormat(Pattern pattern) {
         onCommentFormat = pattern;
@@ -426,10 +220,8 @@ public class SuppressionCommentFilter
      * Set the FileContents for this filter.
      *
      * @param fileContents the FileContents for this filter.
-     * @noinspection WeakerAccess
-     * @noinspectionreason WeakerAccess - we avoid 'protected' when possible
      */
-    public void setFileContents(FileContents fileContents) {
+    private void setFileContents(FileContents fileContents) {
         fileContentsReference = new WeakReference<>(fileContents);
     }
 
@@ -437,6 +229,7 @@ public class SuppressionCommentFilter
      * Setter to specify check pattern to suppress.
      *
      * @param format a {@code String} value
+     * @since 3.5
      */
     public final void setCheckFormat(String format) {
         checkFormat = format;
@@ -446,6 +239,7 @@ public class SuppressionCommentFilter
      * Setter to specify message pattern to suppress.
      *
      * @param format a {@code String} value
+     * @since 3.5
      */
     public void setMessageFormat(String format) {
         messageFormat = format;
@@ -455,6 +249,7 @@ public class SuppressionCommentFilter
      * Setter to specify check ID pattern to suppress.
      *
      * @param format a {@code String} value
+     * @since 8.24
      */
     public void setIdFormat(String format) {
         idFormat = format;
@@ -464,6 +259,7 @@ public class SuppressionCommentFilter
      * Setter to control whether to check C++ style comments ({@code //}).
      *
      * @param checkCpp {@code true} if C++ comments are checked.
+     * @since 3.5
      */
     // -@cs[AbbreviationAsWordInName] We can not change it as,
     // check's property is a part of API (used in configurations).
@@ -475,6 +271,7 @@ public class SuppressionCommentFilter
      * Setter to control whether to check C style comments ({@code &#47;* ... *&#47;}).
      *
      * @param checkC {@code true} if C comments are checked.
+     * @since 3.5
      */
     public void setCheckC(boolean checkC) {
         this.checkC = checkC;
@@ -634,7 +431,7 @@ public class SuppressionCommentFilter
          * @param filter the {@code SuppressionCommentFilter} with the context
          * @throws IllegalArgumentException if unable to parse expanded text.
          */
-        /* package */ Tag(int line, int column, String text, TagType tagType,
+        private Tag(int line, int column, String text, TagType tagType,
                    SuppressionCommentFilter filter) {
             this.line = line;
             this.column = column;

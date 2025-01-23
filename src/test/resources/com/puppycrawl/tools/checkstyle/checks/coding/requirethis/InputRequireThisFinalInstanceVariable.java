@@ -15,8 +15,8 @@ public class InputRequireThisFinalInstanceVariable {
     final int z;
 
     public InputRequireThisFinalInstanceVariable(int y, int z) {
-        y = y; // violation until #8973 is fixed // violation
-        z = z; // violation until #8973 is fixed // violation
+        y = y; // violation until #8973 is fixed // violation '.* variable 'y' needs "this.".'
+        z = z; // violation until #8973 is fixed // violation '.* variable 'z' needs "this.".'
     }
 
     {
@@ -24,6 +24,6 @@ public class InputRequireThisFinalInstanceVariable {
     }
 
     public void foo(int x) {
-        x = x; // ok
+        x = x;
     }
 }

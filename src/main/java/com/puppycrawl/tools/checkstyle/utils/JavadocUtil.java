@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -224,35 +224,6 @@ public final class JavadocUtil {
     }
 
     /**
-     * Checks whether node contains any node of specified type among children on any deep level.
-     *
-     * @param node DetailNode
-     * @param type token type
-     * @return true if node contains any node of type among children on any deep level.
-     */
-    public static boolean containsInBranch(DetailNode node, int type) {
-        boolean result = true;
-        DetailNode curNode = node;
-        while (type != curNode.getType()) {
-            DetailNode toVisit = getFirstChild(curNode);
-            while (curNode != null && toVisit == null) {
-                toVisit = getNextSibling(curNode);
-                if (toVisit == null) {
-                    curNode = curNode.getParent();
-                }
-            }
-
-            if (curNode == toVisit) {
-                result = false;
-                break;
-            }
-
-            curNode = toVisit;
-        }
-        return result;
-    }
-
-    /**
      * Gets next sibling of specified node.
      *
      * @param node DetailNode
@@ -367,11 +338,13 @@ public final class JavadocUtil {
 
     /**
      * Checks Javadoc comment it's in right place.
+     *
      * <p>From Javadoc util documentation:
      * "Placement of comments - Documentation comments are recognized only when placed
      * immediately before class, interface, constructor, method, field or annotation field
      * declarations -- see the class example, method example, and field example.
      * Documentation comments placed in the body of a method are ignored."</p>
+     *
      * <p>If there are many documentation comments per declaration statement,
      * only the last one will be recognized.</p>
      *

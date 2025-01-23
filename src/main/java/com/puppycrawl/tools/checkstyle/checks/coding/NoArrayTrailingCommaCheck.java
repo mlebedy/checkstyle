@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -25,18 +25,19 @@ import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
 /**
- * <p>
+ * <div>
  * Checks that array initialization do not contain a trailing comma.
  * Rationale: JLS allows trailing commas in arrays and enumerations, but does not allow
  * them in other locations. To unify the coding style, the use of trailing commas should
  * be prohibited.
- * </p>
+ * </div>
  * <pre>
  * int[] foo = new int[] {
  *   1,
  *   2
  * };
  * </pre>
+ *
  * <p>
  * The check demands that there should not be any comma after the last element of an array.
  * </p>
@@ -46,30 +47,11 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
  *   "BAR", //violation
  * }
  * </pre>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;NoArrayTrailingComma&quot;/&gt;
- * </pre>
- * <p>
- * Which results in the following violations:
- * </p>
- * <pre>
- * String[] foo1 = {
- *   "FOO", // OK
- *   "BAR", // violation
- * };
- * String[] foo2 = { "FOO", "BAR", }; // violation
- * String[] foo3 = {
- *   "FOO", // OK
- *   "BAR" // OK
- * };
- * String[] foo4 = { "FOO", "BAR" }; // OK
- * </pre>
+ *
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>

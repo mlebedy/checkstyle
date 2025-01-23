@@ -1,11 +1,11 @@
 /*
 PackageName
-format = (default)^[a-z]+(\.[a-zA-Z_]\w*)*$
+format = (default)^[a-z]+(\\.[a-zA-Z_]\\w*)*$
 
 
 */
 
-package com.puppycrawl.tools.checkstyle.checks.naming.packagename; // ok
+package com.puppycrawl.tools.checkstyle.checks.naming.packagename;
 import java.io.*;
 /**
  * Contains simple mistakes:

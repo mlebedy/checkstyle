@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -40,9 +40,9 @@ public class XpathRegressionUnnecessarySemicolonAfterOuterTypeDeclarationTest
     }
 
     @Test
-    public void testOne() throws Exception {
+    public void testSimple() throws Exception {
         final File fileToProcess = new File(getPath(
-            "SuppressionXpathRegressionUnnecessarySemicolonAfterOuterTypeDeclaration.java"));
+            "InputXpathUnnecessarySemicolonAfterOuterTypeDeclarationSimple.java"));
         final DefaultConfiguration moduleConfig = createModuleConfig(CLASS);
         final String[] expectedViolation = {
             "5:2: " + getCheckMessage(CLASS,
@@ -56,9 +56,9 @@ public class XpathRegressionUnnecessarySemicolonAfterOuterTypeDeclarationTest
     }
 
     @Test
-    public void testTwo() throws Exception {
+    public void testInnerTypes() throws Exception {
         final File fileToProcess = new File(getPath(
-            "SuppressionXpathRegressionUnnecessarySemicolonAfterOuterTypeDeclarationInnerTypes"
+            "InputXpathUnnecessarySemicolonAfterOuterTypeDeclarationInnerTypes"
                     + ".java"));
         final DefaultConfiguration moduleConfig = createModuleConfig(CLASS);
         final String[] expectedViolation = {

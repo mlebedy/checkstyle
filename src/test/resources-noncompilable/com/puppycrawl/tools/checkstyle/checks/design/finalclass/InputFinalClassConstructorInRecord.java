@@ -4,10 +4,10 @@ FinalClass
 
 */
 
-//non-compiled with javac: Compilable with Java14
+//non-compiled with javac: Compilable with Java17
 package com.puppycrawl.tools.checkstyle.checks.design.finalclass;
 
-public record InputFinalClassConstructorInRecord(String string) { // ok
+public record InputFinalClassConstructorInRecord(String string) {
 
     public InputFinalClassConstructorInRecord {
     }
@@ -24,7 +24,7 @@ public record InputFinalClassConstructorInRecord(String string) { // ok
     }
 
     class X {
-        class F { // violation
+        class F { // violation 'Class F should be declared as final'
             private F() {
             }
         }

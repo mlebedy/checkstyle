@@ -10,14 +10,14 @@ trailingArrayComma = ignore
 package com.puppycrawl.tools.checkstyle.checks.annotation.annotationusestyle;
 
 @Deprecated
-@SomeArrays(pooches={DOGS.LEO})
+@SomeArraysDiffStyle(pooches={DOGS.LEO})
 @SuppressWarnings({""})
 public class InputAnnotationUseStyleCompact
 {
 
 }
 
-@SomeArrays(pooches={DOGS.LEO}, um={}, duh={"bleh"})
+@SomeArraysDiffStyle(pooches={DOGS.LEO}, um={}, duh={"bleh"})
 @SuppressWarnings("") //compact_no_array
 @Deprecated()
 class Dep5 {
@@ -25,12 +25,12 @@ class Dep5 {
 }
 
 @Deprecated
-@SomeArrays(pooches={DOGS.LEO})
+@SomeArraysDiffStyle(pooches={DOGS.LEO})
 @SuppressWarnings({""})
 enum SON5 {
 
     @Deprecated
-    @SomeArrays(pooches={DOGS.LEO}, um={""}, duh={"bleh"})
+    @SomeArraysDiffStyle(pooches={DOGS.LEO}, um={""}, duh={"bleh"})
     @APooch(dog=DOGS.HERBIE)
     @Another("") //compact_no_array
     ETHAN
@@ -49,11 +49,11 @@ enum DOGS5 {
     String[] um() default {};
     @Another({""}) //compact
     String[] duh() default {};
-    @Another(value={""}) //expanded // violation
+    @Another(value={""}) //expanded // violation 'Annotation style must be 'COMPACT''
     DOGS[] pooches();
 }
 
-@Another(value={""}) //expanded // violation
+@Another(value={""}) //expanded // violation 'Annotation style must be 'COMPACT''
 enum E5 {
 
 }
@@ -68,22 +68,24 @@ enum E5 {
     String value1() default "";
 }
 
-@SomeArrays(pooches = {})
+@SomeArraysDiffStyle(pooches = {})
 @Another({})
 class Closing5 {
     static final String UN_U = "UN_U";
 
-    @SuppressWarnings(value = UN_U) // violation
+    @SuppressWarnings(value = UN_U) // violation 'Annotation style must be 'COMPACT''
     int d;
 }
 
 @AnnotationWithAnnotationValue(@Another)
 class Example17 {}
-@AnnotationWithAnnotationValue(value = @Another) // violation
+// violation below 'Annotation style must be 'COMPACT''
+@AnnotationWithAnnotationValue(value = @Another)
 class Example18 {}
 @AnnotationWithAnnotationValue(@Another())
 class Example19 {}
-@AnnotationWithAnnotationValue(value = @Another()) // violation
+// violation below 'Annotation style must be 'COMPACT''
+@AnnotationWithAnnotationValue(value = @Another())
 class Example20 {}
 
 class Foo5 {

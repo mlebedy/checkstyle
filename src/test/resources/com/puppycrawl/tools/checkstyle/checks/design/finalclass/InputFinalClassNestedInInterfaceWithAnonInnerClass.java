@@ -6,7 +6,7 @@ FinalClass
 package com.puppycrawl.tools.checkstyle.checks.design.finalclass;
 
 public interface InputFinalClassNestedInInterfaceWithAnonInnerClass {
-    class a { // ok
+    class a {
         private a() {
         }
     }
@@ -15,17 +15,17 @@ public interface InputFinalClassNestedInInterfaceWithAnonInnerClass {
     };
 
     interface foo {
-        class m { // ok
+        class m {
             private m() {
             }
         }
     }
 
-    class b { // violation
+    class b { // violation 'Class b should be declared as final'
         private b() {
         }
         class foo {
-            class m { // violation
+            class m { // violation 'Class m should be declared as final'
                 private m() {
                 }
             }
@@ -33,7 +33,7 @@ public interface InputFinalClassNestedInInterfaceWithAnonInnerClass {
     }
 
     @interface annotatedInterface {
-        class b { // ok
+        class b {
             private b() {
             }
         }
@@ -41,13 +41,13 @@ public interface InputFinalClassNestedInInterfaceWithAnonInnerClass {
         b obj = new b () {
         };
 
-        class c { // ok
+        class c {
             private c() {
             }
         }
     }
 
-    class c extends foo.m { // violation
+    class c extends foo.m { // violation 'Class c should be declared as final'
         private c() {
         }
     }

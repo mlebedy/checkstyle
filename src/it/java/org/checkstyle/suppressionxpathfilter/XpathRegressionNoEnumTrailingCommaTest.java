@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -40,7 +40,7 @@ public class XpathRegressionNoEnumTrailingCommaTest extends AbstractXpathTestSup
     @Test
     public void testOne() throws Exception {
         final File fileToProcess = new File(getPath(
-                "SuppressionXpathRegressionNoEnumTrailingCommaOne.java"));
+                "InputXpathNoEnumTrailingCommaOne.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(NoEnumTrailingCommaCheck.class);
@@ -52,7 +52,7 @@ public class XpathRegressionNoEnumTrailingCommaTest extends AbstractXpathTestSup
 
         final List<String> expectedXpathQueries = Collections.singletonList(
             "/COMPILATION_UNIT/CLASS_DEF"
-                    + "[./IDENT[@text='SuppressionXpathRegressionNoEnumTrailingCommaOne']]"
+                    + "[./IDENT[@text='InputXpathNoEnumTrailingCommaOne']]"
                     + "/OBJBLOCK/ENUM_DEF[./IDENT[@text='Foo3']]/OBJBLOCK/COMMA[2]"
         );
 
@@ -62,7 +62,7 @@ public class XpathRegressionNoEnumTrailingCommaTest extends AbstractXpathTestSup
     @Test
     public void testTwo() throws Exception {
         final File fileToProcess = new File(getPath(
-                "SuppressionXpathRegressionNoEnumTrailingCommaTwo.java"));
+                "InputXpathNoEnumTrailingCommaTwo.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(NoEnumTrailingCommaCheck.class);
@@ -74,7 +74,7 @@ public class XpathRegressionNoEnumTrailingCommaTest extends AbstractXpathTestSup
 
         final List<String> expectedXpathQueries = Collections.singletonList(
             "/COMPILATION_UNIT/CLASS_DEF"
-                    + "[./IDENT[@text='SuppressionXpathRegressionNoEnumTrailingCommaTwo']]"
+                    + "[./IDENT[@text='InputXpathNoEnumTrailingCommaTwo']]"
                     + "/OBJBLOCK/ENUM_DEF[./IDENT[@text='Foo6']]/OBJBLOCK/COMMA[2]"
         );
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -25,9 +25,12 @@ import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 
 /**
- * <p>
- * Checks whether file contains code. Files which are considered to have no code:
- * </p>
+ * <div>
+ * Checks whether file contains code.
+ * Java compiler is not raising errors on files with no code or all commented out.
+ * Files which are considered to have no code:
+ * </div>
+ *
  * <ul>
  * <li>
  * File with no text
@@ -39,29 +42,11 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * File with a multi line comment(s).
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name="NoCodeInFile"/&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <p>
- * Content of the files:
- * </p>
- * <pre>
- * // single-line comment // violation
- * </pre>
- * <pre>
- * /* // violation
- *  block comment
- * *&#47;
- * </pre>
+ *
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>

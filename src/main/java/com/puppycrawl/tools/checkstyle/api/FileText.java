@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -42,6 +42,7 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 
 /**
  * Represents the text contents of a file of arbitrary plain text type.
+ *
  * <p>
  * This class will be passed to instances of class FileSetCheck by
  * Checker.
@@ -85,7 +86,6 @@ public final class FileText {
     /**
      * The full text contents of the file.
      *
-     *
      * @noinspection FieldMayBeFinal
      * @noinspectionreason FieldMayBeFinal - field is not final to ease reaching full test coverage.
      */
@@ -106,10 +106,7 @@ public final class FileText {
         charset = fileText.charset;
         fullText = fileText.fullText;
         lines = fileText.lines.clone();
-        if (fileText.lineBreaks == null) {
-            lineBreaks = null;
-        }
-        else {
+        if (fileText.lineBreaks != null) {
             lineBreaks = fileText.lineBreaks.clone();
         }
     }

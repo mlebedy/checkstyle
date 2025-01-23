@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -28,9 +28,10 @@ import com.puppycrawl.tools.checkstyle.utils.JavadocUtil;
 import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
 
 /**
- * <p>
+ * <div>
  * Checks for illegal tokens. By default, labels are prohibited.
- * </p>
+ * </div>
+ *
  * <p>
  * Rationale: Certain language features can harm readability, lead to
  * confusion or are not obvious to novice developers. Other features
@@ -46,38 +47,11 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * LABELED_STAT</a>.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;IllegalToken&quot;/&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public void myTest() {
- *     outer: // violation
- *     for (int i = 0; i &lt; 5; i++) {
- *         if (i == 1) {
- *             break outer;
- *         }
- *     }
- * }
- * </pre>
- * <p>
- * To configure the check to report violation on token LITERAL_NATIVE:
- * </p>
- * <pre>
- * &lt;module name=&quot;IllegalToken&quot;&gt;
- *   &lt;property name=&quot;tokens&quot; value=&quot;LITERAL_NATIVE&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public native void myTest(); // violation
- * </pre>
+ *
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>

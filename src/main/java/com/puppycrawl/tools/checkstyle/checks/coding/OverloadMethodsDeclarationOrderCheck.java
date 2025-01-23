@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -29,40 +29,16 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
 
 /**
- * <p>
+ * <div>
  * Checks that overloaded methods are grouped together. Overloaded methods have the same
  * name but different signatures where the signature can differ by the number of
  * input parameters or type of input parameters or both.
- * </p>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;OverloadMethodsDeclarationOrder&quot;/&gt;
- * </pre>
- * <p>
- * Example of correct grouping of overloaded methods:
- * </p>
- * <pre>
- * public void foo(int i) {}
- * public void foo(String s) {}
- * public void foo(String s, int i) {}
- * public void foo(int i, String s) {}
- * public void notFoo() {}
- * </pre>
- * <p>
- * Example of incorrect grouping of overloaded methods:
- * </p>
- * <pre>
- * public void foo(int i) {} // OK
- * public void foo(String s) {} // OK
- * public void notFoo() {} // violation. Have to be after foo(String s, int i)
- * public void foo(int i, String s) {}
- * public void foo(String s, int i) {}
- * </pre>
+ * </div>
+ *
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -136,7 +112,11 @@ public class OverloadMethodsDeclarationOrderCheck extends AbstractCheck {
                 final String methodName =
                         currentToken.findFirstToken(TokenTypes.IDENT).getText();
                 final Integer previousIndex = methodIndexMap.get(methodName);
-                if (previousIndex != null && currentIndex - previousIndex > allowedDistance) {
+                final DetailAST previousSibling = currentToken.getPreviousSibling();
+                final boolean isMethod = previousSibling.getType() == TokenTypes.METHOD_DEF;
+
+                if (previousIndex != null
+                        && (!isMethod || currentIndex - previousIndex > allowedDistance)) {
                     final int previousLineWithOverloadMethod =
                             methodLineNumberMap.get(methodName);
                     log(currentToken, MSG_KEY,

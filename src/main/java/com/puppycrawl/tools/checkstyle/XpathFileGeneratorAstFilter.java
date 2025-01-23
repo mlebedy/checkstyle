@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.puppycrawl.tools.checkstyle.api.AuditEvent;
-import com.puppycrawl.tools.checkstyle.api.AutomaticBean;
 import com.puppycrawl.tools.checkstyle.api.Violation;
 import com.puppycrawl.tools.checkstyle.xpath.XpathQueryGenerator;
 
@@ -34,7 +33,7 @@ import com.puppycrawl.tools.checkstyle.xpath.XpathQueryGenerator;
  * for {@code XpathFileGeneratorAuditListener}.
  * See issue <a href="https://github.com/checkstyle/checkstyle/issues/102">#102</a>
  */
-public class XpathFileGeneratorAstFilter extends AutomaticBean implements TreeWalkerFilter {
+public class XpathFileGeneratorAstFilter extends AbstractAutomaticBean implements TreeWalkerFilter {
 
     /** The delimiter between xpath queries. */
     private static final String DELIMITER = " | \n";

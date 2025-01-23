@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -109,7 +109,15 @@ tokens {
     LITERAL_YIELD, SWITCH_RULE,
 
     LITERAL_NON_SEALED, LITERAL_SEALED, LITERAL_PERMITS,
-    PERMITS_CLAUSE, PATTERN_DEF
+    PERMITS_CLAUSE, PATTERN_DEF, LITERAL_WHEN,
+    RECORD_PATTERN_DEF, RECORD_PATTERN_COMPONENTS,
+
+    // Placeholders for tokens that are no longer used, But they
+    // have been kept here to maintain compatibility in token numbering
+    NOT_FOR_USAGE_1, NOT_FOR_USAGE_2, NOT_FOR_USAGE_3, NOT_FOR_USAGE_4,
+    NOT_FOR_USAGE_5, NOT_FOR_USAGE_6, NOT_FOR_USAGE_7,
+
+    LITERAL_UNDERSCORE, UNNAMED_PATTERN_DEF
 }
 
 @header {
@@ -138,7 +146,7 @@ import com.puppycrawl.tools.checkstyle.grammar.CrAwareLexerSimulator;
      *
      * @param commentListener the commentListener to use in this lexer
      */
-    public void setCommentListener(CommentListener commentListener){
+    public void setCommentListener(CommentListener commentListener) {
             this.commentListener = commentListener;
     }
 
@@ -147,6 +155,7 @@ import com.puppycrawl.tools.checkstyle.grammar.CrAwareLexerSimulator;
 
     /** Tracks the starting column of a block comment. */
     int startCol = -1;
+
 }
 
 // Keywords and restricted identifiers
@@ -159,7 +168,6 @@ LITERAL_CASE:            'case';
 LITERAL_CATCH:           'catch';
 LITERAL_CHAR:            'char';
 LITERAL_CLASS:           'class';
-LITERAL_CONST:           'const';
 LITERAL_CONTINUE:        'continue';
 LITERAL_DEFAULT:         'default';
 LITERAL_DO:              'do';
@@ -172,7 +180,6 @@ LITERAL_FINALLY:         'finally';
 LITERAL_FLOAT:           'float';
 LITERAL_FOR:             'for';
 LITERAL_IF:              'if';
-LITERAL_GOTO:            'goto';
 LITERAL_IMPLEMENTS:      'implements';
 IMPORT:                  'import';
 LITERAL_INSTANCEOF:      'instanceof';
@@ -205,6 +212,8 @@ LITERAL_YIELD:           'yield';
 LITERAL_NON_SEALED:      'non-sealed';
 LITERAL_SEALED:          'sealed';
 LITERAL_PERMITS:         'permits';
+LITERAL_WHEN:            'when';
+LITERAL_UNDERSCORE:      '_';
 
 // Literals
 DECIMAL_LITERAL_LONG:    ('0' | [1-9] (Digits? | '_'+ Digits)) [lL];
@@ -240,7 +249,9 @@ LITERAL_FALSE:           'false';
 
 CHAR_LITERAL:            '\'' (EscapeSequence | ~['\\\r\n]) '\'';
 
-STRING_LITERAL:          '"' (EscapeSequence | ~["\\\r\n])* '"';
+fragment StringFragment: (EscapeSequence | ~["\\\r\n]);
+
+STRING_LITERAL:         '"' StringFragment* '"';
 
 TEXT_BLOCK_LITERAL_BEGIN: '"' '"' '"' -> pushMode(TextBlock);
 
@@ -308,6 +319,39 @@ DOUBLE_COLON:            '::';
 
 AT:                      '@';
 ELLIPSIS:                '...';
+
+// Text block fragments
+
+fragment TextBlockContent
+    : ( TwoDoubleQuotes
+      | OneDoubleQuote
+      | Newline
+      | TextBlockCharacter
+      )+
+    ;
+
+fragment TextBlockCharacter
+    : ~["\\]
+    | TextBlockStandardEscape
+    | EscapeSequence
+    ;
+
+fragment TextBlockStandardEscape
+    : '\\' ( [btnfrs'\\] | Newline | OneDoubleQuote )
+    ;
+
+fragment Newline
+    : '\n'
+    | '\r' ( '\n' )?
+    ;
+
+fragment TwoDoubleQuotes
+    : { _input.LA(3) != '"' }? '"' '"'
+    ;
+
+fragment OneDoubleQuote
+    : { _input.LA(2) != '"' }? '"'
+    ;
 
 // Whitespace and comments
 
@@ -400,32 +444,9 @@ fragment Letter
 
 // Text block lexical mode
 mode TextBlock;
-    TEXT_BLOCK_CONTENT
-        : ( TwoDoubleQuotes
-          | OneDoubleQuote
-          | Newline
-          | ~'"'
-          | TextBlockStandardEscape
-          )+
-        ;
+
+    TEXT_BLOCK_CONTENT: TextBlockContent;
 
     TEXT_BLOCK_LITERAL_END
         : '"' '"' '"' -> popMode
-        ;
-
-    // Text block fragment rules
-    fragment TextBlockStandardEscape
-        :   '\\' [btnfrs"'\\]
-        ;
-
-    fragment Newline
-        :  '\n' | '\r' ('\n')?
-        ;
-
-    fragment TwoDoubleQuotes
-        :   '"''"' ( Newline | ~'"' )
-        ;
-
-    fragment OneDoubleQuote
-        :   '"' ( Newline | ~'"' )
         ;

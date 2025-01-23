@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -35,19 +35,22 @@ import com.puppycrawl.tools.checkstyle.utils.ScopeUtil;
 import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
 
 /**
- * <p>
+ * <div>
  * Checks that a local variable or a parameter does not shadow
  * a field that is defined in the same class.
- * </p>
+ * </div>
+ *
  * <p>
  * It is possible to configure the check to ignore all property setter methods.
  * </p>
+ *
  * <p>
  * A method is recognized as a setter if it is in the following form
  * </p>
  * <pre>
  * ${returnType} set${Name}(${anyType} ${name}) { ... }
  * </pre>
+ *
  * <p>
  * where ${anyType} is any primitive type, class or interface name;
  * ${name} is name of the variable that is being set and ${Name} its
@@ -57,6 +60,7 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * <pre>
  * void setTime(long time) { ... }
  * </pre>
+ *
  * <p>
  * Any other return types will not let method match a setter pattern. However,
  * by setting <em>setterCanReturnItsClass</em> property to <em>true</em>
@@ -68,6 +72,7 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  *   PageBuilder setName(String name) { ... }
  * }
  * </pre>
+ *
  * <p>
  * Such methods are known as chain-setters and a common when Builder-pattern
  * is used. Property <em>setterCanReturnItsClass</em> has effect only if
@@ -75,15 +80,21 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * </p>
  * <ul>
  * <li>
- * Property {@code ignoreFormat} - Define the RegExp for names of variables
- * and parameters to ignore.
- * Type is {@code java.util.regex.Pattern}.
- * Default value is {@code null}.
+ * Property {@code ignoreAbstractMethods} - Control whether to ignore parameters
+ * of abstract methods.
+ * Type is {@code boolean}.
+ * Default value is {@code false}.
  * </li>
  * <li>
  * Property {@code ignoreConstructorParameter} - Control whether to ignore constructor parameters.
  * Type is {@code boolean}.
  * Default value is {@code false}.
+ * </li>
+ * <li>
+ * Property {@code ignoreFormat} - Define the RegExp for names of variables
+ * and parameters to ignore.
+ * Type is {@code java.util.regex.Pattern}.
+ * Default value is {@code null}.
  * </li>
  * <li>
  * Property {@code ignoreSetter} - Allow to ignore the parameter of a property setter method.
@@ -93,12 +104,6 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * <li>
  * Property {@code setterCanReturnItsClass} - Allow to expand the definition of a setter method
  * to include methods that return the class' instance.
- * Type is {@code boolean}.
- * Default value is {@code false}.
- * </li>
- * <li>
- * Property {@code ignoreAbstractMethods} - Control whether to ignore parameters
- * of abstract methods.
  * Type is {@code boolean}.
  * Default value is {@code false}.
  * </li>
@@ -119,201 +124,11 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * RECORD_COMPONENT_DEF</a>.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- *  &lt;module name=&quot;HiddenField&quot;/&gt;
- * </pre>
- * <pre>
- * public class SomeClass {
  *
- *   private String field;
- *   private String testField;
- *
- *   public SomeClass(String testField) { // violation, 'testField' param hides 'testField' field
- *   }
- *   public void method(String param) { // OK
- *       String field = param; // violation, 'field' variable hides 'field' field
- *   }
- *   public void setTestField(String testField) { // violation, 'testField' param
- *                                                // hides 'testField' field
- *       this.field = field;
- *   }
- *   public SomeClass setField(String field) { // violation, 'field' param hides 'field' field
- *       this.field = field;
- *   }
- * }
- * </pre>
- *
- * <p>
- * To configure the check so that it checks local variables but not parameters:
- * </p>
- * <pre>
- * &lt;module name=&quot;HiddenField&quot;&gt;
- *   &lt;property name=&quot;tokens&quot; value=&quot;VARIABLE_DEF&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <pre>
- * public class SomeClass {
- *
- *   private String field;
- *   private String testField;
- *
- *   public SomeClass(String testField) { // OK, 'testField' param doesn't hide any field
- *   }
- *   public void method(String param) { // OK
- *       String field = param; // violation, 'field' variable hides 'field' field
- *   }
- *   public void setTestField(String testField) { // OK, 'testField' param doesn't hide any field
- *       this.field = field;
- *   }
- *   public SomeClass setField(String field) { // OK, 'field' param doesn't hide any field
- *       this.field = field;
- *   }
- * }
- * </pre>
- *
- * <p>
- * To configure the check so that it ignores the variables and parameters named "test":
- * </p>
- * <pre>
- * &lt;module name=&quot;HiddenField&quot;&gt;
- *   &lt;property name=&quot;ignoreFormat&quot; value=&quot;^testField&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <pre>
- * public class SomeClass {
- *
- *   private String field;
- *   private String testField;
- *
- *   public SomeClass(String testField) { // OK, because it match ignoreFormat
- *   }
- *   public void method(String param) { // OK
- *       String field = param; // violation, 'field' variable hides 'field' field
- *   }
- *   public void setTestField(String testField) { // OK, because it match ignoreFormat
- *       this.field = field;
- *   }
- *   public SomeClass setField(String field) { // violation, 'field' param hides 'field' field
- *       this.field = field;
- *   }
- * }
- * </pre>
- * <p>
- * To configure the check so that it ignores constructor parameters:
- * </p>
- * <pre>
- * &lt;module name=&quot;HiddenField&quot;&gt;
- *   &lt;property name=&quot;ignoreConstructorParameter&quot; value=&quot;true&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <pre>
- * public class SomeClass {
- *
- *   private String field;
- *   private String testField;
- *
- *   public SomeClass(String testField) { // OK, 'testField' param doesn't hide any field
- *   }
- *   public void method(String param) { // OK
- *       String field = param; // violation, 'field' variable hides 'field' field
- *   }
- *   public void setTestField(String testField) { // violation, 'testField' variable
- *                                                // hides 'testField' field
- *       this.field = field;
- *   }
- *   public SomeClass setField(String field) { // violation, 'field' param hides 'field' field
- *       this.field = field;
- *   }
- * }
- * </pre>
- * <p>
- * To configure the check so that it ignores the parameter of setter methods:
- * </p>
- * <pre>
- * &lt;module name=&quot;HiddenField&quot;&gt;
- *   &lt;property name=&quot;ignoreSetter&quot; value=&quot;true&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <pre>
- * public class SomeClass {
- *
- *   private String field;
- *   private String testField;
- *
- *   public SomeClass(String testField) { // violation, 'testField' param hides 'testField' field
- *   }
- *   public void method(String param) { // OK
- *       String field = param; // violation, 'field' variable hides 'field' field
- *   }
- *   public void setTestField(String testField) { // OK, 'testField' param doesn't hide any field
- *       this.field = field;
- *   }
- *   public SomeClass setField(String field) { // violation, 'field' param hides 'field' field
- *       this.field = field;
- *   }
- * }
- * </pre>
- * <p>
- * To configure the check so that it ignores the parameter of setter methods
- * recognizing setter as returning either {@code void} or a class in which it is declared:
- * </p>
- * <pre>
- * &lt;module name=&quot;HiddenField&quot;&gt;
- *   &lt;property name=&quot;ignoreSetter&quot; value=&quot;true&quot;/&gt;
- *   &lt;property name=&quot;setterCanReturnItsClass&quot; value=&quot;true&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <pre>
- * public class SomeClass {
- *
- *   private String field;
- *   private String testField;
- *
- *   public SomeClass(String testField) { // violation, 'testField' param hides 'testField' field
- *   }
- *   public void method(String param) { // OK
- *       String field = param; // violation, 'field' variable hides 'field' field
- *   }
- *   public void setTestField(String testField) { // OK, 'testField' param doesn't hide any field
- *       this.field = field;
- *   }
- *   public SomeClass setField(String field) { // OK, 'field' param doesn't hide any field
- *       this.field = field;
- *   }
- * }
- * </pre>
- * <p>
- * To configure the check so that it ignores parameters of abstract methods:
- * </p>
- * <pre>
- * &lt;module name=&quot;HiddenField&quot;&gt;
- *   &lt;property name=&quot;ignoreAbstractMethods&quot; value=&quot;true&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <pre>
- * abstract class SomeClass {
- *
- *   private String field;
- *
- *   public SomeClass(int field) { // violation, 'field' param hides a 'field' field
- *     float field; // violation, 'field' variable hides a 'field' field
- *   }
- *   public abstract int method(String field); // OK
- * }
- *
- * public class Demo extends SomeClass {
- *
- *   public int method(String param){
- *     return param;
- *   }
- * }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -449,7 +264,9 @@ public class HiddenFieldCheck
         final DetailAST typeMods = ast.findFirstToken(TokenTypes.MODIFIERS);
         final boolean isStaticInnerType =
                 typeMods != null
-                        && typeMods.findFirstToken(TokenTypes.LITERAL_STATIC) != null;
+                        && typeMods.findFirstToken(TokenTypes.LITERAL_STATIC) != null
+                        // inner record is implicitly static
+                        || ast.getType() == TokenTypes.RECORD_DEF;
         final String frameName;
 
         if (type == TokenTypes.CLASS_DEF
@@ -726,6 +543,7 @@ public class HiddenFieldCheck
      * Setter to define the RegExp for names of variables and parameters to ignore.
      *
      * @param pattern a pattern.
+     * @since 3.2
      */
     public void setIgnoreFormat(Pattern pattern) {
         ignoreFormat = pattern;
@@ -736,6 +554,7 @@ public class HiddenFieldCheck
      *
      * @param ignoreSetter decide whether to ignore the parameter of
      *     a property setter method.
+     * @since 3.2
      */
     public void setIgnoreSetter(boolean ignoreSetter) {
         this.ignoreSetter = ignoreSetter;
@@ -750,6 +569,7 @@ public class HiddenFieldCheck
      *        in order to be recognized as setter method (otherwise
      *        already recognized as a setter) must return void.  Later is
      *        the default behavior.
+     * @since 6.3
      */
     public void setSetterCanReturnItsClass(
         boolean aSetterCanReturnItsClass) {
@@ -761,6 +581,7 @@ public class HiddenFieldCheck
      *
      * @param ignoreConstructorParameter decide whether to ignore
      *     constructor parameters.
+     * @since 3.2
      */
     public void setIgnoreConstructorParameter(
         boolean ignoreConstructorParameter) {
@@ -772,6 +593,7 @@ public class HiddenFieldCheck
      *
      * @param ignoreAbstractMethods decide whether to ignore
      *     parameters of abstract methods.
+     * @since 4.0
      */
     public void setIgnoreAbstractMethods(
         boolean ignoreAbstractMethods) {
@@ -781,7 +603,7 @@ public class HiddenFieldCheck
     /**
      * Holds the names of static and instance fields of a type.
      */
-    private static class FieldFrame {
+    private static final class FieldFrame {
 
         /** Name of the frame, such name of the class or enum declaration. */
         private final String frameName;
@@ -805,7 +627,7 @@ public class HiddenFieldCheck
          * @param staticType is this a static inner type (class or enum).
          * @param frameName name associated with the frame, which can be a
          */
-        /* package */ FieldFrame(FieldFrame parent, boolean staticType, String frameName) {
+        private FieldFrame(FieldFrame parent, boolean staticType, String frameName) {
             this.parent = parent;
             this.staticType = staticType;
             this.frameName = frameName;
@@ -836,10 +658,15 @@ public class HiddenFieldCheck
          * @return true if this FieldFrame contains instance field
          */
         public boolean containsInstanceField(String field) {
-            return instanceFields.contains(field)
-                    || parent != null
-                    && !staticType
-                    && parent.containsInstanceField(field);
+            FieldFrame currentParent = parent;
+            boolean contains = instanceFields.contains(field);
+            boolean isStaticType = staticType;
+            while (!isStaticType && !contains) {
+                contains = currentParent.instanceFields.contains(field);
+                isStaticType = currentParent.staticType;
+                currentParent = currentParent.parent;
+            }
+            return contains;
         }
 
         /**
@@ -849,9 +676,13 @@ public class HiddenFieldCheck
          * @return true if this FieldFrame contains static field
          */
         public boolean containsStaticField(String field) {
-            return staticFields.contains(field)
-                    || parent != null
-                    && parent.containsStaticField(field);
+            FieldFrame currentParent = parent;
+            boolean contains = staticFields.contains(field);
+            while (currentParent != null && !contains) {
+                contains = currentParent.staticFields.contains(field);
+                currentParent = currentParent.parent;
+            }
+            return contains;
         }
 
         /**

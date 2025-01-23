@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -29,10 +29,10 @@ import com.puppycrawl.tools.checkstyle.api.FullIdent;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
 /**
- * <p>
+ * <div>
  * Checks for redundant import statements. An import statement is
  * considered redundant if:
- * </p>
+ * </div>
  * <ul>
  *   <li>It is a duplicate of another import. This is, when a class is imported
  *   more than once.</li>
@@ -41,29 +41,11 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
  *   <li>The class non-statically imported is from the same package as the
  *   current package.</li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name="RedundantImport"/&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <pre>
- * package Test;
- * import static Test.MyClass.*; // OK, static import
- * import static java.lang.Integer.MAX_VALUE; // OK, static import
  *
- * import Test.MyClass; // violation, imported from the same package as the current package
- * import java.lang.String; // violation, the class imported is from the 'java.lang' package
- * import java.util.Scanner; // OK
- * import java.util.Scanner; // violation, it is a duplicate of another import
- * public class MyClass{ };
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>

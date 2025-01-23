@@ -2,11 +2,12 @@
 <checkstyle-metadata>
    <module>
       <check fully-qualified-name="com.puppycrawl.tools.checkstyle.checks.indentation.IndentationCheck"
-              name="Indentation"
-              parent="com.puppycrawl.tools.checkstyle.TreeWalker">
-         <description>&lt;p&gt;
+             name="Indentation"
+             parent="com.puppycrawl.tools.checkstyle.TreeWalker">
+         <description>&lt;div&gt;
  Checks correct indentation of Java code.
- &lt;/p&gt;
+ &lt;/div&gt;
+
  &lt;p&gt;
  The idea behind this is that while
  pretty printers are sometimes convenient for bulk reformats of
@@ -16,6 +17,7 @@
  case, this check should just ensure that a minimal set of indentation
  rules is followed.
  &lt;/p&gt;
+
  &lt;p&gt;
  Basic offset indentation is used for indentation inside code blocks.
  For any lines that span more than 1, line wrapping indentation is used for those lines
@@ -27,6 +29,7 @@
  afterwards, in that new code block, are increased on top of the line wrap and any
  indentations above it.
  &lt;/p&gt;
+
  &lt;p&gt;
  Example:
  &lt;/p&gt;
@@ -42,6 +45,10 @@
  }
  &lt;/pre&gt;</description>
          <properties>
+            <property default-value="4" name="arrayInitIndent" type="int">
+               <description>Specify how far an array initialization
+ should be indented when on next line.</description>
+            </property>
             <property default-value="4" name="basicOffset" type="int">
                <description>Specify how far new indentation level should be
  indented when on the next line.</description>
@@ -54,23 +61,19 @@
                <description>Specify how far a case label should be indented
  when on next line.</description>
             </property>
-            <property default-value="4" name="throwsIndent" type="int">
-               <description>Specify how far a throws clause should be
- indented when on next line.</description>
-            </property>
-            <property default-value="4" name="arrayInitIndent" type="int">
-               <description>Specify how far an array initialisation
- should be indented when on next line.</description>
-            </property>
-            <property default-value="4" name="lineWrappingIndentation" type="int">
-               <description>Specify how far continuation line
- should be indented when line-wrapping is present.</description>
-            </property>
             <property default-value="false" name="forceStrictCondition" type="boolean">
                <description>Force strict indent level in line
  wrapping case. If value is true, line wrap indent have to be same as
  lineWrappingIndentation parameter. If value is false, line wrap indent
  could be bigger on any value user would like.</description>
+            </property>
+            <property default-value="4" name="lineWrappingIndentation" type="int">
+               <description>Specify how far continuation line
+ should be indented when line-wrapping is present.</description>
+            </property>
+            <property default-value="4" name="throwsIndent" type="int">
+               <description>Specify how far a throws clause should be
+ indented when on next line.</description>
             </property>
          </properties>
          <message-keys>

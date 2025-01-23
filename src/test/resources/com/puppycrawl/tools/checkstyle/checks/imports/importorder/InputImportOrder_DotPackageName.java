@@ -16,12 +16,12 @@ tokens = (default)STATIC_IMPORT
 
 package com.puppycrawl.tools.checkstyle.checks.imports.importorder;
 
-import java.awt.Button; // ok
-import java.awt.Frame; // ok
-import java.awt.Dialog; // violation
-import java.awt.event.ActionEvent; // ok
-import javax.swing.JComponent; // violation
-import javax.swing.JTable; // ok
+import java.awt.Button;
+import java.awt.Frame;
+import java.awt.Dialog; // violation 'Wrong order for 'java.awt.Dialog' import.'
+import java.awt.event.ActionEvent;
+import javax.swing.JComponent; // violation 'Wrong order for 'javax.swing.JComponent' import.'
+import javax.swing.JTable;
 
 public class InputImportOrder_DotPackageName {
 }

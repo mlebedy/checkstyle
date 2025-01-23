@@ -11,7 +11,7 @@ package com.puppycrawl.tools.checkstyle.checks.coding.requirethis;
 
 import java.util.logging.Logger;
 
-public class InputRequireThisExtendedMethod // ok
+public class InputRequireThisExtendedMethod
 {
     public class Check {
         private Logger log1 = Logger.getLogger(getClass().getName());
@@ -28,7 +28,7 @@ public class InputRequireThisExtendedMethod // ok
     int EXPR;
 
     String method(int EXPR) {
-        EXPR += 12; // violation
+        EXPR += 12; // violation 'Reference to instance variable 'EXPR' needs "this.".'
         return "someString";
     }
 }

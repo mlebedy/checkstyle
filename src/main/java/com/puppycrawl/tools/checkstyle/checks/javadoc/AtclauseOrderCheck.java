@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,6 @@
 
 package com.puppycrawl.tools.checkstyle.checks.javadoc;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
@@ -35,22 +34,22 @@ import com.puppycrawl.tools.checkstyle.utils.JavadocUtil;
 import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
 
 /**
- * <p>
+ * <div>
  * Checks the order of
  * <a href="https://docs.oracle.com/javase/8/docs/technotes/tools/windows/javadoc.html#CHDBEFIF">
  * javadoc block-tags or javadoc tags</a>.
- * </p>
+ * </div>
+ *
  * <p>
  * Note: Google used the term "at-clauses" for block tags in their guide till 2017-02-28.
  * </p>
  *
  * <ul>
  * <li>
- * Property {@code violateExecutionOnNonTightHtml} - Control when to print violations if the
- * Javadoc being examined by this check violates the tight html rules defined at
- * <a href="https://checkstyle.org/writingjavadocchecks.html#Tight-HTML_rules">Tight-HTML Rules</a>.
- * Type is {@code boolean}.
- * Default value is {@code false}.
+ * Property {@code tagOrder} - Specify the order by tags.
+ * Type is {@code java.lang.String[]}.
+ * Default value is
+ * {@code @author, @deprecated, @exception, @param, @return, @see, @serial, @serialData, @serialField, @since, @throws, @version}.
  * </li>
  * <li>
  * Property {@code target} - Specify block tags targeted.
@@ -75,60 +74,18 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * VARIABLE_DEF</a>.
  * </li>
  * <li>
- * Property {@code tagOrder} - Specify the order by tags.
- * Type is {@code java.lang.String[]}.
- * Default value is
- * {@code @author, @deprecated, @exception, @param, @return, @see, @serial, @serialData, @serialField, @since, @throws, @version}.
+ * Property {@code violateExecutionOnNonTightHtml} - Control when to print violations if the
+ * Javadoc being examined by this check violates the tight html rules defined at
+ * <a href="https://checkstyle.org/writingjavadocchecks.html#Tight-HTML_rules">Tight-HTML Rules</a>.
+ * Type is {@code boolean}.
+ * Default value is {@code false}.
  * </li>
  * </ul>
- * <p>
- * To configure the default check:
- * </p>
- * <pre>
- * &lt;module name=&quot;AtclauseOrder&quot;/&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <pre>
- * &#47;**
- * * Some javadoc. // OK
- * *
- * * &#64;author Some javadoc. // OK
- * * &#64;version Some javadoc. // OK
- * * &#64;param Some javadoc. // OK
- * * &#64;return Some javadoc. // OK
- * * &#64;throws Some javadoc. // OK
- * * &#64;exception Some javadoc. // OK
- * * &#64;see Some javadoc. // OK
- * * &#64;since Some javadoc. // OK
- * * &#64;serial Some javadoc. // OK
- * * &#64;serialField // OK
- * * &#64;serialData // OK
- * * &#64;deprecated Some javadoc. // OK
- * *&#47;
  *
- * class Valid implements Serializable
- * {
- * }
- *
- * &#47;**
- * * Some javadoc.
- * *
- * * &#64;since Some javadoc. // OK
- * * &#64;version Some javadoc. // Violation - wrong order
- * * &#64;deprecated
- * * &#64;see Some javadoc. // Violation - wrong order
- * * &#64;author Some javadoc. // Violation - wrong order
- * *&#47;
- *
- * class Invalid implements Serializable
- * {
- * }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -141,6 +98,9 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * </li>
  * <li>
  * {@code javadoc.parse.rule.error}
+ * </li>
+ * <li>
+ * {@code javadoc.unclosedHtml}
  * </li>
  * <li>
  * {@code javadoc.wrong.singleton.html.tag}
@@ -194,6 +154,7 @@ public class AtclauseOrderCheck extends AbstractJavadocCheck {
      * Setter to specify block tags targeted.
      *
      * @param targets user's targets.
+     * @since 6.0
      */
     public void setTarget(String... targets) {
         target = TokenUtil.asBitSet(targets);
@@ -203,13 +164,10 @@ public class AtclauseOrderCheck extends AbstractJavadocCheck {
      * Setter to specify the order by tags.
      *
      * @param orders user's orders.
+     * @since 6.0
      */
     public void setTagOrder(String... orders) {
-        final List<String> customOrder = new ArrayList<>(orders.length);
-        for (String order : orders) {
-            customOrder.add(order.trim());
-        }
-        tagOrder = customOrder;
+        tagOrder = Arrays.asList(orders);
     }
 
     @Override

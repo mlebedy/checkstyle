@@ -13,38 +13,38 @@ package com.puppycrawl.tools.checkstyle.checks.avoidescapedunicodecharacters;
 public class InputAvoidEscapedUnicodeCharactersAllEscapedUnicodeCharacters {
 
   private String[] allEscapedUnicodeCharacters = { ""
-                                                   + "\u0000" // ok
-                                                   + "\u0001" // ok
-                                                   + "\u0002" // ok
-                                                   + "\u0003" // ok
-                                                   + "\u0004" // ok
-                                                   + "\u0005" // ok
-                                                   + "\u0006" // ok
-                                                   + "\u0007" // ok
-                                                   + "\u0008" // ok
-                                                   + "\u0009" // ok
+                                                   + "\u0000"
+                                                   + "\u0001"
+                                                   + "\u0002"
+                                                   + "\u0003"
+                                                   + "\u0004"
+                                                   + "\u0005"
+                                                   + "\u0006"
+                                                   + "\u0007"
+                                                   + "\u0008"
+                                                   + "\u0009"
       /* impossible to use this unicode in Java */ + "\n"
-                                                   + "\u000b" // ok
-                                                   + "\u000c" // ok
+                                                   + "\u000b"
+                                                   + "\u000c"
       /* impossible to use this unicode in Java */ + "\r"
-                                                   + "\u000e" // ok
-                                                   + "\u000f" // ok
-                                                   + "\u0010" // ok
-                                                   + "\u0011" // ok
-                                                   + "\u0012" // ok
-                                                   + "\u0013" // ok
-                                                   + "\u0014" // ok
-                                                   + "\u0015" // ok
-                                                   + "\u0016" // ok
-                                                   + "\u0017" // ok
-                                                   + "\u0018" // ok
-                                                   + "\u0019" // ok
-                                                   + "\u001a" // ok
-                                                   + "\u001b" // ok
-                                                   + "\u001c" // ok
-                                                   + "\u001d" // ok
-                                                   + "\u001e" // ok
-                                                   + "\u001f" // ok
+                                                   + "\u000e"
+                                                   + "\u000f"
+                                                   + "\u0010"
+                                                   + "\u0011"
+                                                   + "\u0012"
+                                                   + "\u0013"
+                                                   + "\u0014"
+                                                   + "\u0015"
+                                                   + "\u0016"
+                                                   + "\u0017"
+                                                   + "\u0018"
+                                                   + "\u0019"
+                                                   + "\u001a"
+                                                   + "\u001b"
+                                                   + "\u001c"
+                                                   + "\u001d"
+                                                   + "\u001e"
+                                                   + "\u001f"
                                                    + "\u0020" // violation
                                                    + "\u0021" // violation
                                                    + "\u005c\u0022" // violation
@@ -141,38 +141,38 @@ public class InputAvoidEscapedUnicodeCharactersAllEscapedUnicodeCharacters {
                                                    + "\u007d" // violation
                                                    + "\u007e" // violation
                                                    + "\u007f" // violation
-                                                   + "\u0080" // ok
-                                                   + "\u0081" // ok
-                                                   + "\u0082" // ok
-                                                   + "\u0083" // ok
-                                                   + "\u0084" // ok
-                                                   + "\u0085" // ok
-                                                   + "\u0086" // ok
-                                                   + "\u0087" // ok
-                                                   + "\u0088" // ok
-                                                   + "\u0089" // ok
-                                                   + "\u008a" // ok
-                                                   + "\u008b" // ok
-                                                   + "\u008c" // ok
-                                                   + "\u008d" // ok
-                                                   + "\u008e" // ok
-                                                   + "\u008f" // ok
-                                                   + "\u0090" // ok
-                                                   + "\u0091" // ok
-                                                   + "\u0092" // ok
-                                                   + "\u0093" // ok
-                                                   + "\u0094" // ok
-                                                   + "\u0095" // ok
-                                                   + "\u0096" // ok
-                                                   + "\u0097" // ok
-                                                   + "\u0098" // ok
-                                                   + "\u0099" // ok
-                                                   + "\u009a" // ok
-                                                   + "\u009b" // ok
-                                                   + "\u009c" // ok
-                                                   + "\u009d" // ok
-                                                   + "\u009e" // ok
-                                                   + "\u009f" // ok
+                                                   + "\u0080"
+                                                   + "\u0081"
+                                                   + "\u0082"
+                                                   + "\u0083"
+                                                   + "\u0084"
+                                                   + "\u0085"
+                                                   + "\u0086"
+                                                   + "\u0087"
+                                                   + "\u0088"
+                                                   + "\u0089"
+                                                   + "\u008a"
+                                                   + "\u008b"
+                                                   + "\u008c"
+                                                   + "\u008d"
+                                                   + "\u008e"
+                                                   + "\u008f"
+                                                   + "\u0090"
+                                                   + "\u0091"
+                                                   + "\u0092"
+                                                   + "\u0093"
+                                                   + "\u0094"
+                                                   + "\u0095"
+                                                   + "\u0096"
+                                                   + "\u0097"
+                                                   + "\u0098"
+                                                   + "\u0099"
+                                                   + "\u009a"
+                                                   + "\u009b"
+                                                   + "\u009c"
+                                                   + "\u009d"
+                                                   + "\u009e"
+                                                   + "\u009f"
                                                    + "\u00a0" // violation
                                                    + "\u00a1" // violation
                                                    + "\u00a2" // violation
@@ -186,7 +186,7 @@ public class InputAvoidEscapedUnicodeCharactersAllEscapedUnicodeCharacters {
                                                    + "\u00aa" // violation
                                                    + "\u00ab" // violation
                                                    + "\u00ac" // violation
-                                                   + "\u00ad" // ok
+                                                   + "\u00ad"
                                                    + "\u00ae" // violation
                                                    + "\u00af" // violation
                                                    + "\u00b0" // violation
@@ -860,7 +860,7 @@ public class InputAvoidEscapedUnicodeCharactersAllEscapedUnicodeCharacters {
                                                    + "\u034c" // violation
                                                    + "\u034d" // violation
                                                    + "\u034e" // violation
-                                                   + "\u034f" // ok
+                                                   + "\u034f"
                                                    + "\u0350" // violation
                                                    + "\u0351" // violation
                                                    + "\u0352" // violation
@@ -1820,7 +1820,7 @@ public class InputAvoidEscapedUnicodeCharactersAllEscapedUnicodeCharacters {
                                                    + "\u070c" // violation
                                                    + "\u070d" // violation
                                                    + "\u070e" // violation
-                                                   + "\u070f" // ok
+                                                   + "\u070f"
                                                    + "\u0710" // violation
                                                    + "\u0711" // violation
                                                    + "\u0712" // violation
@@ -6171,7 +6171,7 @@ public class InputAvoidEscapedUnicodeCharactersAllEscapedUnicodeCharacters {
                                                    + "\u180b" // violation
                                                    + "\u180c" // violation
                                                    + "\u180d" // violation
-                                                   + "\u180e" // ok
+                                                   + "\u180e"
                                                    + "\u180f" // violation
                                                    + "\u1810" // violation
                                                    + "\u1811" // violation
@@ -8216,11 +8216,11 @@ public class InputAvoidEscapedUnicodeCharactersAllEscapedUnicodeCharacters {
                                                    + "\u2008" // violation
                                                    + "\u2009" // violation
                                                    + "\u200a" // violation
-                                                   + "\u200b" // ok
-                                                   + "\u200c" // ok
-                                                   + "\u200d" // ok
-                                                   + "\u200e" // ok
-                                                   + "\u200f" // ok
+                                                   + "\u200b"
+                                                   + "\u200c"
+                                                   + "\u200d"
+                                                   + "\u200e"
+                                                   + "\u200f"
                                                    + "\u2010" // violation
                                                    + "\u2011" // violation
                                                    + "\u2012" // violation
@@ -8247,11 +8247,11 @@ public class InputAvoidEscapedUnicodeCharactersAllEscapedUnicodeCharacters {
                                                    + "\u2027" // violation
                                                    + "\u2028" // violation
                                                    + "\u2029" // violation
-                                                   + "\u202a" // ok
-                                                   + "\u202b" // ok
-                                                   + "\u202c" // ok
-                                                   + "\u202d" // ok
-                                                   + "\u202e" // ok
+                                                   + "\u202a"
+                                                   + "\u202b"
+                                                   + "\u202c"
+                                                   + "\u202d"
+                                                   + "\u202e"
                                                    + "\u202f" // violation
                                                    + "\u2030" // violation
                                                    + "\u2031" // violation
@@ -8301,22 +8301,22 @@ public class InputAvoidEscapedUnicodeCharactersAllEscapedUnicodeCharacters {
                                                    + "\u205d" // violation
                                                    + "\u205e" // violation
                                                    + "\u205f" // violation
-                                                   + "\u2060" // ok
-                                                   + "\u2061" // ok
-                                                   + "\u2062" // ok
-                                                   + "\u2063" // ok
-                                                   + "\u2064" // ok
+                                                   + "\u2060"
+                                                   + "\u2061"
+                                                   + "\u2062"
+                                                   + "\u2063"
+                                                   + "\u2064"
                                                    + "\u2065" // violation
                                                    + "\u2066" // violation
                                                    + "\u2067" // violation
                                                    + "\u2068" // violation
                                                    + "\u2069" // violation
-                                                   + "\u206a" // ok
-                                                   + "\u206b" // ok
-                                                   + "\u206c" // ok
-                                                   + "\u206d" // ok
-                                                   + "\u206e" // ok
-                                                   + "\u206f" // ok
+                                                   + "\u206a"
+                                                   + "\u206b"
+                                                   + "\u206c"
+                                                   + "\u206d"
+                                                   + "\u206e"
+                                                   + "\u206f"
                                                    + "\u2070" // violation
                                                    + "\u2071" // violation
                                                    + "\u2072" // violation
@@ -65292,7 +65292,7 @@ public class InputAvoidEscapedUnicodeCharactersAllEscapedUnicodeCharacters {
                                                    + "\ufefc" // violation
                                                    + "\ufefd" // violation
                                                    + "\ufefe" // violation
-                                                   + "\ufeff" // ok
+                                                   + "\ufeff"
                                                    + "\uff00" // violation
                                                    + "\uff01" // violation
                                                    + "\uff02" // violation
@@ -65542,9 +65542,9 @@ public class InputAvoidEscapedUnicodeCharactersAllEscapedUnicodeCharacters {
                                                    + "\ufff6" // violation
                                                    + "\ufff7" // violation
                                                    + "\ufff8" // violation
-                                                   + "\ufff9" // ok
-                                                   + "\ufffa" // ok
-                                                   + "\ufffb" // ok
+                                                   + "\ufff9"
+                                                   + "\ufffa"
+                                                   + "\ufffb"
                                                    + "\ufffc" // violation
                                                    + "\ufffd" // violation
                                                    + "\ufffe" // violation

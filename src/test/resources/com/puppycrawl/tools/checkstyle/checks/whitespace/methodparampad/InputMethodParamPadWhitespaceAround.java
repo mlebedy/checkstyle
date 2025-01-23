@@ -3,7 +3,7 @@ MethodParamPad
 allowLineBreaks = (default)false
 option = SPACE
 tokens = (default)CTOR_DEF, LITERAL_NEW, METHOD_CALL, METHOD_DEF, SUPER_CTOR_CALL, \
-         ENUM_CONSTANT_DEF, RECORD_DEF
+         ENUM_CONSTANT_DEF, RECORD_DEF, RECORD_PATTERN_DEF
 
 
 */
@@ -11,16 +11,21 @@ tokens = (default)CTOR_DEF, LITERAL_NEW, METHOD_CALL, METHOD_DEF, SUPER_CTOR_CAL
 package com.puppycrawl.tools.checkstyle.checks.whitespace.methodparampad;
 
 @SuppressWarnings({"this", "that"})
-public class InputMethodParamPadWhitespaceAround // ok
+public class InputMethodParamPadWhitespaceAround
 {
     protected InputMethodParamPadWhitespaceAround ( int i )
     {
-        this (); //whitespace
+        this (); // ok, whitespace between 'this' and ()
         toString ();
     }
     protected InputMethodParamPadWhitespaceAround ()
     {
         super ();
+    }
+
+    protected InputMethodParamPadWhitespaceAround ( String s)
+    {
+        this(); // violation ''(' is not preceded with whitespace'
     }
 
     public void enhancedFor ()
@@ -33,9 +38,11 @@ public class InputMethodParamPadWhitespaceAround // ok
 }
 
 @interface CronExpression {
+    // annotation type elements are not checked
     Class<?>[] groups() default {};
 }
 
 @interface CronExpression1 {
-    Class<?>[] groups() default { }; // extra space
+    // annotation type elements are not checked
+    Class<?>[] groups() default { };
 }

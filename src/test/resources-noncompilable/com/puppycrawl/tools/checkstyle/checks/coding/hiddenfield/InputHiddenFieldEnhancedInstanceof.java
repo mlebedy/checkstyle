@@ -10,7 +10,7 @@ tokens = PATTERN_VARIABLE_DEF
 
 */
 
-//non-compiled with javac: Compilable with Java14
+//non-compiled with javac: Compilable with Java17
 package com.puppycrawl.tools.checkstyle.checks.coding.hiddenfield;
 
 import java.util.Locale;
@@ -22,8 +22,8 @@ public class InputHiddenFieldEnhancedInstanceof {
         private final int price = 2;
 
         // Pattern variable price hides field price
-        public boolean doStuff(Float f) {
-            return f instanceof Float price && // violation
+        public boolean doStuff(Object f) {
+            return f instanceof Float price && // violation, ''price' hides a field'
                     price.floatValue() > 0 &&
                     model != null &&
                     price.intValue() == 5;
@@ -34,7 +34,8 @@ public class InputHiddenFieldEnhancedInstanceof {
     static String hiddenStaticField = "hiddenStaticField";
     static {
         // Pattern variable hiddenStaticField hides static field hiddenStaticField
-        if (OBJ instanceof String hiddenStaticField) { // violation
+        if (OBJ instanceof String hiddenStaticField) {
+        // violation above, ''hiddenStaticField' hides a field'
             System.out.println(hiddenStaticField
                     .toLowerCase(Locale.forLanguageTag(hiddenStaticField)));
             boolean stringCheck = "test".equals(hiddenStaticField);

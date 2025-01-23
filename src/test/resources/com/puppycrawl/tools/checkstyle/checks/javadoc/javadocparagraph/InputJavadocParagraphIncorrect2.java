@@ -8,93 +8,104 @@ allowNewlineParagraph = false
 
 package com.puppycrawl.tools.checkstyle.checks.javadoc.javadocparagraph;
 
+// 2 violations 5 lines below:
+//  '<p> tag should be placed immediately before the first word'
+//  'tag should be preceded with an empty line.'
 /**
- * Some Javadoc.
- * <p> // violation '<p> tag should be preceded with an empty line.'
- * /^ WARN/   Some Javadoc.<p> // violation '<p> tag should be preceded with an empty line.'
+ * Some Summary.
+ * <p>
+ * Some Paragraph.<p>
  */
+// 2 violations 2 lines above:
+//  '<p> tag should be placed immediately before the first word'
+//  'tag should be preceded with an empty line.'
 class InputJavadocParagraphIncorrect2 {
 
+    // 2 violations 4 lines below:
+    //  '<p> tag should be placed immediately before the first word'
+    //  'tag should be preceded with an empty line.'
     /**
-     * Some Javadoc.<P>  // violation '<p> tag should be preceded with an empty line.'
+     * Some Summary.<P>
      *
-     * <p>  Some Javadoc.
+     * <p>  Some paragraph.
      *
      * @since 8.0
      */
+    // violation 4 lines above '<p> tag should be placed immediately before the first word'
     public static final byte NUL = 0;
 
+    // violation 2 lines below 'tag should be preceded with an empty line.'
     /**
-     * Some <p>Javadoc. // violation '<p> tag should be preceded with an empty line.'
+     * Some <p>Summary.
      *
-     * <p>    Some Javadoc.
+     * <p>    Some paragraph.
      *
-     * @see <a href="http://www.gwtproject.org/doc/latest/DevGuideOrganizingProjects.html#DevGuideModules">
+     * @see <a href="example.com">
      *     Documentation about GWT emulated source</a>
      */
+    // violation 5 lines above '<p> tag should be placed immediately before the first word'
     boolean emulated() {return false;}
 
-    /**<p>Some Javadoc.<p>  // 2 violations
-     * <p>  // violation '<p> tag should be preceded with an empty line.'
-     * <p><p>  // violation '<p> tag should be preceded with an empty line.'
-     * <p>/^WARN/   Some Javadoc.<p>*/
-    // violation above '<p> tag should be preceded with an empty line.'
+    // 3 violations 7 lines below:
+    //  'Redundant <p> tag.'
+    //  '<p> tag should be placed immediately before the first word'
+    //  'tag should be preceded with an empty line.'
+    // 2 violations 4 lines below:
+    //  '<p> tag should be placed immediately before the first word'
+    //  'tag should be preceded with an empty line.'
+    /**<p>Some Summary.<p>
+     * <p>
+     * <p><p>
+     * <p>   Some paragraph.<p>*/
+    // 3 violations 2 lines above:
+    //  '<p> tag should be preceded with an empty line.'
+    //  '<p> tag should be placed immediately before the first word'
+    //  '<p> tag should be preceded with an empty line.'
+    // 4 violations 5 lines above:
+    //  '<p> tag should be placed immediately before the first word'
+    //  '<p> tag should be preceded with an empty line.'
+    //  '<p> tag should be placed immediately before the first word'
+    //  '<p> tag should be preceded with an empty line.'
      class InnerInputJavadocParagraphIncorrect {
 
+        // 2 violations 4 lines below:
+        //  '<p> tag should be placed immediately before the first word'
+        //  '<p> tag should be preceded with an empty line.'
         /**
-         * Some Javadoc./WARN/<p>  // violation '<p> tag should be preceded with an empty line.'
+         * Some Summary.<p>
          *
          * @since 8.0
          */
         public static final byte NUL = 0;
 
-        // violation 2 lines below 'Redundant <p> tag.'
+        // 2 violations 5 lines below:
+        //  '<p> tag should be placed immediately before the first word'
+        //  'Redundant <p> tag.'
+        // violation 5 lines below '<p> tag should be placed immediately before the first word'
         /**
          * <p>
-         * /^WARN/ Some Javadoc.
+         *  Some Summary.
          *
          * <P>
-         * /^WARN/
-         * <p> // violation '<p> tag should be preceded with an empty line.'
-         *  /^WARN/ Some Javadoc.<p> // violation '<p> tag should be preceded with an empty line.'
-         * @see <a href="http://www.gwtproject.org/doc/latest/DevGuideOrganizingProjects.html#DevGuideModules">
+         *
+         * <p>
+         *   Some paragraph.<p>
+         * @see <a href="example.com">
          *     Documentation about GWT emulated source</a>
          */
+        // violation 5 lines above '<p> tag should be placed immediately before the first word'
+        // 2 violations 5 lines above:
+        //  '<p> tag should be placed immediately before the first word'
+        //  '<p> tag should be preceded with an empty line.'
         boolean emulated() {return false;}
+
+      /**
+       * * <p>   Some Summary.<p>*/
+      // 4 violations above:
+      //  '<p> tag should be placed immediately before the first word'
+      //  '<p> tag should be preceded with an empty line.'
+      //  '<p> tag should be placed immediately before the first word'
+      //  '<p> tag should be preceded with an empty line.'
+      int yyy = 99;
     }
-
-    InnerInputJavadocParagraphIncorrect anon = new InnerInputJavadocParagraphIncorrect() {
-
-        // violation 2 lines below 'Redundant <p> tag.'
-            /**
-         * <p>Some Javadoc.
-         *
-         * Some Javadoc.
-         *
-         * @since 8.0
-         */
-        // violation 5 lines above 'Empty line should be followed by <p> tag on the next line.'
-        public static final byte NUL = 0;
-
-        /**
-         * /WARN/  Some Javadoc.<p> // violation '<p> tag should be preceded with an empty line.'
-         *
-         *  <p>  Some Javadoc.
-         *
-         * @see <a href="http://www.gwtproject.org/doc/latest/DevGuideOrganizingProjects.html#DevGuideModules">
-         *     Documentation about <p> GWT emulated source</a>
-         */
-        // violation 2 lines above '<p> tag should be preceded with an empty line.'
-        boolean emulated() {return false;}
-
-        // violation 3 lines below 'Empty line should be followed by <p> tag on the next line.'
-        /**
-         * Double newline.
-         *
-         *
-         * Some Javadoc. //DOUBLE WARN AT TWO PREVIOUS LINES
-         */
-        // violation 3 lines above 'Empty line should be followed by <p> tag on the next line.'
-         void doubleNewline() {}
-    };
 }

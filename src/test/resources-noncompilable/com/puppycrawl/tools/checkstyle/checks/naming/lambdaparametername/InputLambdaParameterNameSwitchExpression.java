@@ -1,11 +1,11 @@
 /*
 LambdaParameterName
-format = (default)^[a-z][a-zA-Z0-9]*$
+format = (default)^([a-z][a-zA-Z0-9]*|_)$
 
 
 */
 
-//non-compiled with javac: Compilable with Java14
+//non-compiled with javac: Compilable with Java17
 package com.puppycrawl.tools.checkstyle.checks.naming.lambdaparametername;
 
 import java.util.stream.Stream;
@@ -16,7 +16,7 @@ public class InputLambdaParameterNameSwitchExpression {
             case ONE:
                 Stream.of(string.split(" "))
                         .map(word -> word.trim())
-                        .anyMatch(Word -> "in".equals(Word)); // violation
+                        .anyMatch(Word -> "in".equals(Word)); // violation, 'Name 'Word' must match'
                 break;
             default:
         }
@@ -28,12 +28,12 @@ public class InputLambdaParameterNameSwitchExpression {
             case ONE -> {
                 Stream.of(string.split(" "))
                         .map(word -> word.trim())
-                        .anyMatch(Word -> "in".equals(Word)); // violation
+                        .anyMatch(Word -> "in".equals(Word)); // violation, 'Name 'Word' must match'
                 System.out.println("case one");
             }
             default -> Stream.of(string.split(" "))
                     .map(word -> word.trim())
-                    .anyMatch(Word -> "in".equals(Word)); // violation
+                    .anyMatch(Word -> "in".equals(Word)); // violation, 'Name 'Word' must match'
         }
         return true;
     }
@@ -43,7 +43,7 @@ public class InputLambdaParameterNameSwitchExpression {
             case ONE:
                 yield Stream.of(string.split(" "))
                         .map(word -> word.trim())
-                        .anyMatch(Word -> "in".equals(Word)); // violation
+                        .anyMatch(Word -> "in".equals(Word)); // violation, 'Name 'Word' must match'
             default:
                 yield false;
         };
@@ -54,7 +54,7 @@ public class InputLambdaParameterNameSwitchExpression {
             case ONE -> {
                 yield Stream.of(string.split(" "))
                         .map(word -> word.trim())
-                        .anyMatch(Word -> "in".equals(Word)); // violation
+                        .anyMatch(Word -> "in".equals(Word)); // violation, 'Name 'Word' must match'
             }
             default -> { yield false; }
         };

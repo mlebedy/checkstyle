@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -40,25 +40,41 @@ public class InnerAssignmentCheckTest
         final String[] expected = {
             "22:15: " + getCheckMessage(MSG_KEY),
             "22:19: " + getCheckMessage(MSG_KEY),
-            "24:39: " + getCheckMessage(MSG_KEY),
-            "26:35: " + getCheckMessage(MSG_KEY),
-            "44:16: " + getCheckMessage(MSG_KEY),
-            "45:24: " + getCheckMessage(MSG_KEY),
-            "46:19: " + getCheckMessage(MSG_KEY),
-            "47:17: " + getCheckMessage(MSG_KEY),
-            "48:29: " + getCheckMessage(MSG_KEY),
-            "49:20: " + getCheckMessage(MSG_KEY),
-            "50:17: " + getCheckMessage(MSG_KEY),
-            "50:31: " + getCheckMessage(MSG_KEY),
-            "50:41: " + getCheckMessage(MSG_KEY),
-            "51:16: " + getCheckMessage(MSG_KEY),
-            "51:27: " + getCheckMessage(MSG_KEY),
-            "52:32: " + getCheckMessage(MSG_KEY),
-            "92:19: " + getCheckMessage(MSG_KEY),
-            "181:22: " + getCheckMessage(MSG_KEY),
+            "27:39: " + getCheckMessage(MSG_KEY),
+            "29:35: " + getCheckMessage(MSG_KEY),
+            "76:19: " + getCheckMessage(MSG_KEY),
         };
         verifyWithInlineConfigParser(
                 getPath("InputInnerAssignment.java"), expected);
+    }
+
+    @Test
+    public void testMethod() throws Exception {
+        final String[] expected = {
+            "73:22: " + getCheckMessage(MSG_KEY),
+        };
+        verifyWithInlineConfigParser(
+                getPath("InputInnerAssignmentMethod.java"), expected);
+    }
+
+    @Test
+    public void testDemoBug1195047Comment3() throws Exception {
+        final String[] expected = {
+            "18:16: " + getCheckMessage(MSG_KEY),
+            "19:24: " + getCheckMessage(MSG_KEY),
+            "20:19: " + getCheckMessage(MSG_KEY),
+            "21:17: " + getCheckMessage(MSG_KEY),
+            "22:29: " + getCheckMessage(MSG_KEY),
+            "23:20: " + getCheckMessage(MSG_KEY),
+            "24:17: " + getCheckMessage(MSG_KEY),
+            "24:31: " + getCheckMessage(MSG_KEY),
+            "24:41: " + getCheckMessage(MSG_KEY),
+            "29:16: " + getCheckMessage(MSG_KEY),
+            "29:27: " + getCheckMessage(MSG_KEY),
+            "33:32: " + getCheckMessage(MSG_KEY),
+        };
+        verifyWithInlineConfigParser(
+                getPath("InputInnerAssignmentDemoBug1195047Comment3.java"), expected);
     }
 
     @Test
@@ -93,4 +109,24 @@ public class InnerAssignmentCheckTest
             .isNotNull();
     }
 
+    @Test
+    public void testInnerAssignmentSwitchAndSwitchExpression() throws Exception {
+        final String[] expected = {
+            "28:23: " + getCheckMessage(MSG_KEY),
+            "38:25: " + getCheckMessage(MSG_KEY),
+            "40:25: " + getCheckMessage(MSG_KEY),
+            "41:26: " + getCheckMessage(MSG_KEY),
+            "49:25: " + getCheckMessage(MSG_KEY),
+            "51:31: " + getCheckMessage(MSG_KEY),
+            "52:26: " + getCheckMessage(MSG_KEY),
+            "59:42: " + getCheckMessage(MSG_KEY),
+            "61:34: " + getCheckMessage(MSG_KEY),
+            "94:25: " + getCheckMessage(MSG_KEY),
+            "96:26: " + getCheckMessage(MSG_KEY),
+            "98:27: " + getCheckMessage(MSG_KEY),
+        };
+        verifyWithInlineConfigParser(
+                getNonCompilablePath("InputInnerAssignmentSwitchAndSwitchExpression.java"),
+                expected);
+    }
 }

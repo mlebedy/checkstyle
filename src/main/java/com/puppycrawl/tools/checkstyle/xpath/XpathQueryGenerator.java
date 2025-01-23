@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -22,6 +22,8 @@ package com.puppycrawl.tools.checkstyle.xpath;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
 
 import com.puppycrawl.tools.checkstyle.TreeWalkerAuditEvent;
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
@@ -143,7 +145,7 @@ public class XpathQueryGenerator {
         return getMatchingAstElements()
             .stream()
             .map(XpathQueryGenerator::generateXpathQuery)
-            .collect(Collectors.toList());
+            .collect(Collectors.toUnmodifiableList());
     }
 
     /**
@@ -152,6 +154,7 @@ public class XpathQueryGenerator {
      * @param root {@code DetailAST} root ast
      * @return child {@code DetailAst} element of the given root
      */
+    @Nullable
     private static DetailAST findChildWithTextAttribute(DetailAST root) {
         return TokenUtil.findFirstTokenByPredicate(root,
                 XpathUtil::supportsTextAttribute).orElse(null);
@@ -164,6 +167,7 @@ public class XpathQueryGenerator {
      * @param root {@code DetailAST} root ast
      * @return child {@code DetailAst} element of the given root
      */
+    @Nullable
     private static DetailAST findChildWithTextAttributeRecursively(DetailAST root) {
         DetailAST res = findChildWithTextAttribute(root);
         for (DetailAST ast = root.getFirstChild(); ast != null && res == null;
@@ -339,7 +343,7 @@ public class XpathQueryGenerator {
      * with Saxon and encoding outside Ascii range characters.
      *
      * <p>According to
-     * <a href="http://saxon.sourceforge.net/saxon7.1/expressions.html">Saxon documentation</a>:
+     * <a href="https://saxon.sourceforge.net/saxon7.1/expressions.html">Saxon documentation</a>:
      * <br>
      * From Saxon 7.1, string delimiters can be doubled within the string to represent`
      * the delimiter itself: for example select='"He said, ""Go!"""'.

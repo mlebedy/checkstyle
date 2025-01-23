@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -30,12 +30,13 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
 
 /**
- * <p>
+ * <div>
  * Checks that parameters for methods, constructors, catch and for-each blocks are final.
  * Interface, abstract, and native methods are not checked: the final keyword
  * does not make sense for interface, abstract, and native method parameters as
  * there is no code that could modify the parameter.
- * </p>
+ * </div>
+ *
  * <p>
  * Rationale: Changing the value of parameters during the execution of the method's
  * algorithm can be confusing and should be avoided. A great way to let the Java compiler
@@ -48,6 +49,13 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * Default value is {@code false}.
  * </li>
  * <li>
+ * Property {@code ignoreUnnamedParameters} -
+ * Ignore <a href="https://docs.oracle.com/en/java/javase/21/docs/specs/unnamed-jls.html">
+ * unnamed parameters</a>.
+ * Type is {@code boolean}.
+ * Default value is {@code true}.
+ * </li>
+ * <li>
  * Property {@code tokens} - tokens to check
  * Type is {@code java.lang.String[]}.
  * Validation type is {@code tokenSet}.
@@ -58,72 +66,11 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * CTOR_DEF</a>.
  * </li>
  * </ul>
- * <p>
- * To configure the check to enforce final parameters for methods and constructors:
- * </p>
- * <pre>
- * &lt;module name=&quot;FinalParameters&quot;/&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <pre>
- * public class Point {
- *   public Point() { } // ok
- *   public Point(final int m) { } // ok
- *   public Point(final int m,int n) { } // violation, n should be final
- *   public void methodOne(final int x) { } // ok
- *   public void methodTwo(int x) { } // violation, x should be final
- *   public static void main(String[] args) { } // violation, args should be final
- * }
- * </pre>
- * <p>
- * To configure the check to enforce final parameters only for constructors:
- * </p>
- * <pre>
- * &lt;module name=&quot;FinalParameters&quot;&gt;
- *   &lt;property name=&quot;tokens&quot; value=&quot;CTOR_DEF&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <pre>
- * public class Point {
- *   public Point() { } // ok
- *   public Point(final int m) { } // ok
- *   public Point(final int m,int n) { } // violation, n should be final
- *   public void methodOne(final int x) { } // ok
- *   public void methodTwo(int x) { } // ok
- *   public static void main(String[] args) { } // ok
- * }
- * </pre>
- * <p>
- * To configure the check to allow ignoring
- * <a href="https://docs.oracle.com/javase/tutorial/java/nutsandbolts/datatypes.html">
- * primitive datatypes</a> as parameters:
- * </p>
- * <pre>
- * &lt;module name=&quot;FinalParameters&quot;&gt;
- *   &lt;property name=&quot;ignorePrimitiveTypes&quot; value=&quot;true&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <pre>
- * public class Point {
- *   public Point() { } // ok
- *   public Point(final int m) { } // ok
- *   public Point(final int m,int n) { } // ok
- *   public void methodOne(final int x) { } // ok
- *   public void methodTwo(int x) { } // ok
- *   public static void main(String[] args) { } // violation, args should be final
- * }
- * </pre>
+ *
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -166,12 +113,31 @@ public class FinalParametersCheck extends AbstractCheck {
     private boolean ignorePrimitiveTypes;
 
     /**
+     * Ignore <a href="https://docs.oracle.com/en/java/javase/21/docs/specs/unnamed-jls.html">
+     * unnamed parameters</a>.
+     */
+    private boolean ignoreUnnamedParameters = true;
+
+    /**
      * Setter to ignore primitive types as parameters.
      *
      * @param ignorePrimitiveTypes true or false.
+     * @since 6.2
      */
     public void setIgnorePrimitiveTypes(boolean ignorePrimitiveTypes) {
         this.ignorePrimitiveTypes = ignorePrimitiveTypes;
+    }
+
+    /**
+     * Setter to ignore
+     * <a href="https://docs.oracle.com/en/java/javase/21/docs/specs/unnamed-jls.html">
+     * unnamed parameters</a>.
+     *
+     * @param ignoreUnnamedParameters true or false.
+     * @since 10.18.0
+     */
+    public void setIgnoreUnnamedParameters(boolean ignoreUnnamedParameters) {
+        this.ignoreUnnamedParameters = ignoreUnnamedParameters;
     }
 
     @Override
@@ -257,7 +223,8 @@ public class FinalParametersCheck extends AbstractCheck {
      */
     protected void checkParam(final DetailAST param) {
         if (param.findFirstToken(TokenTypes.MODIFIERS).findFirstToken(TokenTypes.FINAL) == null
-                && !isIgnoredParam(param)
+                && !isIgnoredPrimitiveParam(param)
+                && !isIgnoredUnnamedParam(param)
                 && !CheckUtil.isReceiverParameter(param)) {
             final DetailAST paramName = param.findFirstToken(TokenTypes.IDENT);
             final DetailAST firstNode = CheckUtil.getFirstNode(param);
@@ -272,7 +239,7 @@ public class FinalParametersCheck extends AbstractCheck {
      * @param paramDef {@link TokenTypes#PARAMETER_DEF PARAMETER_DEF}
      * @return true if param has to be skipped.
      */
-    private boolean isIgnoredParam(DetailAST paramDef) {
+    private boolean isIgnoredPrimitiveParam(DetailAST paramDef) {
         boolean result = false;
         if (ignorePrimitiveTypes) {
             final DetailAST type = paramDef.findFirstToken(TokenTypes.TYPE);
@@ -285,6 +252,17 @@ public class FinalParametersCheck extends AbstractCheck {
             }
         }
         return result;
+    }
+
+    /**
+     *  Checks for skip current param due to <b>ignoreUnnamedParameters</b> option.
+     *
+     * @param paramDef parameter to check
+     * @return true if the parameter should be skipped due to the ignoreUnnamedParameters option.
+     */
+    private boolean isIgnoredUnnamedParam(final DetailAST paramDef) {
+        final DetailAST paramName = paramDef.findFirstToken(TokenTypes.IDENT);
+        return ignoreUnnamedParameters && paramName != null && "_".equals(paramName.getText());
     }
 
 }

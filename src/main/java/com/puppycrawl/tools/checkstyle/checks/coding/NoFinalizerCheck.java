@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -25,44 +25,27 @@ import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
 /**
- * <p>
+ * <div>
  * Checks that there is no method {@code finalize} with zero parameters.
- * </p>
+ * </div>
+ *
  * <p>
  * See
  * <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/Object.html#finalize()">
  * Object.finalize()</a>
  * </p>
+ *
  * <p>
  * Rationale: Finalizers are unpredictable, often dangerous, and generally unnecessary.
  * Their use can cause erratic behavior, poor performance, and portability problems.
  * For more information for the finalize method and its issues, see Effective Java:
  * Programming Language Guide Third Edition by Joshua Bloch, &#167;8.
  * </p>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;NoFinalizer&quot;/&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- *  public class Test {
  *
- *      protected void finalize() throws Throwable { // violation
- *          try {
- *             System.out.println("overriding finalize()");
- *          } catch (Throwable t) {
- *             throw t;
- *          } finally {
- *             super.finalize();
- *          }
- *      }
- *  }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>

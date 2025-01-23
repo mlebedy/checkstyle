@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -25,19 +25,17 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.puppycrawl.tools.checkstyle.AbstractAutomaticBean.OutputStreamOptions;
 import com.puppycrawl.tools.checkstyle.Checker;
 import com.puppycrawl.tools.checkstyle.DefaultConfiguration;
 import com.puppycrawl.tools.checkstyle.MetadataGeneratorLogger;
 import com.puppycrawl.tools.checkstyle.TreeWalker;
-import com.puppycrawl.tools.checkstyle.api.AutomaticBean;
 import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
-import com.puppycrawl.tools.checkstyle.api.RootModule;
 
 /** Class which handles all the metadata generation and writing calls. */
 public final class MetadataGeneratorUtil {
@@ -72,28 +70,26 @@ public final class MetadataGeneratorUtil {
         treeWalkerConfig.addChild(scraperCheckConfig);
         checker.configure(defaultConfiguration);
 
-        checker.addListener(new MetadataGeneratorLogger(out,
-                AutomaticBean.OutputStreamOptions.NONE));
+        checker.addListener(new MetadataGeneratorLogger(out, OutputStreamOptions.NONE));
 
-        dumpMetadata(checker, path, moduleFolders);
+        final List<File> moduleFiles = getTargetFiles(path, moduleFolders);
+
+        checker.process(moduleFiles);
     }
 
     /**
-     * Process files using the checker passed and write to corresponding XML files.
+     * Get files that represent modules.
      *
      * @param moduleFolders folders to check
-     * @param root root module
-     * @param path rootPath
-     * @throws CheckstyleException checkstyleException
+     * @param path          rootPath
+     * @return files for scrapping javadoc and generation of metadata files
      * @throws IOException ioException
      */
-    private static void dumpMetadata(RootModule root, String path, String... moduleFolders)
-            throws CheckstyleException,
-            IOException {
+    private static List<File> getTargetFiles(String path, String... moduleFolders)
+            throws IOException {
         final List<File> validFiles = new ArrayList<>();
         for (String folder : moduleFolders) {
-            try (Stream<Path> files = Files.walk(Paths.get(path
-                    + "/" + folder))) {
+            try (Stream<Path> files = Files.walk(Path.of(path + "/" + folder))) {
                 validFiles.addAll(
                         files.map(Path::toFile)
                         .filter(file -> {
@@ -102,9 +98,10 @@ public final class MetadataGeneratorUtil {
                                     || fileName.endsWith("Check.java")
                                     || fileName.endsWith("Filter.java");
                         })
-                        .collect(Collectors.toList()));
+                        .collect(Collectors.toUnmodifiableList()));
             }
         }
-        root.process(validFiles);
+
+        return validFiles;
     }
 }

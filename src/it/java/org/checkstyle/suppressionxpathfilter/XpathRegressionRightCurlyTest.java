@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -41,7 +41,7 @@ public class XpathRegressionRightCurlyTest extends AbstractXpathTestSupport {
     @Test
     public void testOne() throws Exception {
         final File fileToProcess =
-                new File(getPath("SuppressionXpathRegressionRightCurlyOne.java"));
+                new File(getPath("InputXpathRightCurlyOne.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(RightCurlyCheck.class);
@@ -53,7 +53,7 @@ public class XpathRegressionRightCurlyTest extends AbstractXpathTestSupport {
 
         final List<String> expectedXpathQueries = Collections.singletonList(
             "/COMPILATION_UNIT/CLASS_DEF"
-                + "[./IDENT[@text='SuppressionXpathRegressionRightCurlyOne']]/OBJBLOCK"
+                + "[./IDENT[@text='InputXpathRightCurlyOne']]/OBJBLOCK"
                 + "/METHOD_DEF[./IDENT[@text='test']]/SLIST/LITERAL_IF/SLIST/RCURLY"
         );
 
@@ -64,7 +64,7 @@ public class XpathRegressionRightCurlyTest extends AbstractXpathTestSupport {
     @Test
     public void testTwo() throws Exception {
         final File fileToProcess =
-                new File(getPath("SuppressionXpathRegressionRightCurlyTwo.java"));
+                new File(getPath("InputXpathRightCurlyTwo.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(RightCurlyCheck.class);
@@ -77,7 +77,7 @@ public class XpathRegressionRightCurlyTest extends AbstractXpathTestSupport {
 
         final List<String> expectedXpathQueries = Collections.singletonList(
             "/COMPILATION_UNIT/CLASS_DEF"
-                + "[./IDENT[@text='SuppressionXpathRegressionRightCurlyTwo']]/OBJBLOCK"
+                + "[./IDENT[@text='InputXpathRightCurlyTwo']]/OBJBLOCK"
                 + "/METHOD_DEF[./IDENT[@text='fooMethod']]/SLIST/LITERAL_TRY/SLIST/RCURLY"
         );
 
@@ -88,7 +88,7 @@ public class XpathRegressionRightCurlyTest extends AbstractXpathTestSupport {
     @Test
     public void testThree() throws Exception {
         final File fileToProcess =
-                new File(getPath("SuppressionXpathRegressionRightCurlyThree.java"));
+                new File(getPath("InputXpathRightCurlyThree.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(RightCurlyCheck.class);
@@ -101,7 +101,7 @@ public class XpathRegressionRightCurlyTest extends AbstractXpathTestSupport {
 
         final List<String> expectedXpathQueries = Collections.singletonList(
             "/COMPILATION_UNIT/CLASS_DEF"
-                + "[./IDENT[@text='SuppressionXpathRegressionRightCurlyThree']]/OBJBLOCK"
+                + "[./IDENT[@text='InputXpathRightCurlyThree']]/OBJBLOCK"
                 + "/METHOD_DEF[./IDENT[@text='sample']]/SLIST/LITERAL_IF/SLIST/RCURLY"
         );
 
@@ -112,7 +112,7 @@ public class XpathRegressionRightCurlyTest extends AbstractXpathTestSupport {
     @Test
     public void testFour() throws Exception {
         final File fileToProcess =
-                new File(getPath("SuppressionXpathRegressionRightCurlyFour.java"));
+                new File(getPath("InputXpathRightCurlyFour.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(RightCurlyCheck.class);
@@ -125,7 +125,7 @@ public class XpathRegressionRightCurlyTest extends AbstractXpathTestSupport {
 
         final List<String> expectedXpathQueries = Collections.singletonList(
             "/COMPILATION_UNIT/CLASS_DEF"
-                + "[./IDENT[@text='SuppressionXpathRegressionRightCurlyFour']]/OBJBLOCK"
+                + "[./IDENT[@text='InputXpathRightCurlyFour']]/OBJBLOCK"
                 + "/METHOD_DEF[./IDENT[@text='sample']]/SLIST/LITERAL_IF/SLIST/RCURLY"
         );
 

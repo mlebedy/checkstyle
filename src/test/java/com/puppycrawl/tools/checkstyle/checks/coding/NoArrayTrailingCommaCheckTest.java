@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -38,11 +38,11 @@ public class NoArrayTrailingCommaCheckTest extends AbstractModuleTestSupport {
         final String[] expected = {
             "20:14: " + getCheckMessage(MSG_KEY),
             "25:32: " + getCheckMessage(MSG_KEY),
-            "29:53: " + getCheckMessage(MSG_KEY),
-            "43:15: " + getCheckMessage(MSG_KEY),
-            "47:17: " + getCheckMessage(MSG_KEY),
-            "53:14: " + getCheckMessage(MSG_KEY),
-            "67:29: " + getCheckMessage(MSG_KEY),
+            "30:53: " + getCheckMessage(MSG_KEY),
+            "44:15: " + getCheckMessage(MSG_KEY),
+            "48:17: " + getCheckMessage(MSG_KEY),
+            "54:14: " + getCheckMessage(MSG_KEY),
+            "68:29: " + getCheckMessage(MSG_KEY),
         };
         verifyWithInlineConfigParser(
                 getPath("InputNoArrayTrailingComma.java"), expected);

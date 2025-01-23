@@ -4,17 +4,17 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/java
 
 schedules:
-- cron: "1 0 * * 0"
-  displayName: Weekly weekend build
-  branches:
-    include:
-    - master
+  - cron: "1 0 * * 0"
+    displayName: Weekly weekend build
+    branches:
+      include:
+        - master
 
 trigger:
-- master
+  - master
 
 pr:
-- master
+  - master
 
 strategy:
   matrix:
@@ -26,7 +26,7 @@ strategy:
 
     # spelling
     'spelling':
-      image: 'ubuntu-20.04'
+      image: 'ubuntu-22.04'
       cmd: "./.ci/test-spelling-unknown-words.sh"
       skipCache: true
 
@@ -80,6 +80,11 @@ strategy:
       image: 'ubuntu-20.04'
       cmd: "./.ci/validation.sh test-ru"
 
+    # unit tests in Albanian locale (openjdk11)
+    'test-al':
+      image: 'ubuntu-20.04'
+      cmd: "./.ci/validation.sh test-al"
+
     # OpenJDK11 verify
     'OpenJDK11 verify':
       image: 'ubuntu-20.04'
@@ -87,12 +92,12 @@ strategy:
 
     # MacOS JDK11 verify
     'MacOS JDK11 verify':
-      image: 'macOS-10.15'
+      image: 'macOS-14'
       cmd: "JAVA_HOME=$JAVA_HOME_11_X64 mvn -e --no-transfer-progress verify"
 
     # MacOS JDK17 verify
-    'MacOS JDK14 verify':
-      image: 'macOS-11'
+    'MacOS JDK17 verify':
+      image: 'macOS-14'
       cmd: "JAVA_HOME=$JAVA_HOME_17_X64 mvn -e --no-transfer-progress verify"
 
     # moved back to Travis till we find a way to keep secrets in azure
@@ -111,7 +116,7 @@ strategy:
 
     # lint for .md files, OSX is used because there is problem to install gem on linux
     'markdownlint':
-      image: 'macOS-10.15'
+      image: 'macOS-14'
       cmd: "./.ci/validation.sh markdownlint"
       skipCache: true
       needMdl: true
@@ -130,46 +135,48 @@ variables:
   BUILD_REASON: $[variables['Build.Reason']]
 
 steps:
-- bash: |
-    apt-fast install -y xmlstarlet
-  condition: |
-      and(
-           ne(variables['Agent.OS'], 'Darwin'),
-           eq(variables.NEED_XMLSTARLET, 'true')
-         )
+  - bash: |
+      apt-fast install -y xmlstarlet
+    condition: |
+        and(
+             ne(variables['Agent.OS'], 'Darwin'),
+             eq(variables.NEED_XMLSTARLET, 'true')
+           )
 
-- bash: |
-    gem install mdl
-  condition: eq(variables.NEED_MDL, 'true')
+  - bash: |
+      gem install mdl
+    condition: eq(variables.NEED_MDL, 'true')
 
-- task: JavaToolInstaller@0
-  inputs:
-    versionSpec: 11
-    jdkArchitectureOption: 'X64'
-    jdkSourceOption: 'PreInstalled'
+  - task: JavaToolInstaller@0
+    inputs:
+      versionSpec: 11
+      jdkArchitectureOption: 'X64'
+      jdkSourceOption: 'PreInstalled'
 
-- task: Cache@2
-  inputs:
-    key: 'maven | "$(Agent.OS)" | **/pom.xml'
-    restoreKeys: |
-      maven | "$(Agent.OS)"
-      maven
-    path: $(MAVEN_CACHE_FOLDER)
-  displayName: Cache Maven local repo
-  condition: ne(variables.SKIP_CACHE, 'true')
+  - task: Cache@2
+    inputs:
+      key: 'maven | "$(Agent.OS)" | **/pom.xml'
+      restoreKeys: |
+        maven | "$(Agent.OS)"
+        maven
+      path: $(MAVEN_CACHE_FOLDER)
+    displayName: Cache Maven local repo
+    condition: ne(variables.SKIP_CACHE, 'true')
 
-- bash: |
-    set -e
-    echo "ON_CRON_ONLY:"$ON_CRON_ONLY
-    echo "BUILD_REASON:"$BUILD_REASON
-    echo "cmd: "$(cmd)
-    eval "$(cmd)"
-    ./.ci/validation.sh git-diff
-  condition: |
-      or (
-          ne(variables.ON_CRON_ONLY, 'true'),
-          and(
-               eq(variables.ON_CRON_ONLY, 'true'),
-               eq(variables['Build.Reason'], 'Schedule')
-             )
-         )
+  - bash: |
+      set -e
+      mvn --version
+      echo "ON_CRON_ONLY:"$ON_CRON_ONLY
+      echo "BUILD_REASON:"$BUILD_REASON
+      echo "cmd: "$(cmd)
+      eval "$(cmd)"
+      ./.ci/validation.sh git-diff
+      ./.ci/validation.sh ci-temp-check
+    condition: |
+        or (
+            ne(variables.ON_CRON_ONLY, 'true'),
+            and(
+                 eq(variables.ON_CRON_ONLY, 'true'),
+                 eq(variables['Build.Reason'], 'Schedule')
+               )
+           )

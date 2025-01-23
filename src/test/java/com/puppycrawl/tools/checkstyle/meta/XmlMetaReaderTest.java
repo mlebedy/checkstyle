@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -23,21 +23,15 @@ import static com.google.common.truth.Truth.assertThat;
 
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import com.puppycrawl.tools.checkstyle.AbstractPathTestSupport;
 
 public class XmlMetaReaderTest extends AbstractPathTestSupport {
-
-    @BeforeAll
-    public static void init() {
-        System.setProperty("org.slf4j.simpleLogger.log.org.reflections", "off");
-    }
 
     @Override
     protected String getPackageLocation() {
@@ -46,26 +40,26 @@ public class XmlMetaReaderTest extends AbstractPathTestSupport {
 
     @Test
     public void test() {
-        assertThat(XmlMetaReader.readAllModulesIncludingThirdPartyIfAny()).hasSize(199);
+        assertThat(XmlMetaReader.readAllModulesIncludingThirdPartyIfAny()).hasSize(207);
     }
 
     @Test
     public void testDuplicatePackage() {
         assertThat(XmlMetaReader
                     .readAllModulesIncludingThirdPartyIfAny("com.puppycrawl.tools.checkstyle.meta"))
-                .hasSize(199);
+                .hasSize(207);
     }
 
     @Test
     public void testBadPackage() {
         assertThat(XmlMetaReader.readAllModulesIncludingThirdPartyIfAny("DOES.NOT.EXIST"))
-                .hasSize(199);
+                .hasSize(207);
     }
 
     @Test
     public void testReadXmlMetaCheckWithProperties() throws Exception {
         final String path = getPath("InputXmlMetaReaderCheckWithProps.xml");
-        try (InputStream is = Files.newInputStream(Paths.get(path))) {
+        try (InputStream is = Files.newInputStream(Path.of(path))) {
             final ModuleDetails result = XmlMetaReader.read(is, ModuleType.CHECK);
             checkModuleProps(result, ModuleType.CHECK, "Some description for check",
                 "com.puppycrawl.tools.checkstyle.checks.misc.InputCheck",
@@ -92,7 +86,7 @@ public class XmlMetaReaderTest extends AbstractPathTestSupport {
     @Test
     public void testReadXmlMetaCheckNoProperties() throws Exception {
         final String path = getPath("InputXmlMetaReaderCheckNoProps.xml");
-        try (InputStream is = Files.newInputStream(Paths.get(path))) {
+        try (InputStream is = Files.newInputStream(Path.of(path))) {
             final ModuleDetails result = XmlMetaReader.read(is, ModuleType.CHECK);
             checkModuleProps(result, ModuleType.CHECK,
                 "Some description for check with no properties",
@@ -103,20 +97,20 @@ public class XmlMetaReaderTest extends AbstractPathTestSupport {
             assertThat(violationMessageKeys).hasSize(2);
             assertThat(violationMessageKeys.get(0)).isEqualTo("test.key1");
             assertThat(violationMessageKeys.get(1)).isEqualTo("test.key2");
-            assertThat(result.getProperties().isEmpty()).isTrue();
+            assertThat(result.getProperties()).isEmpty();
         }
     }
 
     @Test
     public void testReadXmlMetaFilter() throws Exception {
         final String path = getPath("InputXmlMetaReaderFilter.xml");
-        try (InputStream is = Files.newInputStream(Paths.get(path))) {
+        try (InputStream is = Files.newInputStream(Path.of(path))) {
             final ModuleDetails result = XmlMetaReader.read(is, ModuleType.FILTER);
             checkModuleProps(result, ModuleType.FILTER, "Description for filter",
                 "com.puppycrawl.tools.checkstyle.filters.SomeFilter",
                 "com.puppycrawl.tools.checkstyle.TreeWalker");
             assertThat(result.getName()).isEqualTo("SomeFilter");
-            assertThat(result.getViolationMessageKeys().isEmpty()).isTrue();
+            assertThat(result.getViolationMessageKeys()).isEmpty();
             final List<ModulePropertyDetails> props = result.getProperties();
             assertThat(props).hasSize(1);
             final ModulePropertyDetails prop1 = props.get(0);
@@ -129,14 +123,14 @@ public class XmlMetaReaderTest extends AbstractPathTestSupport {
     @Test
     public void testReadXmlMetaFileFilter() throws Exception {
         final String path = getPath("InputXmlMetaReaderFileFilter.xml");
-        try (InputStream is = Files.newInputStream(Paths.get(path))) {
+        try (InputStream is = Files.newInputStream(Path.of(path))) {
             final ModuleDetails result = XmlMetaReader.read(is, ModuleType.FILEFILTER);
             checkModuleProps(result, ModuleType.FILEFILTER,
                 "File filter description",
                 "com.puppycrawl.tools.checkstyle.filefilters.FileFilter",
                 "com.puppycrawl.tools.checkstyle.Checker");
             assertThat(result.getName()).isEqualTo("FileFilter");
-            assertThat(result.getViolationMessageKeys().isEmpty()).isTrue();
+            assertThat(result.getViolationMessageKeys()).isEmpty();
             final List<ModulePropertyDetails> props = result.getProperties();
             assertThat(props).hasSize(1);
             final ModulePropertyDetails prop1 = props.get(0);

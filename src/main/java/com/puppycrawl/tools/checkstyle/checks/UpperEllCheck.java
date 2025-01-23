@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -23,34 +23,23 @@ import com.puppycrawl.tools.checkstyle.StatelessCheck;
 import com.puppycrawl.tools.checkstyle.api.AbstractCheck;
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
-import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 
 /**
- * <p>
+ * <div>
  * Checks that long constants are defined with an upper ell. That is {@code 'L'}
  * and not {@code 'l'}. This is in accordance with the Java Language Specification,
  * <a href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-3.html#jls-3.10.1">
  * Section 3.10.1</a>.
- * </p>
+ * </div>
+ *
  * <p>
  * Rationale: The lower-case ell {@code 'l'} looks a lot like {@code 1}.
  * </p>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;UpperEll&quot;/&gt;
- * </pre>
- * <pre>
- * class Test {
- *   long var1 = 508987; // OK
- *   long var2 = 508987l; // violation
- *   long var3 = 508987L; // OK
- * }
- * </pre>
+ *
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -88,7 +77,7 @@ public class UpperEllCheck extends AbstractCheck {
 
     @Override
     public void visitToken(DetailAST ast) {
-        if (CommonUtil.endsWithChar(ast.getText(), 'l')) {
+        if (ast.getText().endsWith("l")) {
             log(ast, MSG_KEY);
         }
     }

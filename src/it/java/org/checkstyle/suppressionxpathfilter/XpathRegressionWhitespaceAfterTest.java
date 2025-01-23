@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -40,7 +40,7 @@ public class XpathRegressionWhitespaceAfterTest extends AbstractXpathTestSupport
     @Test
     public void testWhitespaceAfterTypecast() throws Exception {
         final File fileToProcess =
-                new File(getPath("SuppressionXpathRegressionWhitespaceAfterTypecast.java"));
+                new File(getPath("InputXpathWhitespaceAfterTypecast.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(WhitespaceAfterCheck.class);
@@ -52,7 +52,7 @@ public class XpathRegressionWhitespaceAfterTest extends AbstractXpathTestSupport
 
         final List<String> expectedXpathQueries = Collections.singletonList(
             "/COMPILATION_UNIT/CLASS_DEF[./IDENT["
-                + "@text='SuppressionXpathRegressionWhitespaceAfterTypecast']]/OBJBLOCK"
+                + "@text='InputXpathWhitespaceAfterTypecast']]/OBJBLOCK"
                 + "/VARIABLE_DEF[./IDENT[@text='bad']]/ASSIGN/EXPR/TYPECAST/RPAREN"
         );
 
@@ -63,7 +63,7 @@ public class XpathRegressionWhitespaceAfterTest extends AbstractXpathTestSupport
     @Test
     public void testWhitespaceAfterNotFollowed() throws Exception {
         final File fileToProcess =
-                new File(getPath("SuppressionXpathRegressionWhitespaceAfterNotFollowed.java"));
+                new File(getPath("InputXpathWhitespaceAfterNotFollowed.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(WhitespaceAfterCheck.class);
@@ -75,7 +75,7 @@ public class XpathRegressionWhitespaceAfterTest extends AbstractXpathTestSupport
 
         final List<String> expectedXpathQueries = Collections.singletonList(
             "/COMPILATION_UNIT/CLASS_DEF[./IDENT["
-                + "@text='SuppressionXpathRegressionWhitespaceAfterNotFollowed']]/OBJBLOCK"
+                + "@text='InputXpathWhitespaceAfterNotFollowed']]/OBJBLOCK"
                 + "/VARIABLE_DEF[./IDENT[@text='bad']]/ASSIGN/ARRAY_INIT/COMMA"
         );
 

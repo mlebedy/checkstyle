@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -25,10 +25,11 @@ import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
 /**
- * <p>
+ * <div>
  * Implements Joshua Bloch, Effective Java, Item 17 -
  * Use Interfaces only to define types.
- * </p>
+ * </div>
+ *
  * <p>
  * According to Bloch, an interface should describe a <em>type</em>. It is therefore
  * inappropriate to define an interface that does not contain any methods
@@ -36,6 +37,7 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
  * <a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/SwingConstants.html">
  * javax.swing.SwingConstants</a> is an example of an interface that would be flagged by this check.
  * </p>
+ *
  * <p>
  * The check can be configured to also disallow marker interfaces like {@code java.io.Serializable},
  * that do not contain methods or constants at all.
@@ -48,49 +50,11 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
  * Default value is {@code true}.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name="InterfaceIsType"/&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public interface Test1 { // violation
- *     int a = 3;
  *
- * }
- *
- * public interface Test2 { // OK
- *
- * }
- *
- * public interface Test3 { // OK
- *     int a = 3;
- *     void test();
- * }
- * </pre>
- * <p>
- * To configure the check to report violation so that it doesn't allow Marker Interfaces:
- * </p>
- * <pre>
- * &lt;module name=&quot;InterfaceIsType&quot;&gt;
- *   &lt;property name=&quot;allowMarkerInterfaces&quot; value=&quot;false&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public interface Test1 { // violation
- *     int a = 3;
- * }
- *
- * public interface Test2 { // violation
- *
- * }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -150,6 +114,7 @@ public final class InterfaceIsTypeCheck
      * Setter to control whether marker interfaces like Serializable are allowed.
      *
      * @param flag whether to allow marker interfaces or not
+     * @since 3.1
      */
     public void setAllowMarkerInterfaces(boolean flag) {
         allowMarkerInterfaces = flag;

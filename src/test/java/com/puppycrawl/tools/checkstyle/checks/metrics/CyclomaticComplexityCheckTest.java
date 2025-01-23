@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -125,6 +125,7 @@ public class CyclomaticComplexityCheckTest
             TokenTypes.LAND,
             TokenTypes.LOR,
             TokenTypes.COMPACT_CTOR_DEF,
+            TokenTypes.LITERAL_WHEN,
         };
         assertWithMessage("Invalid acceptable tokens")
             .that(actual)
@@ -154,6 +155,40 @@ public class CyclomaticComplexityCheckTest
 
         verifyWithInlineConfigParser(
                 getPath("InputCyclomaticComplexitySwitchBlocks4.java"), expected);
+    }
+
+    @Test
+    public void testDefaultMax() throws Exception {
+        final String[] expected = {
+            "14:5: " + getCheckMessage(MSG_KEY, 12, 10),
+        };
+
+        verifyWithInlineConfigParser(
+                getPath("InputCyclomaticComplexitySwitchBlocks5.java"), expected);
+    }
+
+    @Test
+    public void testWhenExpression() throws Exception {
+        final String[] expected = {
+            "13:4: " + getCheckMessage(MSG_KEY, 5, 0),
+            "19:4: " + getCheckMessage(MSG_KEY, 5, 0),
+            "28:4: " + getCheckMessage(MSG_KEY, 7, 0),
+        };
+        verifyWithInlineConfigParser(
+                getNonCompilablePath("InputCyclomaticComplexityWhenExpression.java"), expected);
+    }
+
+    @Test
+    public void testWhenExpressionSwitchAsSinglePoint() throws Exception {
+        final String[] expected = {
+            "14:5: " + getCheckMessage(MSG_KEY, 5, 0),
+            "20:5: " + getCheckMessage(MSG_KEY, 4, 0),
+            "29:5: " + getCheckMessage(MSG_KEY, 5, 0),
+            "39:5: " + getCheckMessage(MSG_KEY, 5, 0),
+        };
+        verifyWithInlineConfigParser(
+                getNonCompilablePath(
+                        "InputCyclomaticComplexityWhenSwitchAsSinglePoint.java"), expected);
     }
 
 }

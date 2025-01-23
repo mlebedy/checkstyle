@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -27,21 +27,22 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
 
 /**
- * <p>
+ * <div>
  * Checks the policy on the padding of parentheses; that is whether a space is required
  * after a left parenthesis and before a right parenthesis, or such spaces are
  * forbidden. No check occurs at the right parenthesis after an empty for
  * iterator, at the left parenthesis before an empty for initialization, or at
  * the right parenthesis of a try-with-resources resource specification where
  * the last resource variable has a trailing semicolon.
- * Use Check <a href="https://checkstyle.org/config_whitespace.html#EmptyForIteratorPad">
+ * Use Check
+ * <a href="https://checkstyle.org/checks/whitespace/emptyforiteratorpad.html#EmptyForIteratorPad">
  * EmptyForIteratorPad</a> to validate empty for iterators and
- * <a href="https://checkstyle.org/config_whitespace.html#EmptyForInitializerPad">
+ * <a href="https://checkstyle.org/checks/whitespace/emptyforinitializerpad.html#EmptyForInitializerPad">
  * EmptyForInitializerPad</a> to validate empty for initializers.
  * Typecasts are also not checked, as there is
- * <a href="https://checkstyle.org/config_whitespace.html#TypecastParenPad">
+ * <a href="https://checkstyle.org/checks/whitespace/typecastparenpad.html#TypecastParenPad">
  * TypecastParenPad</a> to validate them.
- * </p>
+ * </div>
  * <ul>
  * <li>
  * Property {@code option} - Specify policy on how to pad parentheses.
@@ -96,106 +97,16 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#LAMBDA">
  * LAMBDA</a>,
  * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#RECORD_DEF">
- * RECORD_DEF</a>.
+ * RECORD_DEF</a>,
+ * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#RECORD_PATTERN_DEF">
+ * RECORD_PATTERN_DEF</a>.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;ParenPad&quot;/&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <pre>
- * class Foo {
  *
- *   int n;
- *
- *   public void fun() {  // OK
- *     bar( 1);  // violation, space after left parenthesis
- *   }
- *
- *   public void bar(int k ) {  // violation, space before right parenthesis
- *     while (k &gt; 0) {  // OK
- *     }
- *
- *     Test obj = new Test(k);  // OK
- *   }
- *
- *   public void fun2() {  // OK
- *     switch( n) {  // violation, space after left parenthesis
- *       case 2:
- *         bar(n);  // OK
- *       default:
- *         break;
- *     }
- *   }
- *
- * }
- * </pre>
- * <p>
- * To configure the check to require spaces for the
- * parentheses of constructor, method, and super constructor calls:
- * </p>
- * <pre>
- * &lt;module name=&quot;ParenPad&quot;&gt;
- *   &lt;property name=&quot;tokens&quot; value=&quot;LITERAL_FOR, LITERAL_CATCH,
- *     SUPER_CTOR_CALL&quot;/&gt;
- *   &lt;property name=&quot;option&quot; value=&quot;space&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <pre>
- * class Foo {
- *
- *   int x;
- *
- *   public Foo(int n) {
- *   }
- *
- *   public void fun() {
- *     try {
- *       System.out.println(x);
- *     } catch( IOException e) {  // violation, no space before right parenthesis
- *     } catch( Exception e ) {  // OK
- *     }
- *
- *     for ( int i = 0; i &lt; x; i++ ) {  // OK
- *     }
- *   }
- *
- * }
- *
- * class Bar extends Foo {
- *
- *   public Bar() {
- *     super(1 );  // violation, no space after left parenthesis
- *   }
- *
- *   public Bar(int k) {
- *     super( k ); // OK
- *
- *     for ( int i = 0; i &lt; k; i++) {  // violation, no space before right parenthesis
- *     }
- *   }
- *
- * }
- * </pre>
- * <p>
- * The following cases are not checked:
- * </p>
- * <pre>
- * for ( ; i &lt; j; i++, j--) // no check after left parenthesis
- * for (Iterator it = xs.iterator(); it.hasNext(); ) // no check before right parenthesis
- * try (Closeable resource = acquire(); ) // no check before right parenthesis
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -399,6 +310,7 @@ public class ParenPadCheck extends AbstractParenPadCheck {
             TokenTypes.SUPER_CTOR_CALL,
             TokenTypes.LAMBDA,
             TokenTypes.RECORD_DEF,
+            TokenTypes.RECORD_PATTERN_DEF,
         };
     }
 

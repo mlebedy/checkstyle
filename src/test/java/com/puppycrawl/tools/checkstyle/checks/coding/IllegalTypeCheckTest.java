@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -21,6 +21,7 @@ package com.puppycrawl.tools.checkstyle.checks.coding;
 
 import static com.google.common.truth.Truth.assertWithMessage;
 import static com.puppycrawl.tools.checkstyle.checks.coding.IllegalTypeCheck.MSG_KEY;
+import static com.puppycrawl.tools.checkstyle.internal.utils.TestUtil.getExpectedThrowable;
 
 import java.io.File;
 
@@ -235,7 +236,7 @@ public class IllegalTypeCheckTest extends AbstractModuleTestSupport {
     public void testStarImports() throws Exception {
 
         final String[] expected = {
-            "25:5: " + getCheckMessage(MSG_KEY, "List"),
+            "24:5: " + getCheckMessage(MSG_KEY, "List"),
         };
 
         verifyWithInlineConfigParser(
@@ -246,8 +247,8 @@ public class IllegalTypeCheckTest extends AbstractModuleTestSupport {
     public void testStaticImports() throws Exception {
 
         final String[] expected = {
-            "28:6: " + getCheckMessage(MSG_KEY, "SomeStaticClass"),
-            "30:31: " + getCheckMessage(MSG_KEY, "SomeStaticClass"),
+            "26:6: " + getCheckMessage(MSG_KEY, "SomeStaticClass"),
+            "28:31: " + getCheckMessage(MSG_KEY, "SomeStaticClass"),
         };
 
         verifyWithInlineConfigParser(
@@ -298,11 +299,11 @@ public class IllegalTypeCheckTest extends AbstractModuleTestSupport {
     @Test
     public void testIllegalTypeEnhancedInstanceof() throws Exception {
         final String[] expected = {
-            "28:9: " + getCheckMessage(MSG_KEY, "LinkedHashMap"),
-            "31:28: " + getCheckMessage(MSG_KEY, "LinkedHashMap"),
-            "35:35: " + getCheckMessage(MSG_KEY, "HashMap"),
-            "40:52: " + getCheckMessage(MSG_KEY, "TreeSet"),
-            "41:32: " + getCheckMessage(MSG_KEY, "TreeSet"),
+            "29:9: " + getCheckMessage(MSG_KEY, "LinkedHashMap"),
+            "32:28: " + getCheckMessage(MSG_KEY, "LinkedHashMap"),
+            "36:35: " + getCheckMessage(MSG_KEY, "HashMap"),
+            "41:52: " + getCheckMessage(MSG_KEY, "TreeSet"),
+            "43:28: " + getCheckMessage(MSG_KEY, "TreeSet"),
         };
 
         verifyWithInlineConfigParser(
@@ -390,6 +391,14 @@ public class IllegalTypeCheckTest extends AbstractModuleTestSupport {
     }
 
     @Test
+    public void testTrailingWhitespaceInConfig() throws Exception {
+        final String[] expected = CommonUtil.EMPTY_STRING_ARRAY;
+        verifyWithInlineConfigParser(
+                getPath("InputIllegalTypeWhitespaceInConfig.java"),
+                expected);
+    }
+
+    @Test
     public void testTokensNotNull() {
         final IllegalTypeCheck check = new IllegalTypeCheck();
         assertWithMessage("Acceptable tokens should not be null")
@@ -419,4 +428,75 @@ public class IllegalTypeCheckTest extends AbstractModuleTestSupport {
         }
     }
 
+    /**
+     * Tries to reproduce system failure to call Check on not acceptable token.
+     * It can not be reproduced by Input files. Maintainers thinks that keeping
+     * exception on unknown token is beneficial.
+     *
+     */
+    @Test
+    public void testImproperLeaveToken() {
+        final IllegalTypeCheck check = new IllegalTypeCheck();
+        final DetailAstImpl enumAst = new DetailAstImpl();
+        enumAst.setType(TokenTypes.ENUM_DEF);
+        final IllegalStateException exception = getExpectedThrowable(IllegalStateException.class,
+                () -> check.visitToken(enumAst), "IllegalStateException was expected");
+
+        assertWithMessage("Message doesn't contain ast")
+                .that(exception.getMessage())
+                .isEqualTo(enumAst.toString());
+    }
+
+    @Test
+    public void testIllegalTypeAbstractClassNameFormat() throws Exception {
+        final String[] expected = {
+            "15:20: " + getCheckMessage(MSG_KEY, "Gitter"),
+        };
+        verifyWithInlineConfigParser(
+                getPath("InputIllegalTypeAbstractClassNameFormat.java"),
+                expected);
+    }
+
+    @Test
+    public void testIllegalTypeWithRecordPattern() throws Exception {
+        final String[] expected = {
+            "28:25: " + getCheckMessage(MSG_KEY, "Point"),
+            "29:22: " + getCheckMessage(MSG_KEY, "ColoredPoint"),
+            "29:46: " + getCheckMessage(MSG_KEY, "ColoredPoint"),
+            "39:28: " + getCheckMessage(MSG_KEY, "Rectangle"),
+            "40:28: " + getCheckMessage(MSG_KEY, "Rectangle"),
+            "40:38: " + getCheckMessage(MSG_KEY, "ColoredPoint"),
+            "40:54: " + getCheckMessage(MSG_KEY, "ColoredPoint"),
+            "45:28: " + getCheckMessage(MSG_KEY, "Rectangle"),
+            "45:38: " + getCheckMessage(MSG_KEY, "ColoredPoint"),
+            "45:51: " + getCheckMessage(MSG_KEY, "Point"),
+            "50:28: " + getCheckMessage(MSG_KEY, "Point"),
+            "58:9: " + getCheckMessage(MSG_KEY, "LinkedHashMap"),
+            "61:9: " + getCheckMessage(MSG_KEY, "Box"),
+            "61:13: " + getCheckMessage(MSG_KEY, "LinkedHashMap"),
+            "66:28: " + getCheckMessage(MSG_KEY, "Box"),
+            "66:32: " + getCheckMessage(MSG_KEY, "LinkedHashMap"),
+            "76:18: " + getCheckMessage(MSG_KEY, "Point"),
+            "77:18: " + getCheckMessage(MSG_KEY, "Rectangle"),
+            "77:28: " + getCheckMessage(MSG_KEY, "ColoredPoint"),
+            "77:41: " + getCheckMessage(MSG_KEY, "Point"),
+            "83:18: " + getCheckMessage(MSG_KEY, "ColoredPoint"),
+        };
+        verifyWithInlineConfigParser(
+                getNonCompilablePath("InputIllegalTypeWithRecordPattern.java"),
+                expected);
+    }
+
+    @Test
+    public void testIllegalTypeInPermitsList() throws Exception {
+        final String[] expected = {
+            "22:52: " + getCheckMessage(MSG_KEY, "D"),
+            "27:28: " + getCheckMessage(MSG_KEY, "D"),
+            "32:27: " + getCheckMessage(MSG_KEY, "C"),
+            "35:27: " + getCheckMessage(MSG_KEY, "D"),
+        };
+        verifyWithInlineConfigParser(
+                getNonCompilablePath("InputIllegalTypeInPermitsList.java"),
+                expected);
+    }
 }

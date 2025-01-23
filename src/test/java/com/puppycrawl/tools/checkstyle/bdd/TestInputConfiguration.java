@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -30,6 +30,7 @@ import java.util.Set;
 import com.puppycrawl.tools.checkstyle.Checker;
 import com.puppycrawl.tools.checkstyle.DefaultConfiguration;
 import com.puppycrawl.tools.checkstyle.TreeWalker;
+import com.puppycrawl.tools.checkstyle.api.Configuration;
 
 public final class TestInputConfiguration {
 
@@ -41,6 +42,7 @@ public final class TestInputConfiguration {
             "com.puppycrawl.tools.checkstyle.filters.SuppressionFilter",
             "com.puppycrawl.tools.checkstyle.filters.SuppressionSingleFilter",
             "com.puppycrawl.tools.checkstyle.filters.SuppressWarningsFilter",
+            "com.puppycrawl.tools.checkstyle.filters.SuppressWithNearbyTextFilter",
             "com.puppycrawl.tools.checkstyle.filters.SuppressWithPlainTextCommentFilter",
             "com.puppycrawl.tools.checkstyle.checks.header.HeaderCheck",
             "com.puppycrawl.tools.checkstyle.checks.header.RegexpHeaderCheck",
@@ -53,7 +55,12 @@ public final class TestInputConfiguration {
             "com.puppycrawl.tools.checkstyle.checks.regexp.RegexpOnFilenameCheck",
             "com.puppycrawl.tools.checkstyle.checks.sizes.FileLengthCheck",
             "com.puppycrawl.tools.checkstyle.checks.sizes.LineLengthCheck",
-            "com.puppycrawl.tools.checkstyle.checks.whitespace.FileTabCharacterCheck"
+            "com.puppycrawl.tools.checkstyle.checks.whitespace.FileTabCharacterCheck",
+            "com.puppycrawl.tools.checkstyle.api.AbstractFileSetCheckTest$ViolationFileSetCheck",
+            "com.puppycrawl.tools.checkstyle.api.FileSetCheckTest$TestFileSetCheck",
+            "com.puppycrawl.tools.checkstyle.internal.testmodules"
+                + ".VerifyPositionAfterLastTabFileSet",
+            "com.puppycrawl.tools.checkstyle.CheckerTest$VerifyPositionAfterTabFileSet"
     ));
 
     private final List<ModuleInputConfiguration> childrenModules;
@@ -62,12 +69,24 @@ public final class TestInputConfiguration {
 
     private final List<TestInputViolation> filteredViolations;
 
+    private final Configuration xmlConfiguration;
+
     private TestInputConfiguration(List<ModuleInputConfiguration> childrenModules,
                                    List<TestInputViolation> violations,
                                    List<TestInputViolation> filteredViolations) {
         this.childrenModules = childrenModules;
         this.violations = violations;
         this.filteredViolations = filteredViolations;
+        xmlConfiguration = null;
+    }
+
+    private TestInputConfiguration(List<TestInputViolation> violations,
+                                   List<TestInputViolation> filteredViolations,
+                                   Configuration xmlConfiguration) {
+        childrenModules = null;
+        this.violations = violations;
+        this.filteredViolations = filteredViolations;
+        this.xmlConfiguration = xmlConfiguration;
     }
 
     public List<ModuleInputConfiguration> getChildrenModules() {
@@ -84,9 +103,9 @@ public final class TestInputConfiguration {
 
     public DefaultConfiguration createConfiguration() {
         final DefaultConfiguration root = new DefaultConfiguration(ROOT_MODULE_NAME);
-        final DefaultConfiguration treeWalker =
-                new DefaultConfiguration(TreeWalker.class.getName());
         root.addProperty("charset", StandardCharsets.UTF_8.name());
+
+        final DefaultConfiguration treeWalker = createTreeWalker();
         childrenModules
                 .stream()
                 .map(ModuleInputConfiguration::createConfiguration)
@@ -94,7 +113,7 @@ public final class TestInputConfiguration {
                     if (CHECKER_CHILDREN.contains(moduleConfig.getName())) {
                         root.addChild(moduleConfig);
                     }
-                    else {
+                    else if (!treeWalker.getName().equals(moduleConfig.getName())) {
                         treeWalker.addChild(moduleConfig);
                     }
                 });
@@ -102,11 +121,14 @@ public final class TestInputConfiguration {
         return root;
     }
 
+    public Configuration getXmlConfiguration() {
+        return xmlConfiguration;
+    }
+
     public DefaultConfiguration createConfigurationWithoutFilters() {
         final DefaultConfiguration root = new DefaultConfiguration(ROOT_MODULE_NAME);
-        final DefaultConfiguration treeWalker =
-                new DefaultConfiguration(TreeWalker.class.getName());
         root.addProperty("charset", StandardCharsets.UTF_8.name());
+        final DefaultConfiguration treeWalker = createTreeWalker();
         childrenModules
                 .stream()
                 .map(ModuleInputConfiguration::createConfiguration)
@@ -115,12 +137,23 @@ public final class TestInputConfiguration {
                     if (CHECKER_CHILDREN.contains(moduleConfig.getName())) {
                         root.addChild(moduleConfig);
                     }
-                    else {
+                    else if (!treeWalker.getName().equals(moduleConfig.getName())) {
                         treeWalker.addChild(moduleConfig);
                     }
                 });
         root.addChild(treeWalker);
         return root;
+    }
+
+    private DefaultConfiguration createTreeWalker() {
+        final DefaultConfiguration treeWalker;
+        if (childrenModules.get(0).getModuleName().equals(TreeWalker.class.getName())) {
+            treeWalker = childrenModules.get(0).createConfiguration();
+        }
+        else {
+            treeWalker = new DefaultConfiguration(TreeWalker.class.getName());
+        }
+        return treeWalker;
     }
 
     public static final class Builder {
@@ -131,6 +164,8 @@ public final class TestInputConfiguration {
 
         private final List<TestInputViolation> filteredViolations = new ArrayList<>();
 
+        private Configuration xmlConfiguration;
+
         public void addChildModule(ModuleInputConfiguration childModule) {
             childrenModules.add(childModule);
         }
@@ -139,8 +174,24 @@ public final class TestInputConfiguration {
             violations.add(new TestInputViolation(violationLine, violationMessage));
         }
 
+        public void addViolations(List<TestInputViolation> inputViolations) {
+            violations.addAll(inputViolations);
+        }
+
         public void addFilteredViolation(int violationLine, String violationMessage) {
             filteredViolations.add(new TestInputViolation(violationLine, violationMessage));
+        }
+
+        public void setXmlConfiguration(Configuration xmlConfiguration) {
+            this.xmlConfiguration = xmlConfiguration;
+        }
+
+        public TestInputConfiguration buildWithXmlConfiguration() {
+            return new TestInputConfiguration(
+                    violations,
+                    filteredViolations,
+                    xmlConfiguration
+            );
         }
 
         public TestInputConfiguration build() {

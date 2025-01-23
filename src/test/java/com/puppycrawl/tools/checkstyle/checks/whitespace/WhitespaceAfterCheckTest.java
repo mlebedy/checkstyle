@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -328,5 +328,29 @@ public class WhitespaceAfterCheckTest
         };
         verifyWithInlineConfigParser(
             getPath("InputWhitespaceAfterWithEmoji.java"), expected);
+    }
+
+    @Test
+    public void testLiteralWhen() throws Exception {
+        final String[] expected = {
+            "14:28: " + getCheckMessage(MSG_WS_NOT_FOLLOWED, "when"),
+            "16:27: " + getCheckMessage(MSG_WS_NOT_FOLLOWED, "when"),
+            "18:39: " + getCheckMessage(MSG_WS_NOT_FOLLOWED, "when"),
+            "20:39: " + getCheckMessage(MSG_WS_NOT_FOLLOWED, "when"),
+            "35:28: " + getCheckMessage(MSG_WS_NOT_FOLLOWED, "when"),
+            "45:21: " + getCheckMessage(MSG_WS_NOT_FOLLOWED, "when"),
+        };
+        verifyWithInlineConfigParser(
+            getNonCompilablePath("InputWhitespaceAfterLiteralWhen.java"),
+            expected);
+    }
+
+    @Test
+    public void testUnnamedPattern() throws Exception {
+        final String[] expected = CommonUtil.EMPTY_STRING_ARRAY;
+        verifyWithInlineConfigParser(
+            getNonCompilablePath("InputWhitespaceAfterUnnamedPattern.java"),
+            expected);
+
     }
 }

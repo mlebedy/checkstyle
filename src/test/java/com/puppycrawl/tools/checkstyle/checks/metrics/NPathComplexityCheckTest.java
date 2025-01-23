@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -23,6 +23,7 @@ import static com.google.common.truth.Truth.assertWithMessage;
 import static com.puppycrawl.tools.checkstyle.checks.metrics.NPathComplexityCheck.MSG_KEY;
 
 import java.io.File;
+import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.SortedSet;
@@ -132,6 +133,15 @@ public class NPathComplexityCheckTest extends AbstractModuleTestSupport {
                 .that(TestUtil.isStatefulFieldClearedDuringBeginTree(check, ast, "expressionValues",
                         expressionValues -> ((Collection<Context>) expressionValues).isEmpty()))
                 .isTrue();
+        assertWithMessage("Stateful field is not cleared after beginTree")
+                .that(TestUtil.isStatefulFieldClearedDuringBeginTree(check, ast, "branchVisited",
+                        branchVisited -> !(boolean) branchVisited))
+                .isTrue();
+        assertWithMessage("Stateful field is not cleared after beginTree")
+                .that(TestUtil.isStatefulFieldClearedDuringBeginTree(check, ast,
+                        "currentRangeValue",
+                        currentRangeValue -> currentRangeValue.equals(BigInteger.ZERO)))
+                .isTrue();
     }
 
     @Test
@@ -164,7 +174,7 @@ public class NPathComplexityCheckTest extends AbstractModuleTestSupport {
                 .isTrue();
 
         assertWithMessage("State is not cleared on beginTree")
-                .that(TestUtil.isStatefulFieldClearedDuringBeginTree(check, question.get(),
+                .that(TestUtil.isStatefulFieldClearedDuringBeginTree(check, question.orElseThrow(),
                         "processingTokenEnd", processingTokenEnd -> {
                             return TestUtil.<Integer>getInternalState(processingTokenEnd,
                                     "endLineNo") == 0
@@ -214,6 +224,76 @@ public class NPathComplexityCheckTest extends AbstractModuleTestSupport {
     }
 
     @Test
+    public void testBranchVisited() throws Exception {
+
+        final String[] expected = {
+            "13:3: " + getCheckMessage(MSG_KEY, 37, 20),
+        };
+
+        verifyWithInlineConfigParser(
+                getPath("InputNPathComplexityCheckBranchVisited.java"),
+            expected);
+    }
+
+    @Test
+    public void testCount() throws Exception {
+
+        final String[] expected = {
+            "11:5: " + getCheckMessage(MSG_KEY, 30, 20),
+            "22:5: " + getCheckMessage(MSG_KEY, 72, 20),
+            "67:5: " + getCheckMessage(MSG_KEY, 23, 20),
+        };
+
+        verifyWithInlineConfigParser(
+                getPath("InputNPathComplexityCheckCount.java"),
+            expected);
+    }
+
+    @Test
+    public void testPatternMatchingForSwitch() throws Exception {
+
+        final String[] expected = {
+            "14:5: " + getCheckMessage(MSG_KEY, 3, 1),
+            "23:5: " + getCheckMessage(MSG_KEY, 3, 1),
+            "32:5: " + getCheckMessage(MSG_KEY, 3, 1),
+            "41:5: " + getCheckMessage(MSG_KEY, 3, 1),
+            "50:5: " + getCheckMessage(MSG_KEY, 5, 1),
+            "59:5: " + getCheckMessage(MSG_KEY, 5, 1),
+            "68:5: " + getCheckMessage(MSG_KEY, 4, 1),
+            "76:5: " + getCheckMessage(MSG_KEY, 4, 1),
+            "86:5: " + getCheckMessage(MSG_KEY, 3, 1),
+            "95:5: " + getCheckMessage(MSG_KEY, 3, 1),
+        };
+
+        verifyWithInlineConfigParser(
+                getNonCompilablePath("InputNPathComplexityPatternMatchingForSwitch.java"),
+            expected);
+
+    }
+
+    @Test
+    public void testWhenExpression() throws Exception {
+
+        final String[] expected = {
+            "14:5: " + getCheckMessage(MSG_KEY, 3, 1),
+            "20:5: " + getCheckMessage(MSG_KEY, 3, 1),
+            "28:5: " + getCheckMessage(MSG_KEY, 3, 1),
+            "36:5: " + getCheckMessage(MSG_KEY, 4, 1),
+            "44:5: " + getCheckMessage(MSG_KEY, 4, 1),
+            "52:5: " + getCheckMessage(MSG_KEY, 5, 1),
+            "60:5: " + getCheckMessage(MSG_KEY, 7, 1),
+            "69:5: " + getCheckMessage(MSG_KEY, 5, 1),
+            "77:5: " + getCheckMessage(MSG_KEY, 5, 1),
+            "85:5: " + getCheckMessage(MSG_KEY, 6, 1),
+        };
+
+        verifyWithInlineConfigParser(
+                getNonCompilablePath("InputNPathComplexityWhenExpression.java"),
+            expected);
+
+    }
+
+    @Test
     public void testGetAcceptableTokens() {
         final NPathComplexityCheck npathComplexityCheckObj = new NPathComplexityCheck();
         final int[] actual = npathComplexityCheckObj.getAcceptableTokens();
@@ -236,6 +316,7 @@ public class NPathComplexityCheckTest extends AbstractModuleTestSupport {
             TokenTypes.LITERAL_DEFAULT,
             TokenTypes.COMPACT_CTOR_DEF,
             TokenTypes.SWITCH_RULE,
+            TokenTypes.LITERAL_WHEN,
         };
         assertWithMessage("Acceptable tokens should not be null")
             .that(actual)
@@ -268,6 +349,7 @@ public class NPathComplexityCheckTest extends AbstractModuleTestSupport {
             TokenTypes.LITERAL_DEFAULT,
             TokenTypes.COMPACT_CTOR_DEF,
             TokenTypes.SWITCH_RULE,
+            TokenTypes.LITERAL_WHEN,
         };
         assertWithMessage("Required tokens should not be null")
             .that(actual)
@@ -341,6 +423,7 @@ public class NPathComplexityCheckTest extends AbstractModuleTestSupport {
         astTernary.addChild(astTernaryTrue);
 
         final NPathComplexityCheck npathComplexityCheckObj = new NPathComplexityCheck();
+        npathComplexityCheckObj.beginTree(null);
 
         // visiting first ast, set expressionSpatialRange to [2,2 - 4,4]
         npathComplexityCheckObj.visitToken(astIf);

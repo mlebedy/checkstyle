@@ -7,45 +7,45 @@ processJavadoc = (default)true
 
 package com.puppycrawl.tools.checkstyle.checks.imports.unusedimports;
 
-import com.puppycrawl.tools.checkstyle.checks.imports.*;
-import com.puppycrawl.tools.checkstyle.checks.imports.unusedimports. //violation
-        InputUnusedImportsBug;
+import com.google.errorprone.annotations.*;
+import com.google.errorprone.annotations.concurrent.GuardedBy; // violation 'Unused import - .*GuardedBy.'
+
 import java.io.*;
 import java.lang.*;
-import java.lang.String; // violation
+import java.lang.String; // violation 'Unused import - java.lang.String.'
 
-import java.util.List; // violation
-import java.util.List; // violation
+import java.util.List; // violation 'Unused import - java.util.List.'
+import java.util.List; // violation 'Unused import - java.util.List.'
 import java.lang.*;
 import java.util.Iterator;
-import java.util.Enumeration; // violation
+import java.util.Enumeration; // violation 'Unused import - java.util.Enumeration.'
 import java.util.Arrays;
 import javax.swing.JToolBar;
-import javax.swing.JToggleButton; // violation
+import javax.swing.JToggleButton; // violation 'Unused import - javax.swing.JToggleButton.'
 
-import javax.swing.BorderFactory; // violation
+import javax.swing.BorderFactory; // violation 'Unused import - javax.swing.BorderFactory.'
 
 import static java.io.File.listRoots;
 
 import static javax.swing.WindowConstants.*;
-import static java.io.File. // violation
+import static java.io.File. // violation 'Unused import - java.io.File.createTempFile.'
     createTempFile;
 
 import java.awt.Graphics2D;
 import java.awt.HeadlessException;
-import java.awt.Label; // violation
+import java.awt.Label; // violation 'Unused import - java.awt.Label.'
 import java.util.Date;
 import java.util.Calendar;
 import java.util.BitSet;
 
-import com.puppycrawl.tools.checkstyle.Checker;
-import com.puppycrawl.tools.checkstyle.CheckerTest;
-import com.puppycrawl.tools.checkstyle.Definitions;
-import com.puppycrawl.tools.checkstyle.checks.imports.unusedimports.InputUnusedImports15Extensions;
-import com.puppycrawl.tools.checkstyle.ConfigurationLoaderTest;
-import com.puppycrawl.tools.checkstyle.PackageNamesLoader;
-import com.puppycrawl.tools.checkstyle.DefaultConfiguration;
-import com.puppycrawl.tools.checkstyle.DefaultLogger; // violation
+import com.google.errorprone.annotations.CheckReturnValue;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.google.errorprone.annotations.CompatibleWith;
+import com.google.errorprone.annotations.concurrent.LazyInit;
+import com.google.errorprone.annotations.DoNotCall;
+import com.google.errorprone.annotations.CompileTimeConstant;
+import com.google.errorprone.annotations.FormatString;
+import com.google.errorprone.annotations.ForOverride; // violation 'Unused import - .*ForOverride.'
 
 /**
  * Test case for imports
@@ -102,13 +102,14 @@ class InputUnusedImports
     public void render() {}
 
     /**
-     * First is a class with a method with arguments {@link Checker#method1(CheckerTest)}.
+     * First is a class with a method with arguments
+     * {@link CheckReturnValue#method1(CanIgnoreReturnValue)}.
      * Next is a class with typed method
-     * {@link BaseFileSetCheckTestSupport#method2(Definitions, InputUnusedImports15Extensions)}.
+     * {@link BaseFileSetCheckTestSupport#method2(CompatibleWith, LazyInit)}.
      *
-     * @param param1 with a link {@link ConfigurationLoaderTest}
-     * @throws PackageNamesLoader when broken
-     * @deprecated in 1 for removal in 2. Use {@link DefaultConfiguration}
+     * @param param1 with a link {@link DoNotCall}
+     * @throws CompileTimeConstant when broken
+     * @deprecated in 1 for removal in 2. Use {@link FormatString}
      */
     public void aMethodWithManyLinks() {}
 }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -19,6 +19,9 @@
 
 package com.puppycrawl.tools.checkstyle.checks.sizes;
 
+import java.util.Collections;
+import java.util.Set;
+
 import com.puppycrawl.tools.checkstyle.StatelessCheck;
 import com.puppycrawl.tools.checkstyle.api.AbstractCheck;
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
@@ -27,20 +30,26 @@ import com.puppycrawl.tools.checkstyle.utils.AnnotationUtil;
 import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 
 /**
- * <p>
+ * <div>
  * Checks the number of parameters of a method or constructor.
- * </p>
+ * </div>
  * <ul>
  * <li>
- * Property {@code max} - Specify the maximum number of parameters allowed.
- * Type is {@code int}.
- * Default value is {@code 7}.
+ * Property {@code ignoreAnnotatedBy} - Ignore methods and constructors
+ * annotated with the specified annotation(s).
+ * Type is {@code java.lang.String[]}.
+ * Default value is {@code ""}.
  * </li>
  * <li>
  * Property {@code ignoreOverriddenMethods} - Ignore number of parameters for
  * methods with {@code @Override} annotation.
  * Type is {@code boolean}.
  * Default value is {@code false}.
+ * </li>
+ * <li>
+ * Property {@code max} - Specify the maximum number of parameters allowed.
+ * Type is {@code int}.
+ * Default value is {@code 7}.
  * </li>
  * <li>
  * Property {@code tokens} - tokens to check
@@ -53,47 +62,11 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * CTOR_DEF</a>.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name="ParameterNumber"/&gt;
- * </pre>
- * <p>
- * To configure the check to allow 10 parameters for a method:
- * </p>
- * <pre>
- * &lt;module name="ParameterNumber"&gt;
- *   &lt;property name="max" value="10"/&gt;
- *   &lt;property name="tokens" value="METHOD_DEF"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * To configure the check to ignore number of parameters for methods with
- * {@code @Override} or {@code @java.lang.Override annotation}.
- * </p>
- * <p>
- * Rationale: developer may need to override method with many parameters from
- * 3-rd party library. In this case developer has no control over number of parameters.
- * </p>
- * <pre>
- * &lt;module name="ParameterNumber"&gt;
- *   &lt;property name="ignoreOverriddenMethods" value="true"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * Java code example:
- * </p>
- * <pre>
- * &#064;Override
- * public void needsLotsOfParameters(int a,
- *     int b, int c, int d, int e, int f, int g, int h) {
- *     ...
- * }
- * </pre>
+ *
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -125,9 +98,15 @@ public class ParameterNumberCheck
     private boolean ignoreOverriddenMethods;
 
     /**
+     * Ignore methods and constructors annotated with the specified annotation(s).
+     */
+    private Set<String> ignoreAnnotatedBy = Collections.emptySet();
+
+    /**
      * Setter to specify the maximum number of parameters allowed.
      *
      * @param max the max allowed parameters
+     * @since 3.0
      */
     public void setMax(int max) {
         this.max = max;
@@ -137,9 +116,20 @@ public class ParameterNumberCheck
      * Setter to ignore number of parameters for methods with {@code @Override} annotation.
      *
      * @param ignoreOverriddenMethods set ignore overridden methods
+     * @since 6.2
      */
     public void setIgnoreOverriddenMethods(boolean ignoreOverriddenMethods) {
         this.ignoreOverriddenMethods = ignoreOverriddenMethods;
+    }
+
+    /**
+     * Setter to ignore methods and constructors annotated with the specified annotation(s).
+     *
+     * @param annotationNames specified annotation(s)
+     * @since 10.15.0
+     */
+    public void setIgnoreAnnotatedBy(String... annotationNames) {
+        ignoreAnnotatedBy = Set.of(annotationNames);
     }
 
     @Override
@@ -168,16 +158,33 @@ public class ParameterNumberCheck
     }
 
     /**
-     * Determine whether to ignore number of parameters for the method.
+     * Determine whether to ignore number of parameters.
      *
      * @param ast the token to process
-     * @return true if this is overridden method and number of parameters should be ignored
-     *         false otherwise
+     * @return true if number of parameters should be ignored.
      */
     private boolean shouldIgnoreNumberOfParameters(DetailAST ast) {
-        // if you override a method, you have no power over the number of parameters
-        return ignoreOverriddenMethods
-                && AnnotationUtil.hasOverrideAnnotation(ast);
+        return isIgnoredOverriddenMethod(ast) || isAnnotatedByIgnoredAnnotations(ast);
+    }
+
+    /**
+     * Checks if method is overridden and should be ignored.
+     *
+     * @param ast method definition to check
+     * @return true if method is overridden and should be ignored.
+     */
+    private boolean isIgnoredOverriddenMethod(DetailAST ast) {
+        return ignoreOverriddenMethods && AnnotationUtil.hasOverrideAnnotation(ast);
+    }
+
+    /**
+     * Checks if method or constructor is annotated by ignored annotation(s).
+     *
+     * @param ast method or constructor definition to check
+     * @return true if annotated by ignored annotation(s).
+     */
+    private boolean isAnnotatedByIgnoredAnnotations(DetailAST ast) {
+        return AnnotationUtil.containsAnnotation(ast, ignoreAnnotatedBy);
     }
 
 }

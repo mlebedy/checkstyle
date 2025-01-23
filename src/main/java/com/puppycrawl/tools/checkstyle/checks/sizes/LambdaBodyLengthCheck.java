@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -25,9 +25,10 @@ import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
 /**
- * <p>
+ * <div>
  * Checks lambda body length.
- * </p>
+ * </div>
+ *
  * <p>
  * Rationale: Similar to anonymous inner classes, if lambda body becomes very long
  * it is hard to understand and to see the flow of the method
@@ -41,92 +42,11 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
  * Default value is {@code 10}.
  * </li>
  * </ul>
- * <p>
- * To configure the check to accept lambda bodies with up to 10 lines:
- * </p>
- * <pre>
- * &lt;module name="LambdaBodyLength"/&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <pre>
- * class Test {
- *   Runnable r = () -&gt; { // violation, 11 lines
- *       System.out.println(2); // line 2 of lambda
- *       System.out.println(3);
- *       System.out.println(4);
- *       System.out.println(5);
- *       System.out.println(6);
- *       System.out.println(7);
- *       System.out.println(8);
- *       System.out.println(9);
- *       System.out.println(10);
- *   }; // line 11
  *
- *   Runnable r2 = () -&gt; // violation, 11 lines
- *       "someString".concat("1") // line 1 of lambda
- *                   .concat("2")
- *                   .concat("3")
- *                   .concat("4")
- *                   .concat("5")
- *                   .concat("6")
- *                   .concat("7")
- *                   .concat("8")
- *                   .concat("9")
- *                   .concat("10")
- *                   .concat("11"); // line 11
- *
- *   Runnable r3 = () -&gt; { // ok, 10 lines
- *       System.out.println(2); // line 2 of lambda
- *       System.out.println(3);
- *       System.out.println(4);
- *       System.out.println(5);
- *       System.out.println(6);
- *       System.out.println(7);
- *       System.out.println(8);
- *       System.out.println(9);
- *   }; // line 10
- * }
- * </pre>
- * <p>
- * To configure the check to accept lambda bodies with max 5 lines:
- * </p>
- * <pre>
- * &lt;module name="LambdaBodyLength"&gt;
- *   &lt;property name="max" value="5"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <pre>
- * class Test {
- *   Runnable r = () -&gt; { // violation, 6 lines
- *       System.out.println(2); // line 2 of lambda
- *       System.out.println(3);
- *       System.out.println(4);
- *       System.out.println(5);
- *   };
- *
- *   Runnable r2 = () -&gt; // violation, 6 lines
- *       "someString".concat("1")
- *                   .concat("2")
- *                   .concat("3")
- *                   .concat("4")
- *                   .concat("5")
- *                   .concat("6");
- *
- *   Runnable r3 = () -&gt; { // ok, 5 lines
- *       System.out.println(2);
- *       System.out.println(3);
- *       System.out.println(4);
- *   };
- * }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -157,6 +77,7 @@ public class LambdaBodyLengthCheck extends AbstractCheck {
      * Setter to specify the maximum number of lines allowed.
      *
      * @param length the maximum length of lambda body.
+     * @since 8.37
      */
     public void setMax(int length) {
         max = length;

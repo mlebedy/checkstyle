@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -106,8 +106,8 @@ public class SuperCloneCheckTest
                 .that(methodDef.isPresent())
                 .isTrue();
         assertWithMessage("State is not cleared on beginTree")
-                .that(TestUtil.isStatefulFieldClearedDuringBeginTree(check, methodDef.get(),
-                        "methodStack",
+                .that(TestUtil.isStatefulFieldClearedDuringBeginTree(check,
+                        methodDef.orElseThrow(), "methodStack",
                         methodStack -> ((Collection<Set<String>>) methodStack).isEmpty()))
                 .isTrue();
     }

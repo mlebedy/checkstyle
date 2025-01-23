@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -50,15 +50,15 @@ public class ParameterAssignmentCheckTest extends AbstractModuleTestSupport {
             "17:15: " + getCheckMessage(MSG_KEY, "field"),
             "18:15: " + getCheckMessage(MSG_KEY, "field"),
             "20:14: " + getCheckMessage(MSG_KEY, "field"),
-            "28:30: " + getCheckMessage(MSG_KEY, "field1"),
-            "45:31: " + getCheckMessage(MSG_KEY, "q"),
-            "46:39: " + getCheckMessage(MSG_KEY, "q"),
-            "47:34: " + getCheckMessage(MSG_KEY, "w"),
-            "49:41: " + getCheckMessage(MSG_KEY, "w"),
-            "50:49: " + getCheckMessage(MSG_KEY, "a"),
-            "52:11: " + getCheckMessage(MSG_KEY, "c"),
-            "53:11: " + getCheckMessage(MSG_KEY, "d"),
-            "63:15: " + getCheckMessage(MSG_KEY, "d"),
+            "29:30: " + getCheckMessage(MSG_KEY, "field1"),
+            "46:31: " + getCheckMessage(MSG_KEY, "q"),
+            "49:39: " + getCheckMessage(MSG_KEY, "q"),
+            "51:34: " + getCheckMessage(MSG_KEY, "w"),
+            "56:41: " + getCheckMessage(MSG_KEY, "w"),
+            "59:49: " + getCheckMessage(MSG_KEY, "a"),
+            "62:11: " + getCheckMessage(MSG_KEY, "c"),
+            "63:11: " + getCheckMessage(MSG_KEY, "d"),
+            "73:15: " + getCheckMessage(MSG_KEY, "d"),
         };
         verifyWithInlineConfigParser(
                 getPath("InputParameterAssignmentWithUnchecked.java"),
@@ -117,7 +117,7 @@ public class ParameterAssignmentCheckTest extends AbstractModuleTestSupport {
                 .that(methodDef.isPresent())
                 .isTrue();
         assertWithMessage("State is not cleared on beginTree")
-            .that(TestUtil.isStatefulFieldClearedDuringBeginTree(check, methodDef.get(),
+            .that(TestUtil.isStatefulFieldClearedDuringBeginTree(check, methodDef.orElseThrow(),
                 "parameterNamesStack",
                 parameterNamesStack -> ((Collection<Set<String>>) parameterNamesStack).isEmpty()))
             .isTrue();

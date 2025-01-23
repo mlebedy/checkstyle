@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -37,41 +37,49 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 import com.puppycrawl.tools.checkstyle.utils.ScopeUtil;
 
 /**
- * <p>
+ * <div>
  * Checks visibility of class members. Only static final, immutable or annotated
  * by specified annotation members may be public;
  * other class members must be private unless the property {@code protectedAllowed}
  * or {@code packageAllowed} is set.
- * </p>
+ * </div>
+ *
  * <p>
  * Public members are not flagged if the name matches the public
  * member regular expression (contains {@code "^serialVersionUID$"} by
  * default).
  * </p>
+ *
  * <p>
  * Note that Checkstyle 2 used to include {@code "^f[A-Z][a-zA-Z0-9]*$"} in the default pattern
  * to allow names used in container-managed persistence for Enterprise JavaBeans (EJB) 1.1 with
  * the default settings. With EJB 2.0 it is no longer necessary to have public access for
  * persistent fields, so the default has been changed.
  * </p>
+ *
  * <p>
  * Rationale: Enforce encapsulation.
  * </p>
+ *
  * <p>
  * Check also has options making it less strict:
  * </p>
+ *
  * <p>
  * <b>ignoreAnnotationCanonicalNames</b>- the list of annotations which ignore
  * variables in consideration. If user want to provide short annotation name that
  * type will match to any named the same type without consideration of package.
  * </p>
+ *
  * <p>
  * <b>allowPublicFinalFields</b>- which allows public final fields.
  * </p>
+ *
  * <p>
  * <b>allowPublicImmutableFields</b>- which allows immutable fields to be
  * declared as public if defined in final class.
  * </p>
+ *
  * <p>
  * Field is known to be immutable if:
  * </p>
@@ -80,15 +88,18 @@ import com.puppycrawl.tools.checkstyle.utils.ScopeUtil;
  * <li>Has either a primitive type or instance of class user defined to be immutable
  * (such as String, ImmutableCollection from Guava, etc.)</li>
  * </ul>
+ *
  * <p>
  * Classes known to be immutable are listed in <b>immutableClassCanonicalNames</b>
  * by their canonical names.
  * </p>
+ *
  * <p>
  * Property Rationale: Forcing all fields of class to have private modifier by default is
  * good in most cases, but in some cases it drawbacks in too much boilerplate get/set code.
  * One of such cases are immutable classes.
  * </p>
+ *
  * <p>
  * Restriction: Check doesn't check if class is immutable, there's no checking
  * if accessory methods are missing and all fields are immutable, we only check
@@ -98,12 +109,40 @@ import com.puppycrawl.tools.checkstyle.utils.ScopeUtil;
  * Under the flag <b>allowPublicFinalFields</b>, the final modifier
  * on the enclosing class is optional.
  * </p>
+ *
  * <p>
  * Star imports are out of scope of this Check. So if one of type imported via
  * star import collides with user specified one by its short name - there
  * won't be Check's violation.
  * </p>
  * <ul>
+ * <li>
+ * Property {@code allowPublicFinalFields} - Allow final fields to be declared as public.
+ * Type is {@code boolean}.
+ * Default value is {@code false}.
+ * </li>
+ * <li>
+ * Property {@code allowPublicImmutableFields} - Allow immutable fields to be
+ * declared as public if defined in final class.
+ * Type is {@code boolean}.
+ * Default value is {@code false}.
+ * </li>
+ * <li>
+ * Property {@code ignoreAnnotationCanonicalNames} - Specify annotations canonical
+ * names which ignore variables in consideration.
+ * Type is {@code java.lang.String[]}.
+ * Default value is {@code com.google.common.annotations.VisibleForTesting,
+ * org.junit.ClassRule, org.junit.Rule}.
+ * </li>
+ * <li>
+ * Property {@code immutableClassCanonicalNames} - Specify immutable classes canonical names.
+ * Type is {@code java.lang.String[]}.
+ * Default value is {@code java.io.File, java.lang.Boolean, java.lang.Byte,
+ * java.lang.Character, java.lang.Double, java.lang.Float, java.lang.Integer,
+ * java.lang.Long, java.lang.Short, java.lang.StackTraceElement, java.lang.String,
+ * java.math.BigDecimal, java.math.BigInteger, java.net.Inet4Address, java.net.Inet6Address,
+ * java.net.InetSocketAddress, java.net.URI, java.net.URL, java.util.Locale, java.util.UUID}.
+ * </li>
  * <li>
  * Property {@code packageAllowed} - Control whether package visible members are allowed.
  * Type is {@code boolean}.
@@ -119,280 +158,12 @@ import com.puppycrawl.tools.checkstyle.utils.ScopeUtil;
  * Type is {@code java.util.regex.Pattern}.
  * Default value is {@code "^serialVersionUID$"}.
  * </li>
- * <li>
- * Property {@code allowPublicFinalFields} - Allow final fields to be declared as public.
- * Type is {@code boolean}.
- * Default value is {@code false}.
- * </li>
- * <li>
- * Property {@code allowPublicImmutableFields} - Allow immutable fields to be
- * declared as public if defined in final class.
- * Type is {@code boolean}.
- * Default value is {@code false}.
- * </li>
- * <li>
- * Property {@code immutableClassCanonicalNames} - Specify immutable classes canonical names.
- * Type is {@code java.lang.String[]}.
- * Default value is {@code java.io.File, java.lang.Boolean, java.lang.Byte,
- * java.lang.Character, java.lang.Double, java.lang.Float, java.lang.Integer,
- * java.lang.Long, java.lang.Short, java.lang.StackTraceElement, java.lang.String,
- * java.math.BigDecimal, java.math.BigInteger, java.net.Inet4Address, java.net.Inet6Address,
- * java.net.InetSocketAddress, java.net.URI, java.net.URL, java.util.Locale, java.util.UUID}.
- * </li>
- * <li>
- * Property {@code ignoreAnnotationCanonicalNames} - Specify annotations canonical
- * names which ignore variables in consideration.
- * Type is {@code java.lang.String[]}.
- * Default value is {@code com.google.common.annotations.VisibleForTesting,
- * org.junit.ClassRule, org.junit.Rule}.
- * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;VisibilityModifier&quot;/&gt;
- * </pre>
- * <p>
- * To configure the check so that it allows package visible members:
- * </p>
- * <pre>
- * &lt;module name=&quot;VisibilityModifier&quot;&gt;
- *   &lt;property name=&quot;packageAllowed&quot; value=&quot;true&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * To configure the check so that it allows no public members:
- * </p>
- * <pre>
- * &lt;module name=&quot;VisibilityModifier&quot;&gt;
- *   &lt;property name=&quot;publicMemberPattern&quot; value=&quot;^$&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * To configure the Check so that it allows public immutable fields (mostly for immutable classes):
- * </p>
- * <pre>
- * &lt;module name=&quot;VisibilityModifier&quot;&gt;
- *   &lt;property name=&quot;allowPublicImmutableFields&quot; value=&quot;true&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * Example of allowed public immutable fields:
- * </p>
- * <pre>
- * public class ImmutableClass
- * {
- *   public final ImmutableSet&lt;String&gt; includes; // No warning
- *   public final ImmutableSet&lt;String&gt; excludes; // No warning
- *   public final java.lang.String notes; // No warning
- *   public final BigDecimal value; // No warning
  *
- *   public ImmutableClass(Collection&lt;String&gt; includes, Collection&lt;String&gt; excludes,
- *                BigDecimal value, String notes)
- *   {
- *     this.includes = ImmutableSet.copyOf(includes);
- *     this.excludes = ImmutableSet.copyOf(excludes);
- *     this.value = value;
- *     this.notes = notes;
- *   }
- * }
- * </pre>
- * <p>
- * To configure the Check in order to allow user specified immutable class names:
- * </p>
- * <pre>
- * &lt;module name=&quot;VisibilityModifier&quot;&gt;
- *   &lt;property name=&quot;allowPublicImmutableFields&quot; value=&quot;true&quot;/&gt;
- *   &lt;property name=&quot;immutableClassCanonicalNames&quot; value=&quot;
- *   com.google.common.collect.ImmutableSet&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * Example of allowed public immutable fields:
- * </p>
- * <pre>
- * public class ImmutableClass
- * {
- *   public final ImmutableSet&lt;String&gt; includes; // No warning
- *   public final ImmutableSet&lt;String&gt; excludes; // No warning
- *   public final java.lang.String notes; // Warning here because
- *                                        //'java.lang.String' wasn't specified as allowed class
- *   public final int someValue; // No warning
- *
- *   public ImmutableClass(Collection&lt;String&gt; includes, Collection&lt;String&gt; excludes,
- *                String notes, int someValue)
- *   {
- *     this.includes = ImmutableSet.copyOf(includes);
- *     this.excludes = ImmutableSet.copyOf(excludes);
- *     this.value = value;
- *     this.notes = notes;
- *     this.someValue = someValue;
- *   }
- * }
- * </pre>
- * <p>
- * Note, if allowPublicImmutableFields is set to true, the check will also check
- * whether generic type parameters are immutable. If at least one generic type
- * parameter is mutable, there will be a violation.
- * </p>
- * <pre>
- * &lt;module name=&quot;VisibilityModifier&quot;&gt;
- *   &lt;property name=&quot;allowPublicImmutableFields&quot; value=&quot;true&quot;/&gt;
- *   &lt;property name=&quot;immutableClassCanonicalNames&quot;
- *     value=&quot;com.google.common.collect.ImmutableSet, com.google.common.collect.ImmutableMap,
- *       java.lang.String&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * Example of how the check works:
- * </p>
- * <pre>
- * public final class Test {
- *   public final String s;
- *   public final ImmutableSet&lt;String&gt; names;
- *   public final ImmutableSet&lt;Object&gt; objects; // violation (Object class is mutable)
- *   public final ImmutableMap&lt;String, Object&gt; links; // violation (Object class is mutable)
- *
- *   public Test() {
- *     s = "Hello!";
- *     names = ImmutableSet.of();
- *     objects = ImmutableSet.of();
- *     links = ImmutableMap.of();
- *   }
- * }
- * </pre>
- * <p>
- * To configure the Check passing fields annotated with @com.annotation.CustomAnnotation:
- * </p>
- * <pre>
- * &lt;module name=&quot;VisibilityModifier&quot;&gt;
- *   &lt;property name=&quot;ignoreAnnotationCanonicalNames&quot; value=
- *   &quot;com.annotation.CustomAnnotation&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * Example of allowed field:
- * </p>
- * <pre>
- * class SomeClass
- * {
- *   &#64;com.annotation.CustomAnnotation
- *   String annotatedString; // no warning
- *   &#64;CustomAnnotation
- *   String shortCustomAnnotated; // no warning
- * }
- * </pre>
- * <p>
- * To configure the Check passing fields annotated with &#64;org.junit.Rule,
- * &#64;org.junit.ClassRule and &#64;com.google.common.annotations.VisibleForTesting annotations:
- * </p>
- * <pre>
- * &lt;module name=&quot;VisibilityModifier&quot;/&gt;
- * </pre>
- * <p>
- * Example of allowed fields:
- * </p>
- * <pre>
- * class SomeClass
- * {
- *   &#64;org.junit.Rule
- *   public TemporaryFolder publicJUnitRule = new TemporaryFolder(); // no warning
- *   &#64;org.junit.ClassRule
- *   public static TemporaryFolder publicJUnitClassRule = new TemporaryFolder(); // no warning
- *   &#64;com.google.common.annotations.VisibleForTesting
- *   public String testString = ""; // no warning
- * }
- * </pre>
- * <p>
- * To configure the Check passing fields annotated with short annotation name:
- * </p>
- * <pre>
- * &lt;module name=&quot;VisibilityModifier&quot;&gt;
- *   &lt;property name=&quot;ignoreAnnotationCanonicalNames&quot;
- *   value=&quot;CustomAnnotation&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * Example of allowed fields:
- * </p>
- * <pre>
- * class SomeClass
- * {
- *   &#64;CustomAnnotation
- *   String customAnnotated; // no warning
- *   &#64;com.annotation.CustomAnnotation
- *   String customAnnotated1; // no warning
- *   &#64;mypackage.annotation.CustomAnnotation
- *   String customAnnotatedAnotherPackage; // another package but short name matches
- *                                         // so no violation
- * }
- * </pre>
- * <p>
- * To understand the difference between allowPublicImmutableFields and allowPublicFinalFields
- * options, please, study the following examples.
- * </p>
- * <p>
- * 1) To configure the check to use only 'allowPublicImmutableFields' option:
- * </p>
- * <pre>
- * &lt;module name=&quot;VisibilityModifier&quot;&gt;
- *   &lt;property name=&quot;allowPublicImmutableFields&quot; value=&quot;true&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * Code example:
- * </p>
- * <pre>
- * public class InputPublicImmutable {
- *   public final int someIntValue; // violation
- *   public final ImmutableSet&lt;String&gt; includes; // violation
- *   public final java.lang.String notes; // violation
- *   public final BigDecimal value; // violation
- *   public final List list; // violation
- *
- *   public InputPublicImmutable(Collection&lt;String&gt; includes,
- *         BigDecimal value, String notes, int someValue, List l) {
- *     this.includes = ImmutableSet.copyOf(includes);
- *     this.value = value;
- *     this.notes = notes;
- *     this.someIntValue = someValue;
- *     this.list = l;
- *   }
- * }
- * </pre>
- * <p>
- * 2) To configure the check to use only 'allowPublicFinalFields' option:
- * </p>
- * <pre>
- * &lt;module name=&quot;VisibilityModifier&quot;&gt;
- *   &lt;property name=&quot;allowPublicFinalFields&quot; value=&quot;true&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * Code example:
- * </p>
- * <pre>
- * public class InputPublicImmutable {
- *   public final int someIntValue;
- *   public final ImmutableSet&lt;String&gt; includes;
- *   public final java.lang.String notes;
- *   public final BigDecimal value;
- *   public final List list;
- *
- *   public InputPublicImmutable(Collection&lt;String&gt; includes,
- *         BigDecimal value, String notes, int someValue, List l) {
- *     this.includes = ImmutableSet.copyOf(includes);
- *     this.value = value;
- *     this.notes = notes;
- *     this.someIntValue = someValue;
- *     this.list = l;
- *   }
- * }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -476,12 +247,10 @@ public class VisibilityModifierCheck
     private Pattern publicMemberPattern = Pattern.compile("^serialVersionUID$");
 
     /** Set of ignore annotations short names. */
-    private Set<String> ignoreAnnotationShortNames =
-            getClassShortNames(DEFAULT_IGNORE_ANNOTATIONS);
+    private Set<String> ignoreAnnotationShortNames;
 
     /** Set of immutable classes short names. */
-    private Set<String> immutableClassShortNames =
-        getClassShortNames(DEFAULT_IMMUTABLE_TYPES);
+    private Set<String> immutableClassShortNames;
 
     /**
      * Specify annotations canonical names which ignore variables in
@@ -509,6 +278,7 @@ public class VisibilityModifierCheck
      * in consideration.
      *
      * @param annotationNames array of ignore annotations canonical names.
+     * @since 6.5
      */
     public void setIgnoreAnnotationCanonicalNames(String... annotationNames) {
         ignoreAnnotationCanonicalNames = Set.of(annotationNames);
@@ -518,6 +288,7 @@ public class VisibilityModifierCheck
      * Setter to control whether protected members are allowed.
      *
      * @param protectedAllowed whether protected members are allowed
+     * @since 3.0
      */
     public void setProtectedAllowed(boolean protectedAllowed) {
         this.protectedAllowed = protectedAllowed;
@@ -527,6 +298,7 @@ public class VisibilityModifierCheck
      * Setter to control whether package visible members are allowed.
      *
      * @param packageAllowed whether package visible members are allowed
+     * @since 3.0
      */
     public void setPackageAllowed(boolean packageAllowed) {
         this.packageAllowed = packageAllowed;
@@ -537,6 +309,7 @@ public class VisibilityModifierCheck
      *
      * @param pattern
      *        pattern for public members to ignore.
+     * @since 3.0
      */
     public void setPublicMemberPattern(Pattern pattern) {
         publicMemberPattern = pattern;
@@ -546,6 +319,7 @@ public class VisibilityModifierCheck
      * Setter to allow immutable fields to be declared as public if defined in final class.
      *
      * @param allow user's value.
+     * @since 6.4
      */
     public void setAllowPublicImmutableFields(boolean allow) {
         allowPublicImmutableFields = allow;
@@ -555,6 +329,7 @@ public class VisibilityModifierCheck
      * Setter to allow final fields to be declared as public.
      *
      * @param allow user's value.
+     * @since 7.0
      */
     public void setAllowPublicFinalFields(boolean allow) {
         allowPublicFinalFields = allow;
@@ -564,6 +339,7 @@ public class VisibilityModifierCheck
      * Setter to specify immutable classes canonical names.
      *
      * @param classNames array of immutable types canonical names.
+     * @since 6.4.1
      */
     public void setImmutableClassCanonicalNames(String... classNames) {
         immutableClassCanonicalNames = Set.of(classNames);
@@ -661,8 +437,7 @@ public class VisibilityModifierCheck
      */
     private void visitImport(DetailAST importAst) {
         if (!isStarImport(importAst)) {
-            final DetailAST type = importAst.getFirstChild();
-            final String canonicalName = getCanonicalName(type);
+            final String canonicalName = getCanonicalName(importAst);
             final String shortName = getClassShortName(canonicalName);
 
             // If imported canonical class name is not specified as allowed immutable class,
@@ -679,6 +454,7 @@ public class VisibilityModifierCheck
 
     /**
      * Checks if current import is star import. E.g.:
+     *
      * <p>
      * {@code
      * import java.util.*;
@@ -825,7 +601,7 @@ public class VisibilityModifierCheck
         if (isFinalField(variableDef)) {
             final DetailAST type = variableDef.findFirstToken(TokenTypes.TYPE);
             final boolean isCanonicalName = isCanonicalName(type);
-            final String typeName = getTypeName(type, isCanonicalName);
+            final String typeName = getCanonicalName(type);
             if (immutableClassShortNames.contains(typeName)
                     || isCanonicalName && immutableClassCanonicalNames.contains(typeName)) {
                 final DetailAST typeArgs = getGenericTypeArgs(type, isCanonicalName);
@@ -885,8 +661,7 @@ public class VisibilityModifierCheck
         DetailAST type = typeArgs.findFirstToken(TokenTypes.TYPE_ARGUMENT);
         DetailAST sibling;
         do {
-            final boolean isCanonicalName = isCanonicalName(type);
-            final String typeName = getTypeName(type, isCanonicalName);
+            final String typeName = getCanonicalName(type);
             typeClassNames.add(typeName);
             sibling = type.getNextSibling();
             type = sibling.getNextSibling();
@@ -922,26 +697,6 @@ public class VisibilityModifierCheck
     }
 
     /**
-     * Gets the name of type from given ast {@link TokenTypes#TYPE TYPE} node.
-     * If type is specified via its canonical name - canonical name will be returned,
-     * else - short type's name.
-     *
-     * @param type {@link TokenTypes#TYPE TYPE} node.
-     * @param isCanonicalName is given name canonical.
-     * @return String representation of given type's name.
-     */
-    private static String getTypeName(DetailAST type, boolean isCanonicalName) {
-        final String typeName;
-        if (isCanonicalName) {
-            typeName = getCanonicalName(type);
-        }
-        else {
-            typeName = type.getFirstChild().getText();
-        }
-        return typeName;
-    }
-
-    /**
      * Checks if current type is primitive type (int, short, float, boolean, double, etc.).
      * As primitive types have special tokens for each one, such as:
      * LITERAL_INT, LITERAL_BOOLEAN, etc.
@@ -963,7 +718,7 @@ public class VisibilityModifierCheck
      */
     private static String getCanonicalName(DetailAST type) {
         final StringBuilder canonicalNameBuilder = new StringBuilder(256);
-        DetailAST toVisit = type.getFirstChild();
+        DetailAST toVisit = type;
         while (toVisit != null) {
             toVisit = getNextSubTreeNode(toVisit, type);
             if (toVisit != null && toVisit.getType() == TokenTypes.IDENT) {

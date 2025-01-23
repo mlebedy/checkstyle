@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -32,11 +32,13 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 
 /**
- * <p>
+ * <div>
  * Requires user defined Javadoc tag to be present in Javadoc comment with defined format.
  * To define the format for a tag, set property tagFormat to a regular expression.
  * Property tagSeverity is used for severity of events when the tag exists.
- * </p>
+ * No violation reported in case there is no javadoc.
+ * </div>
+ *
  * <ul>
  * <li>
  * Property {@code tag} - Specify the name of tag.
@@ -70,101 +72,11 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * RECORD_DEF</a>.
  * </li>
  * </ul>
- * <p>
- * Example of default Check configuration that do nothing.
- * </p>
- * <pre>
- * &lt;module name="WriteTag"/&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <pre>
- * &#47;**
- * * Some class
- * *&#47;
- * public class Test {
- *   &#47;** some doc *&#47;
- *   void foo() {}
- * }
- * </pre>
- * <p>
- * To configure Check to demand some special tag (for example {@code &#64;since})
- * to be present on classes javadoc.
- * </p>
- * <pre>
- * &lt;module name="WriteTag"&gt;
- *   &lt;property name="tag" value="@since"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <pre>
- * &#47;**
- * * Some class
- * *&#47;
- * public class Test { // violation as required tag is missed
- *   &#47;** some doc *&#47;
- *   void foo() {} // OK, as methods are not checked by default
- * }
- * </pre>
- * <p>
- * To configure Check to demand some special tag (for example {@code &#64;since})
- * to be present on method javadocs also in addition to default tokens.
- * </p>
- * <pre>
- * &lt;module name="WriteTag"&gt;
- *   &lt;property name="tag" value="@since"/&gt;
- *   &lt;property name="tokens"
- *          value="INTERFACE_DEF, CLASS_DEF, ENUM_DEF, ANNOTATION_DEF, RECORD_DEF, METHOD_DEF" /&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <pre>
- * &#47;**
- * * Some class
- * *&#47;
- * public class Test { // violation as required tag is missed
- *   &#47;** some doc *&#47;
- *   void foo() {} // violation as required tag is missed
- * }
- * </pre>
- * <p>
- * To configure Check to demand {@code &#64;since} tag
- * to be present with digital value on method javadocs also in addition to default tokens.
- * Attention: usage of non "ignore" in tagSeverity will print violation with such severity
- * on each presence of such tag.
- * </p>
- * <pre>
- * &lt;module name="WriteTag"&gt;
- *   &lt;property name="tag" value="@since"/&gt;
- *   &lt;property name="tokens"
- *          value="INTERFACE_DEF, CLASS_DEF, ENUM_DEF, ANNOTATION_DEF, RECORD_DEF, METHOD_DEF" /&gt;
- *   &lt;property name="tagFormat" value="[1-9\.]"/&gt;
- *   &lt;property name="tagSeverity" value="ignore"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <pre>
- * &#47;**
- * * Some class
- * * &#64;since 1.2
- * *&#47;
- * public class Test {
- *   &#47;** some doc
- *   * &#64;since violation
- *   *&#47;
- *   void foo() {}
- * }
- * </pre>
+ *
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -218,6 +130,7 @@ public class WriteTagCheck
      * Setter to specify the name of tag.
      *
      * @param tag tag to check
+     * @since 4.2
      */
     public void setTag(String tag) {
         this.tag = tag;
@@ -228,6 +141,7 @@ public class WriteTagCheck
      * Setter to specify the regexp to match tag content.
      *
      * @param pattern a {@code String} value
+     * @since 4.2
      */
     public void setTagFormat(Pattern pattern) {
         tagFormat = pattern;
@@ -238,6 +152,7 @@ public class WriteTagCheck
      *
      * @param severity  The new severity level
      * @see SeverityLevel
+     * @since 4.2
      */
     public final void setTagSeverity(SeverityLevel severity) {
         tagSeverity = severity;
@@ -283,10 +198,7 @@ public class WriteTagCheck
         final int lineNo = ast.getLineNo();
         final TextBlock cmt =
             contents.getJavadocBefore(lineNo);
-        if (cmt == null) {
-            log(lineNo, MSG_MISSING_TAG, tag);
-        }
-        else {
+        if (cmt != null) {
             checkTag(lineNo, cmt.getText());
         }
     }

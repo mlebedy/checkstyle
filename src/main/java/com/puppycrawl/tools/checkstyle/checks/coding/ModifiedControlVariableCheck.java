@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -35,21 +35,23 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
 
 /**
- * <p>
+ * <div>
  * Checks that for loop control variables are not modified
  * inside the for block. An example is:
- * </p>
+ * </div>
  * <pre>
  * for (int i = 0; i &lt; 1; i++) {
  *   i++; // violation
  * }
  * </pre>
+ *
  * <p>
  * Rationale: If the control variable is modified inside the loop
  * body, the program flow becomes more difficult to follow.
  * See <a href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-14.html#jls-14.14">
  * FOR statement</a> specification for more details.
  * </p>
+ *
  * <p>
  * Such loop would be suppressed:
  * </p>
@@ -58,6 +60,7 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  *   i++;
  * }
  * </pre>
+ *
  * <p>
  * NOTE:The check works with only primitive type variables.
  * The check will not work for arrays used as control variable.An example is
@@ -76,55 +79,11 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * Default value is {@code false}.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name="ModifiedControlVariable"/&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <pre>
- * for(int i=0;i &lt; 8;i++) {
- *   i++; // violation, control variable modified
- * }
- * String args1[]={"Coding", "block"};
- * for (String arg: args1) {
- *   arg = arg.trim(); // violation, control variable modified
- * }
- * </pre>
- * <p>
- * By default, This Check validates
- *  <a href = "https://docs.oracle.com/javase/specs/jls/se11/html/jls-14.html#jls-14.14.2">
- * Enhanced For-Loop</a>.
- * </p>
- * <p>
- * Option 'skipEnhancedForLoopVariable' could be used to skip check of variable
- *  from Enhanced For Loop.
- * </p>
- * <p>
- * An example of how to configure the check so that it skips enhanced For Loop Variable is:
- * </p>
- * <pre>
- * &lt;module name="ModifiedControlVariable"&gt;
- *   &lt;property name="skipEnhancedForLoopVariable" value="true"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
  *
- * <pre>
- * for(int i=0;i &lt; 8;i++) {
- *   i++; // violation, control variable modified
- * }
- * String args1[]={"Coding", "block"};
- * for (String arg: args1) {
- *   arg = arg.trim(); // ok
- * }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -174,6 +133,7 @@ public final class ModifiedControlVariableCheck extends AbstractCheck {
      * enhanced for-loop</a> variable.
      *
      * @param skipEnhancedForLoopVariable whether to skip enhanced for-loop variable
+     * @since 6.8
      */
     public void setSkipEnhancedForLoopVariable(boolean skipEnhancedForLoopVariable) {
         this.skipEnhancedForLoopVariable = skipEnhancedForLoopVariable;
@@ -357,7 +317,7 @@ public final class ModifiedControlVariableCheck extends AbstractCheck {
         final Set<String> initializedVariables = getForInitVariables(ast);
         final Set<String> iteratingVariables = getForIteratorVariables(ast);
         return initializedVariables.stream().filter(iteratingVariables::contains)
-            .collect(Collectors.toSet());
+            .collect(Collectors.toUnmodifiableSet());
     }
 
     /**
@@ -366,8 +326,14 @@ public final class ModifiedControlVariableCheck extends AbstractCheck {
      * @param paramDef a for-each clause variable
      */
     private void leaveForEach(DetailAST paramDef) {
-        final DetailAST paramName = paramDef.findFirstToken(TokenTypes.IDENT);
-        getCurrentVariables().push(paramName.getText());
+        // When using record decomposition in enhanced for loops,
+        // we are not able to declare a 'control variable'.
+        final boolean isRecordPattern = paramDef == null;
+
+        if (!isRecordPattern) {
+            final DetailAST paramName = paramDef.findFirstToken(TokenTypes.IDENT);
+            getCurrentVariables().push(paramName.getText());
+        }
     }
 
     /**
@@ -378,9 +344,10 @@ public final class ModifiedControlVariableCheck extends AbstractCheck {
     private void leaveForDef(DetailAST ast) {
         final DetailAST forInitAST = ast.findFirstToken(TokenTypes.FOR_INIT);
         if (forInitAST == null) {
-            if (!skipEnhancedForLoopVariable) {
+            final Deque<String> currentVariables = getCurrentVariables();
+            if (!skipEnhancedForLoopVariable && !currentVariables.isEmpty()) {
                 // this is for-each loop, just pop variables
-                getCurrentVariables().pop();
+                currentVariables.pop();
             }
         }
         else {
@@ -446,7 +413,7 @@ public final class ModifiedControlVariableCheck extends AbstractCheck {
     }
 
     /**
-     * Find all child of given AST of type TokenType.EXPR
+     * Find all child of given AST of type TokenType.EXPR.
      *
      * @param ast parent of expressions to find
      * @return all child of given ast

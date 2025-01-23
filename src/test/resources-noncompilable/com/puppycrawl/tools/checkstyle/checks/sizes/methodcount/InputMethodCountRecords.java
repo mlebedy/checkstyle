@@ -10,7 +10,7 @@ tokens = (default)CLASS_DEF, ENUM_CONSTANT_DEF, ENUM_DEF, INTERFACE_DEF, ANNOTAT
 
 */
 
-//non-compiled with javac: Compilable with Java14
+//non-compiled with javac: Compilable with Java17
 package com.puppycrawl.tools.checkstyle.checks.sizes.methodcount;
 
 public class InputMethodCountRecords {
@@ -42,7 +42,7 @@ public class InputMethodCountRecords {
         }
     }
     //compact ctor
-    record MyTestRecord3() { // ok
+    record MyTestRecord3() {
         void foo() {
         }
 

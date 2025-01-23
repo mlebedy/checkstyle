@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -27,12 +27,13 @@ import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
 /**
- * <p>
+ * <div>
  * Checks for {@code TODO:} comments. Actually it is a generic
  * <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/regex/Pattern.html">
  * pattern</a> matcher on Java comments. To check for other patterns
  * in Java comments, set the {@code format} property.
- * </p>
+ * </div>
+ *
  * <p>
  * Using {@code TODO:} comments is a great way to keep track of tasks that need to be done.
  * Having them reported by Checkstyle makes it very hard to forget about them.
@@ -44,39 +45,11 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
  * Default value is {@code "TODO:"}.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name="TodoComment"/&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <pre>
- * i++; // TODO: do differently in future   // violation
- * i++; // todo: do differently in future   // OK
- * </pre>
- * <p>
- * To configure the check for comments that contain {@code TODO} and {@code FIXME}:
- * </p>
- * <pre>
- * &lt;module name="TodoComment"&gt;
- *   &lt;property name="format" value="(TODO)|(FIXME)"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <pre>
- * i++;   // TODO: do differently in future   // violation
- * i++;   // todo: do differently in future   // OK
- * i=i/x; // FIXME: handle x = 0 case         // violation
- * i=i/x; // FIX :  handle x = 0 case         // OK
- * </pre>
+ *
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -113,6 +86,7 @@ public class TodoCommentCheck
      *
      * @param pattern
      *        pattern of 'todo' comment.
+     * @since 3.0
      */
     public void setFormat(Pattern pattern) {
         format = pattern;

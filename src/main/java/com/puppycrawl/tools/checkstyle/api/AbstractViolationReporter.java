@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -21,6 +21,8 @@ package com.puppycrawl.tools.checkstyle.api;
 
 import java.util.Map;
 
+import com.puppycrawl.tools.checkstyle.AbstractAutomaticBean;
+
 /**
  * Serves as an abstract base class for all modules that report inspection
  * findings. Such modules have a Severity level which is used for the
@@ -32,7 +34,7 @@ import java.util.Map;
  *      by demand in subclasses
  */
 public abstract class AbstractViolationReporter
-    extends AutomaticBean {
+    extends AbstractAutomaticBean {
 
     /** The severity level of any violations found. */
     private SeverityLevel severityLevel = SeverityLevel.ERROR;
@@ -106,11 +108,13 @@ public abstract class AbstractViolationReporter
     /**
      * Returns the message bundle name resource bundle that contains the messages
      * used by this module.
+     *
      * <p>
      * The default implementation expects the resource files to be named
      * messages.properties, messages_de.properties, etc. The file must
      * be placed in the same package as the module implementation.
      * </p>
+     *
      * <p>
      * Example: If you write com/foo/MyCoolCheck, create resource files
      * com/foo/messages.properties, com/foo/messages_de.properties, etc.

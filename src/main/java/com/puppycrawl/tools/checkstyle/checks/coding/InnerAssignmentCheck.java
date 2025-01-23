@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -29,16 +29,18 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
 
 /**
- * <p>
+ * <div>
  * Checks for assignments in subexpressions, such as in
  * {@code String s = Integer.toString(i = 2);}.
- * </p>
+ * </div>
+ *
  * <p>
  * Rationale: Except for the loop idioms,
  * all assignments should occur in their own top-level statement to increase readability.
  * With inner assignments like the one given above, it is difficult to see all places
  * where a variable is set.
  * </p>
+ *
  * <p>
  * Note: Check allows usage of the popular assignments in loops:
  * </p>
@@ -57,63 +59,17 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * }
  * while ((line = bufferedReader.readLine()) != null); // OK
  * </pre>
+ *
  * <p>
  * Assignment inside a condition is not a problem here, as the assignment is surrounded
  * by an extra pair of parentheses. The comparison is {@code != null} and there is no chance that
  * intention was to write {@code line == reader.readLine()}.
  * </p>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;InnerAssignment"/&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * class MyClass {
  *
- *   void foo() {
- *     int a, b;
- *     a = b = 5; // violation, assignment to each variable should be in a separate statement
- *     a = b += 5; // violation
- *
- *     a = 5; // OK
- *     b = 5; // OK
- *     a = 5; b = 5; // OK
- *
- *     double myDouble;
- *     double[] doubleArray = new double[] {myDouble = 4.5, 15.5}; // violation
- *
- *     String nameOne;
- *     List&lt;String&gt; myList = new ArrayList&lt;String&gt;();
- *     myList.add(nameOne = "tom"); // violation
- *     for (int k = 0; k &lt; 10; k = k + 2) { // OK
- *       // some code
- *     }
- *
- *     boolean someVal;
- *     if (someVal = true) { // violation
- *       // some code
- *     }
- *
- *     while (someVal = false) {} // violation
- *
- *     InputStream is = new FileInputStream("textFile.txt");
- *     while ((b = is.read()) != -1) { // OK, this is a common idiom
- *       // some code
- *     }
- *
- *   }
- *
- *   boolean testMethod() {
- *     boolean val;
- *     return val = true; // violation
- *   }
- * }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -150,6 +106,7 @@ public class InnerAssignmentCheck
             TokenTypes.RESOURCE_SPECIFICATION,
         },
         {TokenTypes.EXPR, TokenTypes.LAMBDA},
+        {TokenTypes.EXPR, TokenTypes.SWITCH_RULE, TokenTypes.LITERAL_SWITCH, TokenTypes.SLIST},
     };
 
     /**
@@ -241,6 +198,7 @@ public class InnerAssignmentCheck
      * if (y &lt; 0)
      *     x = y;
      * </pre>
+     *
      * <p>
      * This leads to the following AST structure:
      * </p>
@@ -252,6 +210,7 @@ public class InnerAssignmentCheck
      *     EXPR // body
      *     SEMI
      * </pre>
+     *
      * <p>
      * We need to ensure that ast is in the body and not in the test.
      * </p>

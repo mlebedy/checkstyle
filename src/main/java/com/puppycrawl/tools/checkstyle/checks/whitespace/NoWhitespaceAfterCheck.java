@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -28,13 +28,14 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 
 /**
- * <p>
+ * <div>
  * Checks that there is no whitespace after a token.
  * More specifically, it checks that it is not followed by whitespace,
  * or (if linebreaks are allowed) all characters on the line after are
  * whitespace. To forbid linebreaks after a token, set property
  * {@code allowLineBreaks} to {@code false}.
- * </p>
+ * </div>
+ *
  * <p>
  * The check processes
  * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#ARRAY_DECLARATOR">
@@ -49,12 +50,19 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#INDEX_OP">
  * INDEX_OP</a> will be ignored.
  * </p>
+ *
  * <p>
- * If the annotation is between the type and the array, the check will skip validation for spaces
+ * If the annotation is between the type and the array, like {@code char @NotNull [] param},
+ * the check will skip validation for spaces.
  * </p>
- * <pre>
- * public void foo(final char @NotNull [] param) {} // No violation
- * </pre>
+ *
+ * <p>
+ * Note: This check processes the
+ * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#LITERAL_SYNCHRONIZED">
+ * LITERAL_SYNCHRONIZED</a> token only when it appears as a part of a
+ * <a href="https://docs.oracle.com/javase/specs/jls/se19/html/jls-14.html#jls-14.19">
+ * synchronized statement</a>, i.e. {@code synchronized(this) {}}.
+ * </p>
  * <ul>
  * <li>
  * Property {@code allowLineBreaks} - Control whether whitespace is allowed
@@ -91,75 +99,11 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * INDEX_OP</a>.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;NoWhitespaceAfter&quot;/&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * class Test {
  *
- *   public void lineBreak(String x) {
- *     Integer.
- *         parseInt(x); // Ok
- *     Integer.parseInt(x); // Ok
- *   }
- *
- *   public void dotOperator(String s) {
- *     Integer.parseInt(s); // Ok
- *     Integer. parseInt(s); // violation, '.' is followed by whitespace
- *   }
- *
- *   public void arrayDec() {
- *     int[] arr = arr; // Ok
- *     int [] arr = arr; // violation, int is followed by whitespace
- *   }
- *
- *   public void bitwiseNot(int a) {
- *     a = ~ a; // violation '~' is followed by whitespace
- *     a = ~a; // Ok
- *   }
- * }
- * </pre>
- * <p>To configure the check to forbid linebreaks after a DOT token:
- * </p>
- * <pre>
- * &lt;module name=&quot;NoWhitespaceAfter&quot;&gt;
- *   &lt;property name=&quot;tokens&quot; value=&quot;DOT&quot;/&gt;
- *   &lt;property name=&quot;allowLineBreaks&quot; value=&quot;false&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * class Test {
- *
- *   public void lineBreak(String x) {
- *     Integer.
- *         parseInt(x); // violation, '.' is followed by whitespace
- *     Integer.parseInt(x); // Ok
- *   }
- *
- *   public void dotOperator(String s) {
- *     Integer.parseInt(s); // Ok
- *     Integer. parseInt(s); // violation, '.' is followed by whitespace
- *   }
- *
- *   public void arrayDec() {
- *     int[] arr = arr; // Ok
- *     int [] arr = arr; // Ok
- *   }
- *
- *   public void bitwiseNot(int a) {
- *     a = ~ a; // Ok
- *     a = ~a; // Ok
- *   }
- * }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -230,6 +174,7 @@ public class NoWhitespaceAfterCheck extends AbstractCheck {
      *
      * @param allowLineBreaks whether whitespace should be
      *     flagged at linebreaks.
+     * @since 3.0
      */
     public void setAllowLineBreaks(boolean allowLineBreaks) {
         this.allowLineBreaks = allowLineBreaks;
@@ -283,12 +228,11 @@ public class NoWhitespaceAfterCheck extends AbstractCheck {
      * @return true if whitespace after ast should be checked
      */
     private static boolean shouldCheckWhitespaceAfter(DetailAST ast) {
-        boolean checkWhitespace = true;
         final DetailAST previousSibling = ast.getPreviousSibling();
-        if (previousSibling != null && previousSibling.getType() == TokenTypes.ANNOTATIONS) {
-            checkWhitespace = false;
-        }
-        return checkWhitespace;
+        final boolean isSynchronizedMethod = ast.getType() == TokenTypes.LITERAL_SYNCHRONIZED
+                        && ast.getFirstChild() == null;
+        return !isSynchronizedMethod
+                && (previousSibling == null || previousSibling.getType() != TokenTypes.ANNOTATIONS);
     }
 
     /**
@@ -483,7 +427,7 @@ public class NoWhitespaceAfterCheck extends AbstractCheck {
                     .findFirstToken(TokenTypes.GENERIC_END);
         }
         else if (objectArrayType.isPresent()) {
-            typeLastNode = objectArrayType.get();
+            typeLastNode = objectArrayType.orElseThrow();
         }
         else {
             typeLastNode = parent.getFirstChild();
@@ -506,13 +450,12 @@ public class NoWhitespaceAfterCheck extends AbstractCheck {
         final DetailAST previousElement;
         final DetailAST ident = getIdentLastToken(parent.getParent());
         final DetailAST lastTypeNode = getTypeLastNode(ast);
-        final boolean isTypeCast = parent.getParent().getType() == TokenTypes.TYPECAST;
         // sometimes there are ident-less sentences
         // i.e. "(Object[]) null", but in casual case should be
         // checked whether ident or lastTypeNode has preceding position
         // determining if it is java style or C style
 
-        if (ident == null || isTypeCast || ident.getLineNo() > ast.getLineNo()) {
+        if (ident == null || ident.getLineNo() > ast.getLineNo()) {
             previousElement = lastTypeNode;
         }
         else if (ident.getLineNo() < ast.getLineNo()) {
@@ -544,9 +487,9 @@ public class NoWhitespaceAfterCheck extends AbstractCheck {
      */
     private static DetailAST getIdentLastToken(DetailAST ast) {
         final DetailAST result;
-        final DetailAST dot = getPrecedingDot(ast);
+        final Optional<DetailAST> dot = getPrecedingDot(ast);
         // method call case
-        if (dot == null || ast.getFirstChild().getType() == TokenTypes.METHOD_CALL) {
+        if (dot.isEmpty() || ast.getFirstChild().getType() == TokenTypes.METHOD_CALL) {
             final DetailAST methodCall = ast.findFirstToken(TokenTypes.METHOD_CALL);
             if (methodCall == null) {
                 result = ast.findFirstToken(TokenTypes.IDENT);
@@ -557,7 +500,7 @@ public class NoWhitespaceAfterCheck extends AbstractCheck {
         }
         // qualified name case
         else {
-            result = dot.getFirstChild().getNextSibling();
+            result = dot.orElseThrow().getFirstChild().getNextSibling();
         }
         return result;
     }
@@ -569,11 +512,24 @@ public class NoWhitespaceAfterCheck extends AbstractCheck {
      * @param leftBracket the ast we are checking
      * @return dot preceding the left bracket
      */
-    private static DetailAST getPrecedingDot(DetailAST leftBracket) {
-        final DetailAST referencedClassDot =
-                leftBracket.getParent().findFirstToken(TokenTypes.DOT);
+    private static Optional<DetailAST> getPrecedingDot(DetailAST leftBracket) {
         final DetailAST referencedMemberDot = leftBracket.findFirstToken(TokenTypes.DOT);
-        return Optional.ofNullable(referencedMemberDot).orElse(referencedClassDot);
+        final Optional<DetailAST> result = Optional.ofNullable(referencedMemberDot);
+        return result.or(() -> getReferencedClassDot(leftBracket));
+    }
 
+    /**
+     * Gets the dot preceding a class reference.
+     *
+     * @param leftBracket the ast we are checking
+     * @return dot preceding the left bracket
+     */
+    private static Optional<DetailAST> getReferencedClassDot(DetailAST leftBracket) {
+        final DetailAST parent = leftBracket.getParent();
+        Optional<DetailAST> classDot = Optional.empty();
+        if (parent.getType() != TokenTypes.ASSIGN) {
+            classDot = Optional.ofNullable(parent.findFirstToken(TokenTypes.DOT));
+        }
+        return classDot;
     }
 }

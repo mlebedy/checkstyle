@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -22,16 +22,17 @@ package com.puppycrawl.tools.checkstyle;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
-import com.puppycrawl.tools.checkstyle.api.Violation;
 import com.puppycrawl.tools.checkstyle.utils.ModuleReflectionUtil;
 
 /**
@@ -187,11 +188,7 @@ public class PackageObjectFactory implements ModuleFactory {
             instance = createFromStandardCheckSet(name);
             // find the name in third party map
             if (instance == null) {
-                if (thirdPartyNameToFullModuleNames == null) {
-                    thirdPartyNameToFullModuleNames =
-                            generateThirdPartyNameToFullModuleName(moduleClassLoader);
-                }
-                instance = createObjectFromMap(name, thirdPartyNameToFullModuleNames);
+                instance = createObjectFromClassPath(name);
             }
         }
         if (instance == null) {
@@ -209,10 +206,10 @@ public class PackageObjectFactory implements ModuleFactory {
                         + STRING_SEPARATOR + nameCheck + STRING_SEPARATOR
                         + joinPackageNamesWithClassName(nameCheck, packages);
             }
-            final Violation exceptionMessage = new Violation(1,
-                Definitions.CHECKSTYLE_BUNDLE, UNABLE_TO_INSTANTIATE_EXCEPTION_MESSAGE,
-                new String[] {name, attemptedNames}, null, getClass(), null);
-            throw new CheckstyleException(exceptionMessage.getViolation());
+            final LocalizedMessage exceptionMessage = new LocalizedMessage(
+                Definitions.CHECKSTYLE_BUNDLE, getClass(),
+                UNABLE_TO_INSTANTIATE_EXCEPTION_MESSAGE, name, attemptedNames);
+            throw new CheckstyleException(exceptionMessage.getMessage());
         }
         return instance;
     }
@@ -241,19 +238,23 @@ public class PackageObjectFactory implements ModuleFactory {
     }
 
     /**
-     * Create object with the help of the supplied map.
+     * Create object with the help of the classpath.
      *
      * @param name name of module.
-     * @param map the supplied map.
      * @return instance of module if it is found in modules map and no ambiguous classes exist.
      * @throws CheckstyleException if the class fails to instantiate or there are ambiguous classes.
      */
-    private Object createObjectFromMap(String name, Map<String, Set<String>> map)
+    private Object createObjectFromClassPath(String name)
             throws CheckstyleException {
-        final Set<String> fullModuleNames = map.get(name);
+        thirdPartyNameToFullModuleNames = lazyLoad(
+                thirdPartyNameToFullModuleNames,
+                () -> generateThirdPartyNameToFullModuleName(moduleClassLoader)
+        );
+        final Set<String> fullModuleNames = thirdPartyNameToFullModuleNames.get(name);
         Object instance = null;
         if (fullModuleNames == null) {
-            final Set<String> fullCheckModuleNames = map.get(name + CHECK_SUFFIX);
+            final Set<String> fullCheckModuleNames =
+                    thirdPartyNameToFullModuleNames.get(name + CHECK_SUFFIX);
             if (fullCheckModuleNames != null) {
                 instance = createObjectFromFullModuleNames(name, fullCheckModuleNames);
             }
@@ -285,10 +286,10 @@ public class PackageObjectFactory implements ModuleFactory {
             final String optionalNames = fullModuleNames.stream()
                     .sorted()
                     .collect(Collectors.joining(STRING_SEPARATOR));
-            final Violation exceptionMessage = new Violation(1,
-                    Definitions.CHECKSTYLE_BUNDLE, AMBIGUOUS_MODULE_NAME_EXCEPTION_MESSAGE,
-                    new String[] {name, optionalNames}, null, getClass(), null);
-            throw new CheckstyleException(exceptionMessage.getViolation());
+            final LocalizedMessage exceptionMessage = new LocalizedMessage(
+                    Definitions.CHECKSTYLE_BUNDLE, getClass(),
+                    AMBIGUOUS_MODULE_NAME_EXCEPTION_MESSAGE, name, optionalNames);
+            throw new CheckstyleException(exceptionMessage.getMessage());
         }
         return returnValue;
     }
@@ -306,7 +307,9 @@ public class PackageObjectFactory implements ModuleFactory {
         try {
             returnValue = ModuleReflectionUtil.getCheckstyleModules(packages, loader).stream()
                 .collect(Collectors.groupingBy(Class::getSimpleName,
-                    Collectors.mapping(Class::getCanonicalName, Collectors.toSet())));
+                    Collectors.mapping(
+                        Class::getCanonicalName,
+                        Collectors.toCollection(HashSet::new))));
         }
         catch (IOException ignore) {
             returnValue = Collections.emptyMap();
@@ -386,7 +389,7 @@ public class PackageObjectFactory implements ModuleFactory {
         final List<String> possibleNames = packages.stream()
             .map(packageName -> packageName + PACKAGE_SEPARATOR + name)
             .flatMap(className -> Stream.of(className, className + CHECK_SUFFIX))
-            .collect(Collectors.toList());
+            .collect(Collectors.toUnmodifiableList());
         Object instance = null;
         for (String possibleName : possibleNames) {
             instance = createObject(possibleName);
@@ -395,6 +398,25 @@ public class PackageObjectFactory implements ModuleFactory {
             }
         }
         return instance;
+    }
+
+    /**
+     * Initialize object by supplier if object is null.
+     *
+     * @param <T> type of object
+     * @param object object to initialize
+     * @param supplier function to initialize if object is null
+     * @return object as it was provided in method or initialized
+     */
+    private static <T> T lazyLoad(T object, Supplier<T> supplier) {
+        final T result;
+        if (object == null) {
+            result = supplier.get();
+        }
+        else {
+            result = object;
+        }
+        return result;
     }
 
     /**
@@ -473,6 +495,8 @@ public class PackageObjectFactory implements ModuleFactory {
                 BASE_PACKAGE + ".checks.coding.AvoidInlineConditionalsCheck");
         NAME_TO_FULL_MODULE_NAME.put("AvoidNoArgumentSuperConstructorCallCheck",
                 BASE_PACKAGE + ".checks.coding.AvoidNoArgumentSuperConstructorCallCheck");
+        NAME_TO_FULL_MODULE_NAME.put("ConstructorsDeclarationGroupingCheck",
+                BASE_PACKAGE + ".checks.coding.ConstructorsDeclarationGroupingCheck");
         NAME_TO_FULL_MODULE_NAME.put("CovariantEqualsCheck",
                 BASE_PACKAGE + ".checks.coding.CovariantEqualsCheck");
         NAME_TO_FULL_MODULE_NAME.put("DeclarationOrderCheck",
@@ -511,6 +535,8 @@ public class PackageObjectFactory implements ModuleFactory {
                 BASE_PACKAGE + ".checks.coding.MagicNumberCheck");
         NAME_TO_FULL_MODULE_NAME.put("MissingCtorCheck",
                 BASE_PACKAGE + ".checks.coding.MissingCtorCheck");
+        NAME_TO_FULL_MODULE_NAME.put("MissingNullCaseInSwitchCheck",
+                BASE_PACKAGE + ".checks.coding.MissingNullCaseInSwitchCheck");
         NAME_TO_FULL_MODULE_NAME.put("MissingSwitchDefaultCheck",
                 BASE_PACKAGE + ".checks.coding.MissingSwitchDefaultCheck");
         NAME_TO_FULL_MODULE_NAME.put("ModifiedControlVariableCheck",
@@ -567,12 +593,18 @@ public class PackageObjectFactory implements ModuleFactory {
                 BASE_PACKAGE + ".checks.coding.UnnecessarySemicolonInTryWithResourcesCheck");
         NAME_TO_FULL_MODULE_NAME.put("VariableDeclarationUsageDistanceCheck",
                 BASE_PACKAGE + ".checks.coding.VariableDeclarationUsageDistanceCheck");
+        NAME_TO_FULL_MODULE_NAME.put("WhenShouldBeUsed",
+                BASE_PACKAGE + ".checks.coding.WhenShouldBeUsedCheck");
         NAME_TO_FULL_MODULE_NAME.put("NoArrayTrailingCommaCheck",
                 BASE_PACKAGE + ".checks.coding.NoArrayTrailingCommaCheck");
         NAME_TO_FULL_MODULE_NAME.put("MatchXpathCheck",
                 BASE_PACKAGE + ".checks.coding.MatchXpathCheck");
         NAME_TO_FULL_MODULE_NAME.put("UnusedLocalVariableCheck",
                 BASE_PACKAGE + ".checks.coding.UnusedLocalVariableCheck");
+        NAME_TO_FULL_MODULE_NAME.put("UnusedCatchParameterShouldBeUnnamedCheck",
+                BASE_PACKAGE + ".checks.coding.UnusedCatchParameterShouldBeUnnamedCheck");
+        NAME_TO_FULL_MODULE_NAME.put("UnusedLambdaParameterShouldBeUnnamedCheck",
+                BASE_PACKAGE + ".checks.coding.UnusedLambdaParameterShouldBeUnnamedCheck");
     }
 
     /**
@@ -593,6 +625,8 @@ public class PackageObjectFactory implements ModuleFactory {
                 BASE_PACKAGE + ".checks.design.MutableExceptionCheck");
         NAME_TO_FULL_MODULE_NAME.put("OneTopLevelClassCheck",
                 BASE_PACKAGE + ".checks.design.OneTopLevelClassCheck");
+        NAME_TO_FULL_MODULE_NAME.put("SealedShouldHavePermitsListCheck",
+                BASE_PACKAGE + ".checks.design.SealedShouldHavePermitsListCheck");
         NAME_TO_FULL_MODULE_NAME.put("ThrowsCountCheck",
                 BASE_PACKAGE + ".checks.design.ThrowsCountCheck");
         NAME_TO_FULL_MODULE_NAME.put("VisibilityModifierCheck",
@@ -653,6 +687,8 @@ public class PackageObjectFactory implements ModuleFactory {
                 BASE_PACKAGE + ".checks.javadoc.JavadocBlockTagLocationCheck");
         NAME_TO_FULL_MODULE_NAME.put("JavadocContentLocationCheck",
                 BASE_PACKAGE + ".checks.javadoc.JavadocContentLocationCheck");
+        NAME_TO_FULL_MODULE_NAME.put("JavadocLeadingAsteriskAlignCheck",
+                BASE_PACKAGE + ".checks.javadoc.JavadocLeadingAsteriskAlignCheck");
         NAME_TO_FULL_MODULE_NAME.put("JavadocMethodCheck",
                 BASE_PACKAGE + ".checks.javadoc.JavadocMethodCheck");
         NAME_TO_FULL_MODULE_NAME.put("JavadocMissingLeadingAsteriskCheck",
@@ -915,6 +951,8 @@ public class PackageObjectFactory implements ModuleFactory {
                 BASE_PACKAGE + ".filters.SuppressWarningsFilter");
         NAME_TO_FULL_MODULE_NAME.put("SuppressWithNearbyCommentFilter",
                 BASE_PACKAGE + ".filters.SuppressWithNearbyCommentFilter");
+        NAME_TO_FULL_MODULE_NAME.put("SuppressWithNearbyTextFilter",
+                BASE_PACKAGE + ".filters.SuppressWithNearbyTextFilter");
     }
 
     /**

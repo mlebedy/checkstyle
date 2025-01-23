@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -38,9 +38,9 @@ public class XpathRegressionUnusedImportsTest extends AbstractXpathTestSupport {
     }
 
     @Test
-    public void testOne() throws Exception {
+    public void testUnusedImports() throws Exception {
         final File fileToProcess =
-                new File(getPath("SuppressionXpathRegressionUnusedImportsOne.java"));
+                new File(getPath("InputXpathUnusedImports.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(UnusedImportsCheck.class);
@@ -58,9 +58,9 @@ public class XpathRegressionUnusedImportsTest extends AbstractXpathTestSupport {
     }
 
     @Test
-    public void testTwo() throws Exception {
+    public void testStatic() throws Exception {
         final File fileToProcess =
-                new File(getPath("SuppressionXpathRegressionUnusedImportsTwo.java"));
+                new File(getPath("InputXpathUnusedImportsStatic.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(UnusedImportsCheck.class);

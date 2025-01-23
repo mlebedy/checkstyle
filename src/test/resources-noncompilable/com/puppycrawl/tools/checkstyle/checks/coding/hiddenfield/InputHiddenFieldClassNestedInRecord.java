@@ -10,7 +10,7 @@ tokens = (default)VARIABLE_DEF, PARAMETER_DEF, PATTERN_VARIABLE_DEF, LAMBDA, REC
 
 */
 
-//non-compiled with javac: Compilable with Java14
+//non-compiled with javac: Compilable with Java17
 package com.puppycrawl.tools.checkstyle.checks.coding.hiddenfield;
 
 public class InputHiddenFieldClassNestedInRecord {
@@ -20,12 +20,12 @@ public class InputHiddenFieldClassNestedInRecord {
         class foo2 {
             int a, b;
 
-            foo setA(int a) { // violation
+            foo setA(int a) { // violation, ''a' hides a field'
                 this.a = a;
                 return foo.this;
             }
 
-            foo2 setB(int b) { // ok
+            foo2 setB(int b) {
                 this.b = b;
                 return this;
             }

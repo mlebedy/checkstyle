@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -56,7 +56,9 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.apache.commons.beanutils.PropertyUtils;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -76,15 +78,23 @@ import com.puppycrawl.tools.checkstyle.checks.javadoc.AbstractJavadocCheck;
 import com.puppycrawl.tools.checkstyle.checks.naming.AccessModifierOption;
 import com.puppycrawl.tools.checkstyle.internal.utils.CheckUtil;
 import com.puppycrawl.tools.checkstyle.internal.utils.TestUtil;
+import com.puppycrawl.tools.checkstyle.internal.utils.XdocGenerator;
 import com.puppycrawl.tools.checkstyle.internal.utils.XdocUtil;
 import com.puppycrawl.tools.checkstyle.internal.utils.XmlUtil;
 import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
 
+/**
+ * Generates xdocs pages from templates and performs validations.
+ * Before running this test, the following commands have to be executed:
+ * - mvn clean compile - Required for next command
+ * - mvn plexus-component-metadata:generate-metadata - Required to find custom macros and parser
+ */
 public class XdocsPagesTest {
+    private static final Path SITE_PATH = Path.of("src/site/site.xml");
 
-    private static final Path AVAILABLE_CHECKS_PATH = Paths.get("src/xdocs/checks.xml");
+    private static final Path AVAILABLE_CHECKS_PATH = Path.of("src/site/xdoc/checks.xml");
     private static final String LINK_TEMPLATE =
-            "(?s).*<a href=\"config_\\w+\\.html#%1$s\">(\\s)*%1$s</a>.*";
+            "(?s).*<a href=\"[^\"]+#%1$s\">([\\r\\n\\s])*%1$s([\\r\\n\\s])*</a>.*";
 
     private static final Pattern VERSION = Pattern.compile("\\d+\\.\\d+(\\.\\d+)?");
 
@@ -98,6 +108,7 @@ public class XdocsPagesTest {
             "name=\"LineLength\"",
             "name=\"Translation\"",
             "name=\"SeverityMatchFilter\"",
+            "name=\"SuppressWithNearbyTextFilter\"",
             "name=\"SuppressWithPlainTextCommentFilter\"",
             "name=\"SuppressionFilter\"",
             "name=\"SuppressionSingleFilter\"",
@@ -139,14 +150,10 @@ public class XdocsPagesTest {
             // loads string into memory similar to file
             "Header.header",
             "RegexpHeader.header",
-            // deprecated fields
-            "JavadocMethod.minLineCount",
-            "JavadocMethod.allowMissingJavadoc",
-            "JavadocMethod.allowMissingPropertyJavadoc",
-            "JavadocMethod.ignoreMethodNamesRegex",
-            "JavadocMethod.logLoadErrors",
-            "JavadocMethod.suppressLoadErrors",
-            "MissingDeprecated.skipNoJavadoc"
+            // property is an int, but we cut off excess to accommodate old versions
+            "RedundantModifier.jdkVersion",
+            // until https://github.com/checkstyle/checkstyle/issues/13376
+            "CustomImportOrder.customImportOrderRules"
     );
 
     private static final Set<String> SUN_MODULES = Collections.unmodifiableSet(
@@ -218,8 +225,48 @@ public class XdocsPagesTest {
             "WhitespaceAfter",
             "WhitespaceAround"
     );
+
     private static final Set<String> GOOGLE_MODULES = Collections.unmodifiableSet(
         CheckUtil.getConfigGoogleStyleModules());
+
+    private static final Set<String> NON_MODULE_XDOC = Set.of(
+        "config_system_properties.xml",
+        "sponsoring.xml",
+        "consulting.xml",
+        "index.xml",
+        "extending.xml",
+        "contributing.xml",
+        "running.xml",
+        "checks.xml",
+        "property_types.xml",
+        "google_style.xml",
+        "sun_style.xml",
+        "style_configs.xml",
+        "writingfilters.xml",
+        "writingfilefilters.xml",
+        "eclipse.xml",
+        "netbeans.xml",
+        "idea.xml",
+        "beginning_development.xml",
+        "writingchecks.xml",
+        "config.xml",
+        "report_issue.xml"
+    );
+
+    @TempDir
+    private static File temporaryFolder;
+
+    /**
+     * Generate xdoc content from templates before validation.
+     * This method will be removed once
+     * <a href="https://github.com/checkstyle/checkstyle/issues/13426">#13426</a> is resolved.
+     *
+     * @throws Exception if something goes wrong
+     */
+    @BeforeAll
+    public static void generateXdocContent() throws Exception {
+        XdocGenerator.generateXdocContent(temporaryFolder);
+    }
 
     @Test
     public void testAllChecksPresentOnAvailableChecksPage() throws Exception {
@@ -227,7 +274,10 @@ public class XdocsPagesTest {
 
         CheckUtil.getSimpleNames(CheckUtil.getCheckstyleChecks())
             .stream()
-            .filter(checkName -> !"JavadocMetadataScraper".equals(checkName))
+            .filter(checkName -> {
+                return !"JavadocMetadataScraper".equals(checkName)
+                    && !"ClassAndPropertiesSettersJavadocScraper".equals(checkName);
+            })
             .forEach(checkName -> {
                 if (!isPresent(availableChecks, checkName)) {
                     assertWithMessage(
@@ -243,15 +293,39 @@ public class XdocsPagesTest {
     }
 
     @Test
+    public void testAllConfigsHaveLinkInSite() throws Exception {
+        final String siteContent = Files.readString(SITE_PATH);
+
+        for (Path path : XdocUtil.getXdocsConfigFilePaths(XdocUtil.getXdocsFilePaths())) {
+            final String expectedFile = path.toString()
+                    .replace(".xml", ".html")
+                    .replaceAll("\\\\", "/")
+                    .replaceAll("src[\\\\/]site[\\\\/]xdoc[\\\\/]", "");
+            final boolean isConfigHtmlFile = Pattern.matches("config_[a-z]+.html", expectedFile);
+            final boolean isChecksIndexHtmlFile = "checks/index.html".equals(expectedFile);
+            final boolean isOldReleaseNotes = path.toString().contains("releasenotes_");
+            final boolean isInnerPage = "report_issue.html".equals(expectedFile);
+
+            if (!isConfigHtmlFile && !isChecksIndexHtmlFile
+                && !isOldReleaseNotes && !isInnerPage) {
+                final String expectedLink = String.format(Locale.ROOT, "href=\"%s\"", expectedFile);
+                assertWithMessage("Expected to find link to '" + expectedLink + "' in " + SITE_PATH)
+                        .that(siteContent)
+                        .contains(expectedLink);
+            }
+        }
+    }
+
+    @Test
     public void testAllChecksPageInSyncWithChecksSummaries() throws Exception {
         final Pattern endOfSentence = Pattern.compile("(.*?\\.)\\s", Pattern.DOTALL);
         final Map<String, String> summaries = readSummaries();
 
         for (Path path : XdocUtil.getXdocsConfigFilePaths(XdocUtil.getXdocsFilePaths())) {
             final String fileName = path.getFileName().toString();
-            if ("config_system_properties.xml".equals(fileName)
-                    || "config_filefilters.xml".equals(fileName)
-                    || "config_filters.xml".equals(fileName)) {
+            if (isNonModulePage(fileName)
+                || path.toString().contains("filefilters")
+                || path.toString().contains("filters")) {
                 continue;
             }
 
@@ -282,6 +356,183 @@ public class XdocsPagesTest {
                     .isEqualTo(firstSentence);
             }
         }
+    }
+
+    @Test
+    public void testCategoryIndexPageTableInSyncWithAllChecksPageTable() throws Exception {
+        final Map<String, String> summaries = readSummaries();
+        for (Path path : XdocUtil.getXdocsConfigFilePaths(XdocUtil.getXdocsFilePaths())) {
+            final String fileName = path.getFileName().toString();
+            if (!"index.xml".equals(fileName)
+                    || path.getParent().toString().contains("filters")) {
+                continue;
+            }
+
+            final String input = Files.readString(path);
+            final Document document = XmlUtil.getRawXml(fileName, input, input);
+            final NodeList sources = document.getElementsByTagName("tr");
+
+            for (int position = 0; position < sources.getLength(); position++) {
+                final Node tableRow = sources.item(position);
+                final Iterator<Node> cells = XmlUtil
+                        .findChildElementsByTag(tableRow, "td").iterator();
+                final String checkName = XmlUtil.sanitizeXml(cells.next().getTextContent());
+                final String description = XmlUtil.sanitizeXml(cells.next().getTextContent());
+                assertWithMessage("The summary for check " + checkName
+                        + " in the file \"" + path + "\""
+                        + " should match the summary"
+                        + " for this check in the file \"" + AVAILABLE_CHECKS_PATH + "\"")
+                    .that(description)
+                    .isEqualTo(summaries.get(checkName));
+            }
+        }
+    }
+
+    @Test
+    public void testAlphabetOrderInNames() throws Exception {
+        final String input = Files.readString(SITE_PATH);
+        final Document document = XmlUtil.getRawXml(SITE_PATH.toString(), input, input);
+        final NodeList nodes = document.getElementsByTagName("item");
+
+        for (int nodeIndex = 0; nodeIndex < nodes.getLength(); nodeIndex++) {
+            final Node current = nodes.item(nodeIndex);
+
+            if ("Checks".equals(XmlUtil.getNameAttributeOfNode(current))) {
+                final List<String> groupNames = getNames(current);
+                final List<String> groupNamesSorted = groupNames.stream()
+                        .sorted()
+                        .collect(Collectors.toUnmodifiableList());
+
+                assertWithMessage("Group names must be in alphabetical order.")
+                        .that(groupNames)
+                        .containsExactlyElementsIn(groupNamesSorted)
+                        .inOrder();
+
+                Node groupNode = current.getFirstChild();
+                int index = 0;
+                final int totalGroups = XmlUtil.getChildrenElements(current).size();
+                while (index < totalGroups) {
+                    if ("item".equals(groupNode.getNodeName())) {
+                        final List<String> checkNames = getNames(groupNode);
+                        final List<String> checkNamesSorted = checkNames.stream()
+                                .sorted()
+                                .collect(Collectors.toUnmodifiableList());
+                        assertWithMessage("Check Names must be in alphabetical Order.")
+                                .that(checkNames)
+                                .containsExactlyElementsIn(checkNamesSorted)
+                                .inOrder();
+                        index++;
+                    }
+                    groupNode = groupNode.getNextSibling();
+                }
+            }
+            if ("Filters".equals(XmlUtil.getNameAttributeOfNode(current))) {
+                final List<String> filterNames = getNames(current);
+                final List<String> filterNamesSorted = filterNames.stream()
+                        .sorted()
+                        .collect(Collectors.toUnmodifiableList());
+                assertWithMessage("Filter Names must be in alphabetical order.")
+                        .that(filterNames)
+                        .containsExactlyElementsIn(filterNamesSorted)
+                        .inOrder();
+            }
+            if ("File Filters".equals(XmlUtil.getNameAttributeOfNode(current))) {
+                final List<String> fileFilterNames = getNames(current);
+                final List<String> fileFilterNamesSorted = fileFilterNames.stream()
+                        .sorted()
+                        .collect(Collectors.toUnmodifiableList());
+                assertWithMessage("File Filter Names must be in alphabetical order.")
+                        .that(fileFilterNames)
+                        .containsExactlyElementsIn(fileFilterNamesSorted)
+                        .inOrder();
+            }
+        }
+    }
+
+    @Test
+    public void testAlphabetOrderAtIndexPages() throws Exception {
+        final Path allChecks = Paths.get("src/site/xdoc/checks.xml");
+        validateOrder(allChecks, "Check");
+
+        final String[] groupNames = {"annotation", "blocks", "design",
+            "coding", "header", "imports", "javadoc", "metrics",
+            "misc", "modifier", "naming", "regexp", "sizes", "whitespace"};
+        for (String name : groupNames) {
+            final Path checks = Paths.get("src/site/xdoc/checks/" + name + "/index.xml");
+            validateOrder(checks, "Check");
+        }
+        final Path filters = Paths.get("src/site/xdoc/filters/index.xml");
+        validateOrder(filters, "Filter");
+
+        final Path fileFilters = Paths.get("src/site/xdoc/filefilters/index.xml");
+        validateOrder(fileFilters, "File Filter");
+    }
+
+    public static void validateOrder(Path path, String name) throws Exception {
+        final String input = Files.readString(path);
+        final Document document = XmlUtil.getRawXml(path.toString(), input, input);
+        final NodeList nodes = document.getElementsByTagName("div");
+
+        for (int nodeIndex = 0; nodeIndex < nodes.getLength(); nodeIndex++) {
+            final Node current = nodes.item(nodeIndex);
+            final List<String> names = getNamesFromIndexPage(current);
+            final List<String> namesSorted = names.stream()
+                    .sorted()
+                    .collect(Collectors.toUnmodifiableList());
+
+            assertWithMessage(name + " Names must be in alphabetical order.")
+                    .that(names)
+                    .containsExactlyElementsIn(namesSorted)
+                    .inOrder();
+        }
+    }
+
+    private static List<String> getNamesFromIndexPage(Node node) {
+        final List<String> result = new ArrayList<>();
+        final Set<Node> children = XmlUtil.findChildElementsByTag(node, "a");
+
+        Node current = node.getFirstChild();
+        Node treeNode = current;
+        boolean getFirstChild = false;
+        int index = 0;
+        while (current != null && index < children.size()) {
+            if ("tr".equals(current.getNodeName())) {
+                treeNode = current.getNextSibling();
+            }
+            if ("a".equals(current.getNodeName())) {
+                final String name = current.getFirstChild().getTextContent()
+                    .replace(" ", "").replace("\n", "");
+                result.add(name);
+                current = treeNode;
+                getFirstChild = false;
+                index++;
+            }
+            else if (getFirstChild) {
+                current = current.getFirstChild();
+                getFirstChild = false;
+            }
+            else {
+                current = current.getNextSibling();
+                getFirstChild = true;
+            }
+        }
+        return result;
+    }
+
+    private static List<String> getNames(Node node) {
+        final Set<Node> children = XmlUtil.getChildrenElements(node);
+        final List<String> result = new ArrayList<>();
+        Node current = node.getFirstChild();
+        int index = 0;
+        while (index < children.size()) {
+            if ("item".equals(current.getNodeName())) {
+                final String name = XmlUtil.getNameAttributeOfNode(current);
+                result.add(name);
+                index++;
+            }
+            current = current.getNextSibling();
+        }
+        return result;
     }
 
     private static Map<String, String> readSummaries() throws Exception {
@@ -327,24 +578,34 @@ public class XdocsPagesTest {
                     .isNotNull();
 
                 final String sectionName;
+                final String nameString = name.getNodeValue();
+                final String idString = id.getNodeValue();
+                final String expectedId;
 
                 if ("google_style.xml".equals(fileName)) {
                     sectionName = "Google";
+                    expectedId = (sectionName + " " + nameString).replace(' ', '_');
                 }
                 else if ("sun_style.xml".equals(fileName)) {
                     sectionName = "Sun";
+                    expectedId = (sectionName + " " + nameString).replace(' ', '_');
+                }
+                else if (path.toString().contains("filters")
+                        || path.toString().contains("checks")) {
+                    // Checks and filters have their own xdocs files, so the section name
+                    // is the same as the section id.
+                    sectionName = XmlUtil.getNameAttributeOfNode(subSection.getParentNode());
+                    expectedId = nameString.replace(' ', '_');
                 }
                 else {
                     sectionName = XmlUtil.getNameAttributeOfNode(subSection.getParentNode());
+                    expectedId = (sectionName + " " + nameString).replace(' ', '_');
                 }
-
-                final String nameString = name.getNodeValue();
-                final String idString = id.getNodeValue();
 
                 assertWithMessage(fileName + " sub-section " + nameString + " for section "
                         + sectionName + " must match")
                     .that(idString)
-                    .isEqualTo((sectionName + " " + nameString).replace(' ', '_'));
+                    .isEqualTo(expectedId);
             }
         }
     }
@@ -375,7 +636,9 @@ public class XdocsPagesTest {
 
                 // can't test ant structure, or old and outdated checks
                 assertWithMessage("Xml is invalid, old or has outdated structure")
-                        .that(fileName.startsWith("anttask") || fileName.startsWith("releasenotes")
+                        .that(fileName.startsWith("anttask")
+                                || fileName.startsWith("releasenotes")
+                                || fileName.startsWith("writingjavadocchecks")
                                 || isValidCheckstyleXml(fileName, code, unserializedSource))
                         .isTrue();
             }
@@ -435,6 +698,8 @@ public class XdocsPagesTest {
 
                 properties.setProperty("checkstyle.header.file",
                         new File("config/java.header").getCanonicalPath());
+                properties.setProperty("config.folder",
+                        new File("config").getCanonicalPath());
 
                 final PropertiesExpander expander = new PropertiesExpander(properties);
                 final Configuration config = ConfigurationLoader.loadConfiguration(new InputSource(
@@ -465,7 +730,7 @@ public class XdocsPagesTest {
         for (Path path : XdocUtil.getXdocsConfigFilePaths(XdocUtil.getXdocsFilePaths())) {
             final String fileName = path.getFileName().toString();
 
-            if ("config_system_properties.xml".equals(fileName)) {
+            if (isNonModulePage(fileName)) {
                 continue;
             }
 
@@ -504,18 +769,17 @@ public class XdocsPagesTest {
         }
     }
 
-    /**
-     * Validates xml check documentation section.
-     *
-     * @noinspection JUnitTestMethodWithNoAssertions
-     * @noinspectionreason JUnitTestMethodWithNoAssertions -asserts in callstack,
-     *      but not in this method
-     */
+    public static boolean isNonModulePage(String fileName) {
+        return NON_MODULE_XDOC.contains(fileName)
+            || fileName.startsWith("releasenotes")
+            || Pattern.matches("config_[a-z]+.xml", fileName);
+    }
+
     @Test
     public void testAllCheckSectionsEx() throws Exception {
         final ModuleFactory moduleFactory = TestUtil.getPackageObjectFactory();
 
-        final Path path = Paths.get(XdocUtil.DIRECTORY_PATH + "/config.xml");
+        final Path path = Path.of(XdocUtil.DIRECTORY_PATH + "/config.xml");
         final String fileName = path.getFileName().toString();
 
         final String input = Files.readString(path);
@@ -605,14 +869,14 @@ public class XdocsPagesTest {
         if ("Checker".equals(sectionName)) {
             assertWithMessage(fileName + " section '" + sectionName
                     + "' should contain up to 'Package' sub-section")
-                    .that(subSectionPos >= 6)
-                    .isTrue();
+                    .that(subSectionPos)
+                    .isGreaterThan(5);
         }
         else {
             assertWithMessage(fileName + " section '" + sectionName
                     + "' should contain up to 'Parent' sub-section")
-                    .that(subSectionPos >= 7)
-                    .isTrue();
+                    .that(subSectionPos)
+                    .isGreaterThan(6);
         }
     }
 
@@ -712,15 +976,16 @@ public class XdocsPagesTest {
                 .that(div.getAttributes().getNamedItem("class").getNodeValue())
                 .isNotNull();
             assertWithMessage(wrapperMessage)
-                    .that(div.getAttributes().getNamedItem("class").getNodeValue()
-                                    .contains("wrapper"))
-                    .isTrue();
+                    .that(div.getAttributes().getNamedItem("class").getNodeValue())
+                    .contains("wrapper");
 
             final Node table = XmlUtil.getFirstChildElement(div);
             assertWithMessage(fileName + " section '" + sectionName
                     + "' subsection 'Properties' has unexpected child node")
                 .that(table.getNodeName())
                 .isEqualTo("table");
+
+            validatePropertySectionPropertiesOrder(fileName, sectionName, table, properties);
 
             validatePropertySectionProperties(fileName, sectionName, table, instance,
                     properties);
@@ -730,6 +995,43 @@ public class XdocsPagesTest {
                 fileName + " section '" + sectionName + "' should show properties: " + properties)
             .that(properties)
             .isEmpty();
+    }
+
+    private static void validatePropertySectionPropertiesOrder(String fileName, String sectionName,
+                                                               Node table, Set<String> properties) {
+        final Set<Node> rows = XmlUtil.getChildrenElements(table);
+        final List<String> orderedPropertyNames = new ArrayList<>(properties);
+        final List<String> tablePropertyNames = new ArrayList<>();
+
+        // javadocTokens and tokens should be last
+        if (orderedPropertyNames.contains("javadocTokens")) {
+            orderedPropertyNames.remove("javadocTokens");
+            orderedPropertyNames.add("javadocTokens");
+        }
+        if (orderedPropertyNames.contains("tokens")) {
+            orderedPropertyNames.remove("tokens");
+            orderedPropertyNames.add("tokens");
+        }
+
+        rows
+            .stream()
+            // First row is header row
+            .skip(1)
+            .forEach(row -> {
+                final List<Node> columns = new ArrayList<>(XmlUtil.getChildrenElements(row));
+                assertWithMessage(fileName + " section '" + sectionName
+                        + "' should have the requested columns")
+                    .that(columns)
+                    .hasSize(5);
+
+                final String propertyName = columns.get(0).getTextContent();
+                tablePropertyNames.add(propertyName);
+            });
+
+        assertWithMessage(fileName + " section '" + sectionName
+                + "' should have properties in the requested order")
+            .that(tablePropertyNames)
+            .isEqualTo(orderedPropertyNames);
     }
 
     private static void fixCapturedProperties(String sectionName, Object instance, Class<?> clss,
@@ -879,6 +1181,11 @@ public class XdocsPagesTest {
                         fileName, sectionName, propertyName)
                 .that(columns.get(1).getTextContent().trim())
                 .isNotEmpty();
+        assertWithMessage("%s section '%s' should have a description for %s"
+                        + " that starts with uppercase character",
+                        fileName, sectionName, propertyName)
+                .that(Character.isUpperCase(columns.get(1).getTextContent().trim().charAt(0)))
+                .isTrue();
 
         final String actualTypeName = columns.get(2).getTextContent().replace("\n", "")
                 .replace("\r", "").replaceAll(" +", " ").trim();
@@ -892,18 +1199,10 @@ public class XdocsPagesTest {
         final Class<?> fieldClass = getFieldClass(fileName, sectionName, instance, field,
                 propertyName);
 
-        final String expectedTypeName;
-        // SuppressWarningsHolder#aliasList is backed by a static (upper case) property.
-        if ("SuppressWarningsHolder".equals(sectionName) && "aliasList".equals(propertyName)) {
-            expectedTypeName = "String[] in a format of comma separated attribute=value entries. "
-                + "The attribute is the fully qualified name of the Check and value is its alias.";
-        }
-        else {
-            expectedTypeName = Optional.ofNullable(field)
+        final String expectedTypeName = Optional.ofNullable(field)
                 .map(nonNullField -> nonNullField.getAnnotation(XdocsPropertyType.class))
                 .map(propertyType -> propertyType.value().getDescription())
                 .orElse(fieldClass.getSimpleName());
-        }
         final String expectedValue = getModulePropertyExpectedValue(sectionName, propertyName,
                 field, fieldClass, instance);
 
@@ -1050,7 +1349,8 @@ public class XdocsPagesTest {
                 result = "UTF-8";
             }
             else if ("charset".equals(propertyName)) {
-                result = "the charset property of the parent Checker module";
+                result = "the charset property of the parent"
+                    + " <a href=\"https://checkstyle.org/config.html#Checker\">Checker</a> module";
             }
             else if ("PropertyCacheFile".equals(fieldClass.getSimpleName())) {
                 result = "null (no cache file)";
@@ -1248,22 +1548,21 @@ public class XdocsPagesTest {
             Field field, String propertyName) throws Exception {
         Class<?> result = null;
 
-        if (field != null) {
+        if (PROPERTIES_ALLOWED_GET_TYPES_FROM_METHOD.contains(sectionName + "." + propertyName)) {
+            final PropertyDescriptor descriptor = PropertyUtils.getPropertyDescriptor(instance,
+                    propertyName);
+            result = descriptor.getPropertyType();
+        }
+        if (field != null && result == null) {
             result = field.getType();
         }
         if (result == null) {
             assertWithMessage(
                     fileName + " section '" + sectionName + "' could not find field "
                             + propertyName)
-                    .that(PROPERTIES_ALLOWED_GET_TYPES_FROM_METHOD
-                            .contains(sectionName + "." + propertyName))
-                    .isTrue();
-
-            final PropertyDescriptor descriptor = PropertyUtils.getPropertyDescriptor(instance,
-                    propertyName);
-            result = descriptor.getPropertyType();
+                    .fail();
         }
-        if (result == List.class || result == Set.class) {
+        if (field != null && (result == List.class || result == Set.class)) {
             final ParameterizedType type = (ParameterizedType) field.getGenericType();
             final Class<?> parameterClass = (Class<?>) type.getActualTypeArguments()[0];
 
@@ -1295,7 +1594,7 @@ public class XdocsPagesTest {
             result = XmlUtil.getChildrenElements(node)
                     .stream()
                     .map(Node::getTextContent)
-                    .collect(Collectors.toSet());
+                    .collect(Collectors.toUnmodifiableSet());
         }
         return result;
     }
@@ -1333,10 +1632,14 @@ public class XdocsPagesTest {
                 .isEqualTo("");
         }
         else {
+            final String subsectionTextContent = subSection.getTextContent()
+                    .replaceAll("\n\\s+", "\n")
+                    .replaceAll("\\s+", " ")
+                    .trim();
             assertWithMessage(fileName + " section '" + sectionName
                             + "' should have the expected error keys")
-                .that(subSection.getTextContent().replaceAll("\n\\s+", "\n").trim())
-                .isEqualTo(expectedText.toString().trim());
+                .that(subsectionTextContent)
+                .isEqualTo(expectedText.toString().replaceAll("\n", " ").trim());
 
             for (Node node : XmlUtil.findChildElementsByTag(subSection, "a")) {
                 final String url = node.getAttributes().getNamedItem("href").getTextContent();
@@ -1344,14 +1647,14 @@ public class XdocsPagesTest {
                 final String expectedUrl;
 
                 if ("see the documentation".equals(linkText)) {
-                    expectedUrl = "config.html#Custom_messages";
+                    expectedUrl = "../../config.html#Custom_messages";
                 }
                 else {
                     expectedUrl = "https://github.com/search?q="
                             + "path%3Asrc%2Fmain%2Fresources%2F"
                             + clss.getPackage().getName().replace(".", "%2F")
-                            + "+filename%3Amessages*.properties+repo%3Acheckstyle%2Fcheckstyle+%22"
-                            + linkText + "%22";
+                            + "%20path%3A**%2Fmessages*.properties+repo%3Acheckstyle%2F"
+                            + "checkstyle+%22" + linkText + "%22";
                 }
 
                 assertWithMessage(fileName + " section '" + sectionName
@@ -1383,32 +1686,32 @@ public class XdocsPagesTest {
             if ("Checkstyle Style".equals(linkText)) {
                 hasCheckstyle = true;
                 expectedUrl = "https://github.com/search?q="
-                        + "path%3Aconfig+filename%3Acheckstyle_checks.xml+"
+                        + "path%3Aconfig%20path%3A**%2Fcheckstyle-checks.xml+"
                         + "repo%3Acheckstyle%2Fcheckstyle+" + sectionName;
             }
             else if ("Google Style".equals(linkText)) {
                 hasGoogle = true;
                 expectedUrl = "https://github.com/search?q="
-                        + "path%3Asrc%2Fmain%2Fresources+filename%3Agoogle_checks.xml+"
+                        + "path%3Asrc%2Fmain%2Fresources%20path%3A**%2Fgoogle_checks.xml+"
                         + "repo%3Acheckstyle%2Fcheckstyle+"
                         + sectionName;
 
                 assertWithMessage(fileName + " section '" + sectionName
                             + "' should be in google_checks.xml or not reference 'Google Style'")
-                        .that(GOOGLE_MODULES.contains(sectionName))
-                        .isTrue();
+                        .that(GOOGLE_MODULES)
+                        .contains(sectionName);
             }
             else if ("Sun Style".equals(linkText)) {
                 hasSun = true;
                 expectedUrl = "https://github.com/search?q="
-                        + "path%3Asrc%2Fmain%2Fresources+filename%3Asun_checks.xml+"
+                        + "path%3Asrc%2Fmain%2Fresources%20path%3A**%2Fsun_checks.xml+"
                         + "repo%3Acheckstyle%2Fcheckstyle+"
                         + sectionName;
 
                 assertWithMessage(fileName + " section '" + sectionName
                             + "' should be in sun_checks.xml or not reference 'Sun Style'")
-                        .that(SUN_MODULES.contains(sectionName))
-                        .isTrue();
+                        .that(SUN_MODULES)
+                        .contains(sectionName);
             }
 
             assertWithMessage(fileName + " section '" + sectionName
@@ -1547,6 +1850,7 @@ public class XdocsPagesTest {
             styleChecks.remove("SuppressionCommentFilter");
             styleChecks.remove("SuppressWarningsFilter");
             styleChecks.remove("SuppressWarningsHolder");
+            styleChecks.remove("SuppressWithNearbyTextFilter");
 
             assertWithMessage(
                     fileName + " requires the following check(s) to appear: " + styleChecks)
@@ -1654,13 +1958,29 @@ public class XdocsPagesTest {
             Set<String> styleChecks, String styleName, String ruleName) {
         final Iterator<Node> itrChecks = checks.iterator();
         final Iterator<Node> itrConfigs = configs.iterator();
+        final boolean isGoogleDocumentation = "google".equals(styleName);
 
+        if (isGoogleDocumentation) {
+            validateChapterWiseTesting(itrChecks, itrConfigs, styleChecks, styleName, ruleName);
+        }
+        else {
+            validateModuleWiseTesting(itrChecks, itrConfigs, styleChecks, styleName, ruleName);
+        }
+
+        assertWithMessage(styleName + "_style.xml rule '" + ruleName + "' has too many configs")
+                .that(itrConfigs.hasNext())
+                .isFalse();
+    }
+
+    private static void validateModuleWiseTesting(Iterator<Node> itrChecks,
+          Iterator<Node> itrConfigs, Set<String> styleChecks, String styleName, String ruleName) {
         while (itrChecks.hasNext()) {
             final Node module = itrChecks.next();
             final String moduleName = module.getTextContent().trim();
+            final String href = module.getAttributes().getNamedItem("href").getTextContent();
+            final boolean moduleIsCheck = href.startsWith("checks/");
 
-            if (!module.getAttributes().getNamedItem("href").getTextContent()
-                    .startsWith("config_")) {
+            if (!moduleIsCheck) {
                 continue;
             }
 
@@ -1692,7 +2012,7 @@ public class XdocsPagesTest {
 
                 if ("config".equals(configName)) {
                     final String expectedUrl = "https://github.com/search?q="
-                            + "path%3Asrc%2Fmain%2Fresources+filename%3A" + styleName
+                            + "path%3Asrc%2Fmain%2Fresources%20path%3A**%2F" + styleName
                             + "_checks.xml+repo%3Acheckstyle%2Fcheckstyle+" + moduleName;
 
                     assertWithMessage(styleName + "_style.xml rule '" + ruleName + "' module '"
@@ -1703,14 +2023,14 @@ public class XdocsPagesTest {
                 else if ("test".equals(configName)) {
                     assertWithMessage(styleName + "_style.xml rule '" + ruleName + "' module '"
                                 + moduleName + "' should have matching " + configName + " url")
-                            .that(configUrl.startsWith("https://github.com/checkstyle/checkstyle/"
-                                            + "blob/master/src/it/java/com/" + styleName
-                                            + "/checkstyle/test/"))
-                            .isTrue();
+                            .that(configUrl)
+                            .startsWith("https://github.com/checkstyle/checkstyle/"
+                                    + "blob/master/src/it/java/com/" + styleName
+                                    + "/checkstyle/test/");
                     assertWithMessage(styleName + "_style.xml rule '" + ruleName + "' module '"
                                 + moduleName + "' should have matching " + configName + " url")
-                            .that(configUrl.endsWith("/" + moduleName + "Test.java"))
-                            .isTrue();
+                            .that(configUrl)
+                            .endsWith("/" + moduleName + "Test.java");
 
                     assertWithMessage(styleName + "_style.xml rule '" + ruleName + "' module '"
                                 + moduleName + "' should have a test that exists")
@@ -1720,10 +2040,207 @@ public class XdocsPagesTest {
                 }
             }
         }
-
-        assertWithMessage(styleName + "_style.xml rule '" + ruleName + "' has too many configs")
-                .that(itrConfigs.hasNext())
-                .isFalse();
     }
 
+    private static void validateChapterWiseTesting(Iterator<Node> itrChecks,
+          Iterator<Node> itrSample, Set<String> styleChecks, String styleName, String ruleName) {
+        boolean hasChecks = false;
+        final Set<String> usedModules = new HashSet<>();
+
+        while (itrChecks.hasNext()) {
+            final Node module = itrChecks.next();
+            final String moduleName = module.getTextContent().trim();
+            final String href = module.getAttributes().getNamedItem("href").getTextContent();
+            final boolean moduleIsCheck = href.startsWith("checks/");
+
+            final String partialConfigUrl = "https://github.com/search?q="
+                    + "path%3Asrc%2Fmain%2Fresources%20path%3A**%2F" + styleName;
+
+            if (!moduleIsCheck) {
+                if (href.startsWith(partialConfigUrl)) {
+                    assertWithMessage("google_style.xml rule '" + ruleName + "' module '"
+                            + moduleName + "' has too many config links").fail();
+                }
+                continue;
+            }
+
+            hasChecks = true;
+
+            assertWithMessage("The module '" + moduleName + "' in the rule '" + ruleName
+                    + "' of the style guide '" + styleName
+                    + "_style.xml' should not appear more than once in the section.")
+                    .that(usedModules)
+                    .doesNotContain(moduleName);
+
+            usedModules.add(moduleName);
+
+            assertWithMessage(styleName + "_style.xml rule '" + ruleName + "' module '"
+                    + moduleName + "' shouldn't end with 'Check'")
+                    .that(moduleName.endsWith("Check"))
+                    .isFalse();
+
+            styleChecks.remove(moduleName);
+
+            if (itrChecks.hasNext()) {
+                final Node config = itrChecks.next();
+
+                final String configUrl = config.getAttributes()
+                                       .getNamedItem("href").getTextContent();
+
+                final String expectedUrl =
+                    partialConfigUrl + "_checks.xml+repo%3Acheckstyle%2Fcheckstyle+" + moduleName;
+
+                assertWithMessage(
+                        "google_style.xml rule '" + ruleName + "' module '" + moduleName
+                            + "' should have matching config url")
+                    .that(configUrl)
+                    .isEqualTo(expectedUrl);
+            }
+            else {
+                assertWithMessage(styleName + "_style.xml rule '" + ruleName + "' module '"
+                        + moduleName + "' is missing the config link").fail();
+            }
+        }
+
+        if (itrSample.hasNext()) {
+            assertWithMessage(styleName + "_style.xml rule '" + ruleName + "' should have checks"
+                    + " if it has sample links")
+                    .that(hasChecks)
+                    .isTrue();
+
+            final Node sample = itrSample.next();
+            final String inputFolderUrl = sample.getAttributes().getNamedItem("href")
+                    .getTextContent();
+            final String extractedChapterNumber = getExtractedChapterNumber(ruleName);
+            final String extractedSectionNumber = getExtractedSectionNumber(ruleName);
+
+            assertWithMessage("google_style.xml rule '" + ruleName + "' rule '"
+                    + "' should have matching sample url")
+                    .that(inputFolderUrl)
+                    .startsWith("https://github.com/checkstyle/checkstyle/"
+                            + "tree/master/src/it/resources/com/google/checkstyle/test/");
+
+            assertWithMessage("google_style.xml rule '" + ruleName
+                    + "' should have matching sample url")
+                .that(inputFolderUrl)
+                .containsMatch(
+                    "/chapter" + extractedChapterNumber
+                          + "\\D[^/]+/rule" + extractedSectionNumber + "\\D");
+
+            assertWithMessage("google_style.xml rule '" + ruleName
+                    + "' should have a inputs test folder that exists")
+                    .that(new File(inputFolderUrl.substring(53).replace('/',
+                            File.separatorChar)).exists())
+                    .isTrue();
+
+            assertWithMessage(styleName + "_style.xml rule '" + ruleName
+                    + "' has too many samples link")
+                    .that(itrSample.hasNext())
+                    .isFalse();
+        }
+        else {
+            assertWithMessage(styleName + "_style.xml rule '" + ruleName + "' is missing"
+                 + " sample link")
+                .that(hasChecks)
+                .isFalse();
+        }
+    }
+
+    private static String getExtractedChapterNumber(String ruleName) {
+        final Pattern pattern = Pattern.compile("^\\d+");
+        final Matcher matcher = pattern.matcher(ruleName);
+        matcher.find();
+        return matcher.group();
+    }
+
+    private static String getExtractedSectionNumber(String ruleName) {
+        final Pattern pattern = Pattern.compile("^\\d+(\\.\\d+)*");
+        final Matcher matcher = pattern.matcher(ruleName);
+        matcher.find();
+        return matcher.group().replaceAll("\\.", "");
+    }
+
+    @Test
+    public void testAllExampleMacrosHaveParagraphWithIdBeforeThem() throws Exception {
+        for (Path path : XdocUtil.getXdocsTemplatesFilePaths()) {
+            final String fileName = path.getFileName().toString();
+            final String input = Files.readString(path);
+            final Document document = XmlUtil.getRawXml(fileName, input, input);
+            final NodeList sources = document.getElementsByTagName("macro");
+
+            for (int position = 0; position < sources.getLength(); position++) {
+                final Node macro = sources.item(position);
+                final String macroName = macro.getAttributes()
+                        .getNamedItem("name").getTextContent();
+
+                if (!"example".equals(macroName)) {
+                    continue;
+                }
+
+                final Node precedingParagraph = getPrecedingParagraph(macro);
+                assertWithMessage(fileName
+                        + ": paragraph before example macro should have an id attribute")
+                        .that(precedingParagraph.hasAttributes())
+                        .isTrue();
+
+                final Node idAttribute = precedingParagraph.getAttributes().getNamedItem("id");
+                assertWithMessage(fileName
+                        + ": paragraph before example macro should have an id attribute")
+                        .that(idAttribute)
+                        .isNotNull();
+
+                validatePrecedingParagraphId(macro, fileName, idAttribute);
+            }
+        }
+    }
+
+    private static void validatePrecedingParagraphId(
+            Node macro, String fileName, Node idAttribute) {
+        String exampleName = "";
+        String exampleType = "";
+        final NodeList params = macro.getChildNodes();
+        for (int paramPosition = 0; paramPosition < params.getLength(); paramPosition++) {
+            final Node item = params.item(paramPosition);
+
+            if (!"param".equals(item.getNodeName())) {
+                continue;
+            }
+
+            final String paramName = item.getAttributes()
+                    .getNamedItem("name").getTextContent();
+            final String paramValue = item.getAttributes()
+                    .getNamedItem("value").getTextContent();
+            if ("path".equals(paramName)) {
+                exampleName = paramValue.substring(paramValue.lastIndexOf('/') + 1,
+                        paramValue.lastIndexOf('.'));
+            }
+            else if ("type".equals(paramName)) {
+                exampleType = paramValue;
+            }
+        }
+
+        final String id = idAttribute.getTextContent();
+        final String expectedId = String.format(Locale.ROOT, "%s-%s", exampleName,
+                exampleType);
+        if (expectedId.startsWith("package-info")) {
+            assertWithMessage(fileName
+                + ": paragraph before example macro should have the expected id value")
+                .that(id)
+                .endsWith(expectedId);
+        }
+        else {
+            assertWithMessage(fileName
+                + ": paragraph before example macro should have the expected id value")
+                .that(id)
+                .isEqualTo(expectedId);
+        }
+    }
+
+    private static Node getPrecedingParagraph(Node macro) {
+        Node precedingNode = macro.getPreviousSibling();
+        while (!"p".equals(precedingNode.getNodeName())) {
+            precedingNode = precedingNode.getPreviousSibling();
+        }
+        return precedingNode;
+    }
 }

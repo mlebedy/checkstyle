@@ -3,7 +3,7 @@ MethodParamPad
 allowLineBreaks = (default)false
 option = invalid_option
 tokens = (default)CTOR_DEF, LITERAL_NEW, METHOD_CALL, METHOD_DEF, SUPER_CTOR_CALL, \
-         ENUM_CONSTANT_DEF, RECORD_DEF
+         ENUM_CONSTANT_DEF, RECORD_DEF, RECORD_PATTERN_DEF
 
 
 */
@@ -11,7 +11,7 @@ tokens = (default)CTOR_DEF, LITERAL_NEW, METHOD_CALL, METHOD_DEF, SUPER_CTOR_CAL
 package com.puppycrawl.tools.checkstyle.checks.whitespace.methodparampad;
 import java.util.Vector;
 /** Test input for MethodDefPadCheck */
-public class InputMethodParamPad4 // ok
+public class InputMethodParamPad4
 {
     public InputMethodParamPad4()
     {

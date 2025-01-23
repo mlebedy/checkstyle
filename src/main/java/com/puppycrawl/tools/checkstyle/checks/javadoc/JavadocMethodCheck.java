@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -22,7 +22,6 @@ package com.puppycrawl.tools.checkstyle.checks.javadoc;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -31,7 +30,7 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.puppycrawl.tools.checkstyle.FileStatefulCheck;
+import com.puppycrawl.tools.checkstyle.StatelessCheck;
 import com.puppycrawl.tools.checkstyle.api.AbstractCheck;
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.FileContents;
@@ -42,19 +41,23 @@ import com.puppycrawl.tools.checkstyle.checks.naming.AccessModifierOption;
 import com.puppycrawl.tools.checkstyle.utils.AnnotationUtil;
 import com.puppycrawl.tools.checkstyle.utils.CheckUtil;
 import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
+import com.puppycrawl.tools.checkstyle.utils.UnmodifiableCollectionUtil;
 
 /**
- * <p>
+ * <div>
  * Checks the Javadoc of a method or constructor.
- * </p>
+ * </div>
+ *
  * <p>
  * Violates parameters and type parameters for which no param tags are present can
  * be suppressed by defining property {@code allowMissingParamTags}.
  * </p>
+ *
  * <p>
  * Violates methods which return non-void but for which no return tag is present can
  * be suppressed by defining property {@code allowMissingReturnTag}.
  * </p>
+ *
  * <p>
  * Violates exceptions which are declared to be thrown (by {@code throws} in the method
  * signature or by {@code throw new} in the method body), but for which no throws tag is
@@ -73,11 +76,13 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * throw statements inside such classes are going to be evaluated, so they are ignored.
  * </li>
  * </ul>
+ *
  * <p>
  * ATTENTION: Checkstyle does not have information about hierarchy of exception types
  * so usage of base class is considered as separate exception type.
  * As workaround, you need to specify both types in javadoc (parent and exact type).
  * </p>
+ *
  * <p>
  * Javadoc is not required on a method that is tagged with the {@code @Override}
  * annotation. However, under Java 5 it is not possible to mark a method required
@@ -85,11 +90,13 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * supports using the convention of using a single {@code {@inheritDoc}} tag
  * instead of all the other tags.
  * </p>
+ *
  * <p>
  * Note that only inheritable items will allow the {@code {@inheritDoc}}
  * tag to be used in place of comments. Static methods at all visibilities,
  * private non-static methods and constructors are not inheritable.
  * </p>
+ *
  * <p>
  * For example, if the following method is implementing a method required by
  * an interface, then the Javadoc could be done as:
@@ -101,16 +108,6 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  *                           int aLineNo)
  * </pre>
  * <ul>
- * <li>
- * Property {@code allowedAnnotations} - Specify annotations that allow missed documentation.
- * Type is {@code java.lang.String[]}.
- * Default value is {@code Override}.
- * </li>
- * <li>
- * Property {@code validateThrows} - Control whether to validate {@code throws} tags.
- * Type is {@code boolean}.
- * Default value is {@code false}.
- * </li>
  * <li>
  * Property {@code accessModifiers} - Specify the access modifiers where Javadoc comments are
  * checked.
@@ -130,6 +127,16 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * Default value is {@code false}.
  * </li>
  * <li>
+ * Property {@code allowedAnnotations} - Specify annotations that allow missed documentation.
+ * Type is {@code java.lang.String[]}.
+ * Default value is {@code Override}.
+ * </li>
+ * <li>
+ * Property {@code validateThrows} - Control whether to validate {@code throws} tags.
+ * Type is {@code boolean}.
+ * Default value is {@code false}.
+ * </li>
+ * <li>
  * Property {@code tokens} - tokens to check
  * Type is {@code java.lang.String[]}.
  * Validation type is {@code tokenSet}.
@@ -144,119 +151,11 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * COMPACT_CTOR_DEF</a>.
  * </li>
  * </ul>
- * <p>
- * To configure the default check:
- * </p>
- * <pre>
- * &lt;module name="JavadocMethod"/&gt;
- * </pre>
- * <p>
- * To configure the check for only {@code public} modifier, ignoring any missing param tags is:
- * </p>
- * <pre>
- * &lt;module name="JavadocMethod"&gt;
- *   &lt;property name="accessModifiers" value="public"/&gt;
- *   &lt;property name="allowMissingParamTags" value="true"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * To configure the check for methods which are in {@code private} and {@code package},
- * but not any other modifier:
- * </p>
- * <pre>
- * &lt;module name="JavadocMethod"&gt;
- *   &lt;property name="accessModifiers" value="private, package"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * To configure the check to validate {@code throws} tags, you can use following config.
- * </p>
- * <pre>
- * &lt;module name="JavadocMethod"&gt;
- *   &lt;property name="validateThrows" value="true"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <pre>
- * &#47;**
- *  * Actual exception thrown is child class of class that is declared in throws.
- *  * It is limitation of checkstyle (as checkstyle does not know type hierarchy).
- *  * Javadoc is valid not declaring FileNotFoundException
- *  * BUT checkstyle can not distinguish relationship between exceptions.
- *  * &#64;param file some file
- *  * &#64;throws IOException if some problem
- *  *&#47;
- * public void doSomething8(File file) throws IOException {
- *     if (file == null) {
- *         throw new FileNotFoundException(); // violation
- *     }
- * }
  *
- * &#47;**
- *  * Exact throw type referencing in javadoc even first is parent of second type.
- *  * It is a limitation of checkstyle (as checkstyle does not know type hierarchy).
- *  * This javadoc is valid for checkstyle and for javadoc tool.
- *  * &#64;param file some file
- *  * &#64;throws IOException if some problem
- *  * &#64;throws FileNotFoundException if file is not found
- *  *&#47;
- * public void doSomething9(File file) throws IOException {
- *     if (file == null) {
- *         throw new FileNotFoundException();
- *     }
- * }
- *
- * &#47;**
- *  * Ignore try block, but keep catch and finally blocks.
- *  *
- *  * &#64;param s String to parse
- *  * &#64;return A positive integer
- *  *&#47;
- * public int parsePositiveInt(String s) {
- *     try {
- *         int value = Integer.parseInt(s);
- *         if (value &lt;= 0) {
- *             throw new NumberFormatException(value + " is negative/zero"); // ok, try
- *         }
- *         return value;
- *     } catch (NumberFormatException ex) {
- *         throw new IllegalArgumentException("Invalid number", ex); // violation, catch
- *     } finally {
- *         throw new IllegalStateException("Should never reach here"); // violation, finally
- *     }
- * }
- *
- * &#47;**
- *  * Try block without catch is not ignored.
- *  *
- *  * &#64;return a String from standard input, if there is one
- *  *&#47;
- * public String readLine() {
- *     try (Scanner sc = new Scanner(System.in)) {
- *         if (!sc.hasNext()) {
- *             throw new IllegalStateException("Empty input"); // violation, not caught
- *         }
- *         return sc.next();
- *     }
- * }
- *
- * &#47;**
- *  * Lambda expressions are ignored as we do not know when the exception will be thrown.
- *  *
- *  * &#64;param s a String to be printed at some point in the future
- *  * &#64;return a Runnable to be executed when the string is to be printed
- *  *&#47;
- * public Runnable printLater(String s) {
- *     return () -&gt; {
- *         if (s == null) {
- *             throw new NullPointerException(); // ok
- *         }
- *         System.out.println(s);
- *     };
- * }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -286,7 +185,7 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  *
  * @since 3.0
  */
-@FileStatefulCheck
+@StatelessCheck
 public class JavadocMethodCheck extends AbstractCheck {
 
     /**
@@ -331,6 +230,12 @@ public class JavadocMethodCheck extends AbstractCheck {
      */
     public static final String MSG_DUPLICATE_TAG = "javadoc.duplicateTag";
 
+    /** Html element start symbol. */
+    private static final String ELEMENT_START = "<";
+
+    /** Html element end symbol. */
+    private static final String ELEMENT_END = ">";
+
     /** Compiled regexp to match Javadoc tags that take an argument. */
     private static final Pattern MATCH_JAVADOC_ARG = CommonUtil.createPattern(
             "^\\s*(?>\\*|\\/\\*\\*)?\\s*@(throws|exception|param)\\s+(\\S+)\\s+\\S*");
@@ -357,9 +262,6 @@ public class JavadocMethodCheck extends AbstractCheck {
     /** Compiled regexp to match Javadoc tags with no argument and {}. */
     private static final Pattern MATCH_JAVADOC_NOARG_CURLY =
             CommonUtil.createPattern("\\{\\s*@(inheritDoc)\\s*\\}");
-
-    /** Name of current class. */
-    private String currentClassName;
 
     /** Specify the access modifiers where Javadoc comments are checked. */
     private AccessModifierOption[] accessModifiers = {
@@ -393,6 +295,7 @@ public class JavadocMethodCheck extends AbstractCheck {
      * Setter to control whether to validate {@code throws} tags.
      *
      * @param value user's value.
+     * @since 6.0
      */
     public void setValidateThrows(boolean value) {
         validateThrows = value;
@@ -402,6 +305,7 @@ public class JavadocMethodCheck extends AbstractCheck {
      * Setter to specify annotations that allow missed documentation.
      *
      * @param userAnnotations user's value.
+     * @since 6.0
      */
     public void setAllowedAnnotations(String... userAnnotations) {
         allowedAnnotations = Set.of(userAnnotations);
@@ -411,10 +315,11 @@ public class JavadocMethodCheck extends AbstractCheck {
      * Setter to specify the access modifiers where Javadoc comments are checked.
      *
      * @param accessModifiers access modifiers.
+     * @since 8.42
      */
     public void setAccessModifiers(AccessModifierOption... accessModifiers) {
         this.accessModifiers =
-            Arrays.copyOf(accessModifiers, accessModifiers.length);
+            UnmodifiableCollectionUtil.copyOfArray(accessModifiers, accessModifiers.length);
     }
 
     /**
@@ -422,6 +327,7 @@ public class JavadocMethodCheck extends AbstractCheck {
      * but does not have matching {@code param} tags in the javadoc.
      *
      * @param flag a {@code Boolean} value
+     * @since 3.1
      */
     public void setAllowMissingParamTags(boolean flag) {
         allowMissingParamTags = flag;
@@ -432,6 +338,7 @@ public class JavadocMethodCheck extends AbstractCheck {
      * and does not have a {@code return} tag in the javadoc.
      *
      * @param flag a {@code Boolean} value
+     * @since 3.1
      */
     public void setAllowMissingReturnTag(boolean flag) {
         allowMissingReturnTag = flag;
@@ -439,12 +346,7 @@ public class JavadocMethodCheck extends AbstractCheck {
 
     @Override
     public final int[] getRequiredTokens() {
-        return new int[] {
-            TokenTypes.CLASS_DEF,
-            TokenTypes.INTERFACE_DEF,
-            TokenTypes.ENUM_DEF,
-            TokenTypes.RECORD_DEF,
-        };
+        return CommonUtil.EMPTY_INT_ARRAY;
     }
 
     @Override
@@ -455,45 +357,16 @@ public class JavadocMethodCheck extends AbstractCheck {
     @Override
     public int[] getAcceptableTokens() {
         return new int[] {
-            TokenTypes.CLASS_DEF,
-            TokenTypes.ENUM_DEF,
-            TokenTypes.INTERFACE_DEF,
             TokenTypes.METHOD_DEF,
             TokenTypes.CTOR_DEF,
             TokenTypes.ANNOTATION_FIELD_DEF,
-            TokenTypes.RECORD_DEF,
             TokenTypes.COMPACT_CTOR_DEF,
         };
     }
 
     @Override
-    public void beginTree(DetailAST rootAST) {
-        currentClassName = "";
-    }
-
-    @Override
     public final void visitToken(DetailAST ast) {
-        if (ast.getType() == TokenTypes.CLASS_DEF
-                 || ast.getType() == TokenTypes.INTERFACE_DEF
-                 || ast.getType() == TokenTypes.ENUM_DEF
-                 || ast.getType() == TokenTypes.RECORD_DEF) {
-            processClass(ast);
-        }
-        else {
-            processAST(ast);
-        }
-    }
-
-    @Override
-    public final void leaveToken(DetailAST ast) {
-        if (ast.getType() == TokenTypes.CLASS_DEF
-            || ast.getType() == TokenTypes.INTERFACE_DEF
-            || ast.getType() == TokenTypes.ENUM_DEF
-            || ast.getType() == TokenTypes.RECORD_DEF) {
-            // perhaps it was inner class
-            final int dotIdx = currentClassName.lastIndexOf('$');
-            currentClassName = currentClassName.substring(0, dotIdx);
-        }
+        processAST(ast);
     }
 
     /**
@@ -526,8 +399,7 @@ public class JavadocMethodCheck extends AbstractCheck {
                 .getSurroundingAccessModifier(ast);
         final AccessModifierOption accessModifier = CheckUtil
                 .getAccessModifierFromModifiersToken(ast);
-        return surroundingAccessModifier != null
-                && Arrays.stream(accessModifiers)
+        return Arrays.stream(accessModifiers)
                         .anyMatch(modifier -> modifier == surroundingAccessModifier)
                 && Arrays.stream(accessModifiers).anyMatch(modifier -> modifier == accessModifier);
     }
@@ -641,8 +513,7 @@ public class JavadocMethodCheck extends AbstractCheck {
                 tags.add(new JavadocTag(currentLine, col, javadocNoargMatcher.group(1)));
             }
             else if (noargCurlyMatcher.find()) {
-                final int col = calculateTagColumn(noargCurlyMatcher, i, startColumnNumber);
-                tags.add(new JavadocTag(currentLine, col, noargCurlyMatcher.group(1)));
+                tags.add(new JavadocTag(currentLine, 0, noargCurlyMatcher.group(1)));
             }
             else if (noargMultilineStart.find()) {
                 tags.addAll(getMultilineNoArgTags(noargMultilineStart, lines, i, currentLine));
@@ -712,11 +583,9 @@ public class JavadocMethodCheck extends AbstractCheck {
 
         DetailAST child = params.getFirstChild();
         while (child != null) {
-            if (child.getType() == TokenTypes.PARAMETER_DEF) {
-                final DetailAST ident = child.findFirstToken(TokenTypes.IDENT);
-                if (ident != null) {
-                    returnValue.add(ident);
-                }
+            final DetailAST ident = child.findFirstToken(TokenTypes.IDENT);
+            if (ident != null) {
+                returnValue.add(ident);
             }
             child = child.getNextSibling();
         }
@@ -808,14 +677,13 @@ public class JavadocMethodCheck extends AbstractCheck {
      * @return true if throwAst is inside a block that should be ignored
      */
     private static boolean isInIgnoreBlock(DetailAST methodBodyAst, DetailAST throwAst) {
-        DetailAST ancestor = throwAst.getParent();
+        DetailAST ancestor = throwAst;
         while (ancestor != methodBodyAst) {
-            if (ancestor.getType() == TokenTypes.LITERAL_TRY
-                    && ancestor.findFirstToken(TokenTypes.LITERAL_CATCH) != null
-                    || ancestor.getType() == TokenTypes.LAMBDA
-                    || ancestor.getType() == TokenTypes.OBJBLOCK) {
-                // throw is inside a try block, and there is a catch block,
-                // or throw is inside a lambda expression/anonymous class/local class
+            if (ancestor.getType() == TokenTypes.LAMBDA
+                    || ancestor.getType() == TokenTypes.OBJBLOCK
+                    || ancestor.findFirstToken(TokenTypes.LITERAL_CATCH) != null) {
+                // throw is inside a lambda expression/anonymous class/local class,
+                // or throw is inside a try block, and there is a catch block
                 break;
             }
             if (ancestor.getType() == TokenTypes.LITERAL_CATCH
@@ -909,7 +777,7 @@ public class JavadocMethodCheck extends AbstractCheck {
             final String arg1 = tag.getFirstArg();
             boolean found = removeMatchingParam(params, arg1);
 
-            if (CommonUtil.startsWithChar(arg1, '<') && CommonUtil.endsWithChar(arg1, '>')) {
+            if (arg1.startsWith(ELEMENT_START) && arg1.endsWith(ELEMENT_END)) {
                 found = searchMatchingTypeParameter(typeParams,
                         arg1.substring(1, arg1.length() - 1));
             }
@@ -932,8 +800,8 @@ public class JavadocMethodCheck extends AbstractCheck {
             for (DetailAST typeParam : typeParams) {
                 log(typeParam, MSG_EXPECTED_TAG,
                     JavadocTagInfo.PARAM.getText(),
-                    "<" + typeParam.findFirstToken(TokenTypes.IDENT).getText()
-                    + ">");
+                    ELEMENT_START + typeParam.findFirstToken(TokenTypes.IDENT).getText()
+                    + ELEMENT_END);
             }
         }
     }
@@ -1031,8 +899,6 @@ public class JavadocMethodCheck extends AbstractCheck {
     private void checkThrowsTags(List<JavadocTag> tags,
             List<ExceptionInfo> throwsList, boolean reportExpectedTags) {
         // Loop over the tags, checking to see they exist in the throws.
-        // The foundThrows used for performance only
-        final Set<String> foundThrows = new HashSet<>();
         final ListIterator<JavadocTag> tagIt = tags.listIterator();
         while (tagIt.hasNext()) {
             final JavadocTag tag = tagIt.next();
@@ -1043,10 +909,7 @@ public class JavadocMethodCheck extends AbstractCheck {
             tagIt.remove();
 
             // Loop looking for matching throw
-            final Token token = new Token(tag.getFirstArg(), tag.getLineNo(), tag
-                    .getColumnNo());
-            final ClassInfo documentedClassInfo = new ClassInfo(token);
-            processThrows(throwsList, documentedClassInfo, foundThrows);
+            processThrows(throwsList, tag.getFirstArg());
         }
         // Now dump out all throws without tags :- unless
         // the user has chosen to suppress these problems
@@ -1065,25 +928,16 @@ public class JavadocMethodCheck extends AbstractCheck {
      * Verifies that documented exception is in throws.
      *
      * @param throwsIterable collection of throws
-     * @param documentedClassInfo documented exception class info
-     * @param foundThrows previously found throws
+     * @param documentedClassName documented exception class name
      */
     private static void processThrows(Iterable<ExceptionInfo> throwsIterable,
-                                      ClassInfo documentedClassInfo, Set<String> foundThrows) {
-        ExceptionInfo foundException = null;
-
-        // First look for matches on the exception name
+                                      String documentedClassName) {
         for (ExceptionInfo exceptionInfo : throwsIterable) {
             if (isClassNamesSame(exceptionInfo.getName().getText(),
-                    documentedClassInfo.getName().getText())) {
-                foundException = exceptionInfo;
+                    documentedClassName)) {
+                exceptionInfo.setFound();
                 break;
             }
-        }
-
-        if (foundException != null) {
-            foundException.setFound();
-            foundThrows.add(documentedClassInfo.getName().getText());
         }
     }
 
@@ -1126,19 +980,6 @@ public class JavadocMethodCheck extends AbstractCheck {
     }
 
     /**
-     * Processes class definition.
-     *
-     * @param ast class definition to process.
-     */
-    private void processClass(DetailAST ast) {
-        final DetailAST ident = ast.findFirstToken(TokenTypes.IDENT);
-        String innerClass = ident.getText();
-
-        innerClass = "$" + innerClass;
-        currentClassName += innerClass;
-    }
-
-    /**
      * Contains class's {@code Token}.
      */
     private static class ClassInfo {
@@ -1170,7 +1011,7 @@ public class JavadocMethodCheck extends AbstractCheck {
     /**
      * Represents text element with location in the text.
      */
-    private static class Token {
+    private static final class Token {
 
         /** Token's column number. */
         private final int columnNo;
@@ -1186,7 +1027,7 @@ public class JavadocMethodCheck extends AbstractCheck {
          * @param lineNo token's line number
          * @param columnNo token's column number
          */
-        /* package */ Token(String text, int lineNo, int columnNo) {
+        private Token(String text, int lineNo, int columnNo) {
             this.text = text;
             this.lineNo = lineNo;
             this.columnNo = columnNo;
@@ -1197,7 +1038,7 @@ public class JavadocMethodCheck extends AbstractCheck {
          *
          * @param fullIdent full ident to convert.
          */
-        /* package */ Token(FullIdent fullIdent) {
+        private Token(FullIdent fullIdent) {
             text = fullIdent.getText();
             lineNo = fullIdent.getLineNo();
             columnNo = fullIdent.getColumnNo();
@@ -1221,7 +1062,7 @@ public class JavadocMethodCheck extends AbstractCheck {
     }
 
     /** Stores useful information about declared exception. */
-    private static class ExceptionInfo {
+    private static final class ExceptionInfo {
 
         /** AST node representing this exception. */
         private final DetailAST ast;
@@ -1237,7 +1078,7 @@ public class JavadocMethodCheck extends AbstractCheck {
          * @param ast AST node representing this exception
          * @param classInfo class info
          */
-        /* package */ ExceptionInfo(DetailAST ast, ClassInfo classInfo) {
+        private ExceptionInfo(DetailAST ast, ClassInfo classInfo) {
             this.ast = ast;
             this.classInfo = classInfo;
         }

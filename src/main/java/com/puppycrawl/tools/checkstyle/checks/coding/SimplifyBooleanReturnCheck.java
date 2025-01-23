@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -26,84 +26,34 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
 
 /**
- * <p>
- * Checks for over-complicated boolean return statements.
+ * <div>
+ * Checks for over-complicated boolean return or yield statements.
  * For example the following code
- * </p>
+ * </div>
  * <pre>
  * if (valid())
  *   return false;
  * else
  *   return true;
  * </pre>
+ *
  * <p>
  * could be written as
  * </p>
  * <pre>
  * return !valid();
  * </pre>
+ *
  * <p>
  * The idea for this Check has been shamelessly stolen from the equivalent
- * <a href="https://pmd.github.io/">PMD</a> rule.
+ * <a href="https://pmd.github.io/pmd/pmd_rules_java_design.html#simplifybooleanreturns">
+ *     PMD</a> rule.
  * </p>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;SimplifyBooleanReturn&quot;/&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public class Test {
  *
- *  private boolean cond;
- *  private Foo a;
- *  private Foo b;
- *
- *  public boolean check1() {
- *   if (cond) { // violation, can be simplified
- *     return true;
- *   }
- *   else {
- *     return false;
- *   }
- *  }
- *
- *  // Ok, simplified version of check1()
- *  public boolean check2() {
- *   return cond;
- *  }
- *
- *  // violations, can be simplified
- *  public boolean check3() {
- *   if (cond == true) { // can be simplified to "if (cond)"
- *     return false;
- *   }
- *   else {
- *     return true; // can be simplified to "return !cond"
- *   }
- *  }
- *
- *  // Ok, can be simplified but doesn't return a Boolean
- *  public Foo choose1() {
- *   if (cond) {
- *     return a;
- *   }
- *   else {
- *     return b;
- *   }
- *  }
- *
- *  // Ok, simplified version of choose1()
- *  public Foo choose2() {
- *   return cond ? a: b;
- *  }
- *
- * }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -159,55 +109,56 @@ public class SimplifyBooleanReturnCheck
             final DetailAST condition = ast.getFirstChild().getNextSibling();
             final DetailAST thenStatement = condition.getNextSibling().getNextSibling();
 
-            if (canReturnOnlyBooleanLiteral(thenStatement)
-                && canReturnOnlyBooleanLiteral(elseStatement)) {
+            if (canReturnOrYieldOnlyBooleanLiteral(thenStatement)
+                && canReturnOrYieldOnlyBooleanLiteral(elseStatement)) {
                 log(ast, MSG_KEY);
             }
         }
     }
 
     /**
-     * Returns if an AST is a return statement with a boolean literal
-     * or a compound statement that contains only such a return statement.
+     * Returns if an AST is a return or a yield statement with a boolean literal
+     * or a compound statement that contains only such a return or a yield statement.
      *
      * <p>Returns {@code true} iff ast represents
      * <pre>
-     * return true/false;
+     * return/yield true/false;
      * </pre>
      * or
      * <pre>
      * {
-     *   return true/false;
+     *   return/yield true/false;
      * }
      * </pre>
      *
      * @param ast the syntax tree to check
-     * @return if ast is a return statement with a boolean literal.
+     * @return if ast is a return or a yield statement with a boolean literal.
      */
-    private static boolean canReturnOnlyBooleanLiteral(DetailAST ast) {
+    private static boolean canReturnOrYieldOnlyBooleanLiteral(DetailAST ast) {
         boolean result = true;
-        if (!isBooleanLiteralReturnStatement(ast)) {
+        if (!isBooleanLiteralReturnOrYieldStatement(ast)) {
             final DetailAST firstStatement = ast.getFirstChild();
-            result = isBooleanLiteralReturnStatement(firstStatement);
+            result = isBooleanLiteralReturnOrYieldStatement(firstStatement);
         }
         return result;
     }
 
     /**
-     * Returns if an AST is a return statement with a boolean literal.
+     * Returns if an AST is a return or a yield statement with a boolean literal.
      *
      * <p>Returns {@code true} iff ast represents
      * <pre>
-     * return true/false;
+     * return/yield true/false;
      * </pre>
      *
      * @param ast the syntax tree to check
-     * @return if ast is a return statement with a boolean literal.
+     * @return if ast is a return or a yield statement with a boolean literal.
      */
-    private static boolean isBooleanLiteralReturnStatement(DetailAST ast) {
+    private static boolean isBooleanLiteralReturnOrYieldStatement(DetailAST ast) {
         boolean booleanReturnStatement = false;
 
-        if (ast != null && ast.getType() == TokenTypes.LITERAL_RETURN) {
+        if (ast != null && (ast.getType() == TokenTypes.LITERAL_RETURN
+                                || ast.getType() == TokenTypes.LITERAL_YIELD)) {
             final DetailAST expr = ast.getFirstChild();
 
             if (expr.getType() != TokenTypes.SEMI) {

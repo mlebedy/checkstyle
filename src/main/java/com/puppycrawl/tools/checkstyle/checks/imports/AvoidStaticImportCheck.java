@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -27,19 +27,22 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 
 /**
- * <p>
+ * <div>
  * Checks that there are no static import statements.
- * </p>
+ * </div>
+ *
  * <p>
  * Rationale: Importing static members can lead to naming conflicts
  * between class' members. It may lead to poor code readability since it
  * may no longer be clear what class a member resides in (without looking
  * at the import statement).
  * </p>
+ *
  * <p>
  * If you exclude a starred import on a class this automatically excludes
  * each member individually.
  * </p>
+ *
  * <p>
  * For example: Excluding {@code java.lang.Math.*}. will allow the import
  * of each static member in the Math class individually like
@@ -55,39 +58,11 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * Default value is {@code ""}.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name="AvoidStaticImport"/&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * import static java.lang.Math.pow;          // violation
- * import static java.lang.System.*;          // violation
- * import java.io.File;                       // OK
- * import java.util.*;                        // OK
- * </pre>
- * <p>
- * To configure the check so that the {@code java.lang.System.out} member and all
- * members from {@code java.lang.Math} are allowed:
- * </p>
- * <pre>
- * &lt;module name="AvoidStaticImport"&gt;
- *   &lt;property name="excludes" value="java.lang.System.out,java.lang.Math.*"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * import static java.lang.Math.*;            // OK
- * import static java.lang.System.out;        // OK
- * import static java.lang.Integer.parseInt;  // violation
- * import java.io.*;                          // OK
- * import java.util.*;                        // OK
- * </pre>
+ *
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -140,6 +115,7 @@ public class AvoidStaticImportCheck
      *
      * @param excludes fully-qualified class names/specific
      *     static members where static imports are ok
+     * @since 5.0
      */
     public void setExcludes(String... excludes) {
         this.excludes = excludes.clone();

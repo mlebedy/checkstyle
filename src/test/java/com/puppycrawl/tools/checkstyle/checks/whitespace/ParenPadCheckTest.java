@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -144,6 +144,13 @@ public class ParenPadCheckTest
         verifyWithInlineConfigParser(
                 getPath("InputParenPadWithSpace.java"),
                expected);
+    }
+
+    @Test
+    public void testTrimOptionProperty() throws Exception {
+        final String[] expected = CommonUtil.EMPTY_STRING_ARRAY;
+        verifyWithInlineConfigParser(
+                getPath("InputParenPadToCheckTrimFunctionInOptionProperty.java"), expected);
     }
 
     @Test
@@ -435,9 +442,21 @@ public class ParenPadCheckTest
         final String[] expected = {
             "20:37: " + getCheckMessage(MSG_WS_PRECEDED, ")"),
             "21:61: " + getCheckMessage(MSG_WS_PRECEDED, ")"),
+            "22:13: " + getCheckMessage(MSG_WS_FOLLOWED, "("),
         };
         verifyWithInlineConfigParser(
                 getPath("InputParenPadTryWithResources.java"), expected);
+    }
+
+    @Test
+    public void testTryWithResourcesAndSuppression() throws Exception {
+        final String[] expectedFiltered = CommonUtil.EMPTY_STRING_ARRAY;
+        final String[] expectedUnfiltered = {
+            "23:13: " + getCheckMessage(MSG_WS_FOLLOWED, "("),
+        };
+        verifyFilterWithInlineConfigParser(
+                getPath("InputParenPadTryWithResourcesAndSuppression.java"), expectedUnfiltered,
+                expectedFiltered);
     }
 
     @Test
@@ -506,6 +525,24 @@ public class ParenPadCheckTest
                 getPath("InputParenPadCheckEmoji.java"), expected);
     }
 
+    @Test
+    public void testParenPadForSynchronized() throws Exception {
+
+        final String[] expected = {
+            "18:29: " + getCheckMessage(MSG_WS_PRECEDED, ")"),
+        };
+        verifyWithInlineConfigParser(
+                getPath("InputParenPadForSynchronized.java"), expected);
+    }
+
+    @Test
+    public void testParenPadForEnum() throws Exception {
+
+        final String[] expected = CommonUtil.EMPTY_STRING_ARRAY;
+        verifyWithInlineConfigParser(
+                getPath("InputParenPadForEnum.java"), expected);
+    }
+
     /**
      * Pitest requires us to specify more concrete lower bound for condition for
      * ParenPadCheck#isAcceptableToken as nodes of first several types like CTOR_DEF,
@@ -528,6 +565,73 @@ public class ParenPadCheckTest
                     .that(TestUtil.<Boolean>invokeMethod(check, "isAcceptableToken", ast))
                     .isTrue();
         }
+    }
+
+    @Test
+    public void testParenPadWithWhenExpression() throws Exception {
+        final String[] expected = {
+            "21:38: " + getCheckMessage(MSG_WS_FOLLOWED, "("),
+            "25:33: " + getCheckMessage(MSG_WS_FOLLOWED, "("),
+            "27:41: " + getCheckMessage(MSG_WS_PRECEDED, ")"),
+            "29:43: " + getCheckMessage(MSG_WS_FOLLOWED, "("),
+            "29:52: " + getCheckMessage(MSG_WS_PRECEDED, ")"),
+        };
+        verifyWithInlineConfigParser(
+                getNonCompilablePath("InputParenPadCheckWhenExpression.java"), expected);
+    }
+
+    @Test
+    public void testParenPadForRecordPattern() throws Exception {
+        final String[] expected = {
+            "14:40: " + getCheckMessage(MSG_WS_FOLLOWED, "("),
+            "16:40: " + getCheckMessage(MSG_WS_FOLLOWED, "("),
+            "16:60: " + getCheckMessage(MSG_WS_PRECEDED, ")"),
+            "22:40: " + getCheckMessage(MSG_WS_FOLLOWED, "("),
+            "22:47: " + getCheckMessage(MSG_WS_FOLLOWED, "("),
+            "26:46: " + getCheckMessage(MSG_WS_FOLLOWED, "("),
+            "26:61: " + getCheckMessage(MSG_WS_PRECEDED, ")"),
+            "26:73: " + getCheckMessage(MSG_WS_PRECEDED, ")"),
+            "31:40: " + getCheckMessage(MSG_WS_FOLLOWED, "("),
+            "31:47: " + getCheckMessage(MSG_WS_FOLLOWED, "("),
+            "31:62: " + getCheckMessage(MSG_WS_PRECEDED, ")"),
+            "31:74: " + getCheckMessage(MSG_WS_PRECEDED, ")"),
+            "42:23: " + getCheckMessage(MSG_WS_FOLLOWED, "("),
+            "44:23: " + getCheckMessage(MSG_WS_FOLLOWED, "("),
+            "44:38: " + getCheckMessage(MSG_WS_PRECEDED, ")"),
+            "52:30: " + getCheckMessage(MSG_WS_FOLLOWED, "("),
+            "52:37: " + getCheckMessage(MSG_WS_FOLLOWED, "("),
+            "56:36: " + getCheckMessage(MSG_WS_FOLLOWED, "("),
+            "56:51: " + getCheckMessage(MSG_WS_PRECEDED, ")"),
+            "56:63: " + getCheckMessage(MSG_WS_PRECEDED, ")"),
+            "61:30: " + getCheckMessage(MSG_WS_FOLLOWED, "("),
+            "61:37: " + getCheckMessage(MSG_WS_FOLLOWED, "("),
+            "61:52: " + getCheckMessage(MSG_WS_PRECEDED, ")"),
+            "61:64: " + getCheckMessage(MSG_WS_PRECEDED, ")"),
+        };
+        verifyWithInlineConfigParser(
+                getNonCompilablePath("InputParenPadForRecordPattern.java"), expected);
+    }
+
+    @Test
+    public void testParenPadForRecordPatternWithSpaceOption() throws Exception {
+        final String[] expected = {
+            "14:40: " + getCheckMessage(MSG_WS_NOT_FOLLOWED, "("),
+            "14:58: " + getCheckMessage(MSG_WS_NOT_PRECEDED, ")"),
+            "18:59: " + getCheckMessage(MSG_WS_NOT_PRECEDED, ")"),
+            "23:40: " + getCheckMessage(MSG_WS_NOT_FOLLOWED, "("),
+            "23:46: " + getCheckMessage(MSG_WS_NOT_FOLLOWED, "("),
+            "23:59: " + getCheckMessage(MSG_WS_NOT_PRECEDED, ")"),
+            "23:70: " + getCheckMessage(MSG_WS_NOT_PRECEDED, ")"),
+            "29:61: " + getCheckMessage(MSG_WS_NOT_PRECEDED, ")"),
+            "29:72: " + getCheckMessage(MSG_WS_NOT_PRECEDED, ")"),
+            "33:40: " + getCheckMessage(MSG_WS_NOT_FOLLOWED, "("),
+            "41:30: " + getCheckMessage(MSG_WS_NOT_FOLLOWED, "("),
+            "41:48: " + getCheckMessage(MSG_WS_NOT_PRECEDED, ")"),
+            "45:37: " + getCheckMessage(MSG_WS_NOT_PRECEDED, ")"),
+        };
+        verifyWithInlineConfigParser(
+                getNonCompilablePath("InputParenPadForRecordPatternWithSpaceOption.java"),
+                expected);
     }
 
 }

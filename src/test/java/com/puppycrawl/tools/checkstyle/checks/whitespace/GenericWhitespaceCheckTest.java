@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -25,12 +25,21 @@ import static com.puppycrawl.tools.checkstyle.checks.whitespace.GenericWhitespac
 import static com.puppycrawl.tools.checkstyle.checks.whitespace.GenericWhitespaceCheck.MSG_WS_NOT_PRECEDED;
 import static com.puppycrawl.tools.checkstyle.checks.whitespace.GenericWhitespaceCheck.MSG_WS_PRECEDED;
 
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.util.Optional;
+
 import org.antlr.v4.runtime.CommonToken;
 import org.junit.jupiter.api.Test;
 
 import com.puppycrawl.tools.checkstyle.AbstractModuleTestSupport;
 import com.puppycrawl.tools.checkstyle.DetailAstImpl;
+import com.puppycrawl.tools.checkstyle.JavaParser;
+import com.puppycrawl.tools.checkstyle.api.DetailAST;
+import com.puppycrawl.tools.checkstyle.api.FileContents;
+import com.puppycrawl.tools.checkstyle.api.FileText;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
+import com.puppycrawl.tools.checkstyle.internal.utils.TestUtil;
 import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 
 public class GenericWhitespaceCheckTest
@@ -62,6 +71,7 @@ public class GenericWhitespaceCheckTest
             "22:44: " + getCheckMessage(MSG_WS_PRECEDED, "<"),
             "22:44: " + getCheckMessage(MSG_WS_FOLLOWED, "<"),
             "22:54: " + getCheckMessage(MSG_WS_PRECEDED, ">"),
+            "22:54: " + getCheckMessage(MSG_WS_FOLLOWED, ">"),
             "23:14: " + getCheckMessage(MSG_WS_PRECEDED, "<"),
             "23:14: " + getCheckMessage(MSG_WS_FOLLOWED, "<"),
             "23:21: " + getCheckMessage(MSG_WS_PRECEDED, "<"),
@@ -76,6 +86,7 @@ public class GenericWhitespaceCheckTest
             "23:70: " + getCheckMessage(MSG_WS_PRECEDED, ">"),
             "23:70: " + getCheckMessage(MSG_WS_FOLLOWED, ">"),
             "23:72: " + getCheckMessage(MSG_WS_PRECEDED, ">"),
+            "23:72: " + getCheckMessage(MSG_WS_FOLLOWED, ">"),
             "36:18: " + getCheckMessage(MSG_WS_NOT_PRECEDED, "<"),
             "36:20: " + getCheckMessage(MSG_WS_ILLEGAL_FOLLOW, ">"),
             "48:22: " + getCheckMessage(MSG_WS_PRECEDED, "<"),
@@ -162,6 +173,132 @@ public class GenericWhitespaceCheckTest
         };
         verifyWithInlineConfigParser(
                 getPath("InputGenericWhitespaceWithEmoji.java"), expected);
+    }
+
+    @Test
+    public void testBeforeCtorInvocation() throws Exception {
+        final String[] expected = {
+            "17:31: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+            "19:56: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+            "19:56: " + getCheckMessage(MSG_WS_PRECEDED, '>'),
+            "24:25: " + getCheckMessage(MSG_WS_FOLLOWED, '<'),
+            "27:36: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+            "31:35: " + getCheckMessage(MSG_WS_FOLLOWED, '<'),
+            "31:35: " + getCheckMessage(MSG_WS_PRECEDED, '<'),
+            "31:47: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+            "31:47: " + getCheckMessage(MSG_WS_PRECEDED, '>'),
+            "38:34: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+            "39:47: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+            "40:28: " + getCheckMessage(MSG_WS_PRECEDED, '<'),
+            "40:48: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+            "47:41: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+            "50:47: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+            "52:44: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+        };
+        verifyWithInlineConfigParser(
+                getPath("InputGenericWhitespaceBeforeCtorInvocation.java"), expected);
+    }
+
+    @Test
+    public void testAfterNew() throws Exception {
+        final String[] expected = {
+            "17:30: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+            "21:12: " + getCheckMessage(MSG_WS_FOLLOWED, '<'),
+            "21:12: " + getCheckMessage(MSG_WS_NOT_PRECEDED, '<'),
+            "21:23: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+            "21:23: " + getCheckMessage(MSG_WS_PRECEDED, '>'),
+            "28:22: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+            "33:31: " + getCheckMessage(MSG_WS_FOLLOWED, '<'),
+            "33:31: " + getCheckMessage(MSG_WS_NOT_PRECEDED, '<'),
+            "33:40: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+            "33:40: " + getCheckMessage(MSG_WS_PRECEDED, '>'),
+            "41:28: " + getCheckMessage(MSG_WS_NOT_PRECEDED, '<'),
+            "41:36: " + getCheckMessage(MSG_WS_FOLLOWED, '<'),
+            "41:56: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+            "41:61: " + getCheckMessage(MSG_WS_PRECEDED, '>'),
+            "41:63: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+            "41:65: " + getCheckMessage(MSG_WS_PRECEDED, '>'),
+            "41:66: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+            "41:85: " + getCheckMessage(MSG_WS_PRECEDED, '<'),
+            "41:92: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+        };
+        verifyWithInlineConfigParser(
+                getPath("InputGenericWhitespaceAfterNew.java"), expected);
+    }
+
+    @Test
+    public void testBeforeRecordHeader() throws Exception {
+        final String[] expected = {
+            "17:20: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+            "18:20: " + getCheckMessage(MSG_WS_FOLLOWED, '<'),
+            "18:20: " + getCheckMessage(MSG_WS_PRECEDED, '<'),
+            "18:24: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+            "18:24: " + getCheckMessage(MSG_WS_PRECEDED, '>'),
+            "30:27: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+            "30:38: " + getCheckMessage(MSG_WS_PRECEDED, '<'),
+            "30:80: " + getCheckMessage(MSG_WS_ILLEGAL_FOLLOW, '>'),
+            "36:38: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+            "43:44: " + getCheckMessage(MSG_WS_PRECEDED, '<'),
+            "43:69: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+            "49:21: " + getCheckMessage(MSG_WS_PRECEDED, '<'),
+            "49:64: " + getCheckMessage(MSG_WS_PRECEDED, '>'),
+            "49:66: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+            "56:63: " + getCheckMessage(MSG_WS_PRECEDED, '<'),
+            "56:80: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+            "62:36: " + getCheckMessage(MSG_WS_PRECEDED, '<'),
+            "62:61: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+            "67:49: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+            "73:26: " + getCheckMessage(MSG_WS_PRECEDED, '<'),
+            "73:51: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+            "73:64: " + getCheckMessage(MSG_WS_FOLLOWED, '<'),
+            "80:26: " + getCheckMessage(MSG_WS_PRECEDED, '<'),
+            "80:34: " + getCheckMessage(MSG_WS_FOLLOWED, '<'),
+            "80:55: " + getCheckMessage(MSG_WS_ILLEGAL_FOLLOW, '>'),
+            "91:25: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+            "91:44: " + getCheckMessage(MSG_WS_PRECEDED, '<'),
+            "91:47: " + getCheckMessage(MSG_WS_PRECEDED, '>'),
+            "91:61: " + getCheckMessage(MSG_WS_PRECEDED, '<'),
+            "91:71: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+            "91:73: " + getCheckMessage(MSG_WS_PRECEDED, '>'),
+            "101:25: " + getCheckMessage(MSG_WS_PRECEDED, '<'),
+            "101:58: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+            "108:25: " + getCheckMessage(MSG_WS_PRECEDED, '<'),
+            "108:32: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+            "108:46: " + getCheckMessage(MSG_WS_FOLLOWED, '<'),
+            "108:63: " + getCheckMessage(MSG_WS_FOLLOWED, '>'),
+        };
+        verifyWithInlineConfigParser(
+                getNonCompilablePath("InputGenericWhitespaceBeforeRecordHeader.java"),
+                expected);
+    }
+
+    /**
+     * Checks if the private field {@code depth} is properly cleared during the
+     * start of processing the next file in the check.
+     *
+     * @throws Exception if there is an error.
+     */
+    @Test
+    public void testClearState() throws Exception {
+        final GenericWhitespaceCheck check = new GenericWhitespaceCheck();
+        final FileText fileText = new FileText(
+                new File(getPath("InputGenericWhitespaceDefault.java")),
+                StandardCharsets.UTF_8.name());
+        check.setFileContents(new FileContents(fileText));
+        final DetailAST root = JavaParser.parseFileText(fileText,
+                JavaParser.Options.WITHOUT_COMMENTS);
+        final Optional<DetailAST> genericStart = TestUtil.findTokenInAstByPredicate(root,
+            ast -> ast.getType() == TokenTypes.GENERIC_START);
+
+        assertWithMessage("Ast should contain GENERIC_START")
+                .that(genericStart.isPresent())
+                .isTrue();
+        assertWithMessage("State is not cleared on beginTree")
+                .that(
+                    TestUtil.isStatefulFieldClearedDuringBeginTree(check,
+                            genericStart.orElseThrow(), "depth",
+                            depth -> ((Number) depth).intValue() == 0))
+                .isTrue();
     }
 
     @Test

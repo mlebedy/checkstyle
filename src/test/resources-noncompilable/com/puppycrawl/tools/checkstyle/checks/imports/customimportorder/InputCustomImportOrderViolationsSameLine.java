@@ -1,7 +1,7 @@
 /*
 CustomImportOrder
 customImportOrderRules = STATIC###THIRD_PARTY_PACKAGE
-standardPackageRegExp = (default)^(java|javax)\.
+standardPackageRegExp = (default)^(java|javax)\\.
 thirdPartyPackageRegExp = (default).*
 specialImportsRegExp = (default)^$
 separateLineBetweenGroups = (default)true
@@ -14,8 +14,8 @@ sortImportsInGroupAlphabetically = true
 package com.puppycrawl.tools.checkstyle.checks.imports.customimportorder;
 
 import   java . util . * ;
-import    static   java.util.Collections   .*; // violation
-import static java.lang.String . CASE_INSENSITIVE_ORDER; // violation
+import    static   java.util.Collections   .*; // violation '.* wrong order. Should be in the .*group, expecting not assigned imports.*'
+import static java.lang.String . CASE_INSENSITIVE_ORDER; // violation '.* wrong order. Should be in the .*group, expecting not assigned imports.*'
 
 
 import java . // 2 violations

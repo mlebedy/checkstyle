@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -73,6 +73,7 @@ public final class XpathIteratorUtil {
 
     /**
      * Creates AST tree for iteration tests and returns root.
+     *
      * <p>
      * PACKAGE_DEF -> package [1:0]
      * |--ANNOTATIONS -> ANNOTATIONS [1:8]

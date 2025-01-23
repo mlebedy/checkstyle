@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -29,7 +29,6 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
@@ -41,6 +40,7 @@ import java.util.Set;
 import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
 import com.puppycrawl.tools.checkstyle.api.Configuration;
 import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
+import com.puppycrawl.tools.checkstyle.utils.OsSpecificUtil;
 
 /**
  * This class maintains a persistent(on file-system) store of the files
@@ -142,10 +142,11 @@ public final class PropertyCacheFile {
      * @throws IOException  when there is a problems with file save
      */
     public void persist() throws IOException {
-        final Path path = Paths.get(fileName);
+        final Path path = Path.of(fileName);
         final Path directory = path.getParent();
+
         if (directory != null) {
-            Files.createDirectories(directory);
+            OsSpecificUtil.updateDirectory(directory);
         }
         try (OutputStream out = Files.newOutputStream(path)) {
             details.store(out, null);
@@ -379,7 +380,7 @@ public final class PropertyCacheFile {
     /**
      * Class which represents external resource.
      */
-    private static class ExternalResource {
+    private static final class ExternalResource {
 
         /** Location of resource. */
         private final String location;
@@ -392,7 +393,7 @@ public final class PropertyCacheFile {
          * @param location resource location.
          * @param contentHashSum content hash sum.
          */
-        /* package */ ExternalResource(String location, String contentHashSum) {
+        private ExternalResource(String location, String contentHashSum) {
             this.location = location;
             this.contentHashSum = contentHashSum;
         }

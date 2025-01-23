@@ -4,7 +4,7 @@ CovariantEquals
 
 */
 
-//non-compiled with javac: Compilable with Java14
+//non-compiled with javac: Compilable with Java17
 package com.puppycrawl.tools.checkstyle.checks.coding.covariantequals;
 
 public class InputCovariantEqualsRecords {
@@ -16,7 +16,7 @@ public class InputCovariantEqualsRecords {
     }
 
     public record MyRecord2() {
-        public boolean equals(String str) { // ok
+        public boolean equals(String str) {
             return str.equals(this);
         }
         public boolean equals(Object obj) {

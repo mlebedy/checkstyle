@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -29,9 +29,9 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
 
 /**
- * <p>
+ * <div>
  * Restricts the number of executable statements to a specified limit.
- * </p>
+ * </div>
  * <ul>
  * <li>
  * Property {@code max} - Specify the maximum threshold allowed.
@@ -57,24 +57,11 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * LAMBDA</a>.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name="ExecutableStatementCount"/&gt;
- * </pre>
- * <p>
- * To configure the check with a threshold of 20 for constructor and method definitions:
- * </p>
- * <pre>
- * &lt;module name="ExecutableStatementCount"&gt;
- *   &lt;property name="max" value="20"/&gt;
- *   &lt;property name="tokens" value="CTOR_DEF,METHOD_DEF"/&gt;
- * &lt;/module&gt;
- * </pre>
+ *
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -148,6 +135,7 @@ public final class ExecutableStatementCountCheck
      * Setter to specify the maximum threshold allowed.
      *
      * @param max the maximum threshold.
+     * @since 3.2
      */
     public void setMax(int max) {
         this.max = max;
@@ -212,7 +200,7 @@ public final class ExecutableStatementCountCheck
      */
     private void visitSlist(DetailAST ast) {
         final DetailAST contextAST = context.getAST();
-        DetailAST parent = ast.getParent();
+        DetailAST parent = ast;
         while (parent != null && !isContainerNode(parent)) {
             parent = parent.getParent();
         }
@@ -237,7 +225,7 @@ public final class ExecutableStatementCountCheck
     /**
      * Class to encapsulate counting information about one member.
      */
-    private static class Context {
+    private static final class Context {
 
         /** Member AST node. */
         private final DetailAST ast;
@@ -250,9 +238,8 @@ public final class ExecutableStatementCountCheck
          *
          * @param ast member AST node.
          */
-        /* package */ Context(DetailAST ast) {
+        private Context(DetailAST ast) {
             this.ast = ast;
-            count = 0;
         }
 
         /**

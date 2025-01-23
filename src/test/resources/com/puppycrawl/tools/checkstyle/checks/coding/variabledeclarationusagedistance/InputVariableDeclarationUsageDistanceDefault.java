@@ -80,7 +80,7 @@ public class InputVariableDeclarationUsageDistanceDefault {
     }
 
     public void testMethod3() {
-        int count; // violation
+        int count; // violation 'Distance between .* declaration and its first usage is 4.'
         int a = 3;
         int b = 3;
         a = a + b;
@@ -228,7 +228,7 @@ public class InputVariableDeclarationUsageDistanceDefault {
 
     public void testMethod14() {
         Session s = openSession();
-        Transaction t = s.beginTransaction(); // violation
+        Transaction t = s.beginTransaction(); // violation 'Distance .* is 5.'
         A a = new A();
         E d1 = new E();
         C1 c = new C1();
@@ -488,7 +488,7 @@ public class InputVariableDeclarationUsageDistanceDefault {
 
     public void testIssue32_9() {
         Options options = new Options();
-        Option myOption = null; // violation
+        Option myOption = null; // violation 'Distance .* is 7.'
         options.addBindFile(null);
         options.addBindFile(null);
         options.addBindFile(null);
@@ -500,7 +500,7 @@ public class InputVariableDeclarationUsageDistanceDefault {
 
     public void testIssue32_10() {
         Options options = new Options();
-        Option myOption = null; // violation
+        Option myOption = null; // violation 'Distance .* is 6.'
         options.addBindFile(null);
         options.addBindFile(null);
         options.addBindFile(null);
@@ -513,7 +513,7 @@ public class InputVariableDeclarationUsageDistanceDefault {
     public int testIssue32_11(String toDir)
             throws Exception
     {
-        int count = 0;
+        int count = 0;  // violation 'Distance .* is 4.'
         String[] files = {};
 
         System.identityHashCode("Data archival started");
@@ -551,7 +551,7 @@ public class InputVariableDeclarationUsageDistanceDefault {
         for (Object[] s : tree) {
             Integer id = (Integer) s[0];
             String label = (String) s[1];
-            Integer parentId = (Integer) s[2]; // violation
+            Integer parentId = (Integer) s[2]; // violation 'Distance .* is 4.'
             Number weight = (Number) s[3];
             Number value = (Number) s[4];
             Integer childCount = (Integer) s[5];
@@ -852,7 +852,7 @@ public class InputVariableDeclarationUsageDistanceDefault {
 
 class New6 {
     void a() {
-        int a = 1;
+        int a = 1; // violation 'Distance .* is 5.'
         System.lineSeparator();
         System.lineSeparator();
         System.lineSeparator();
@@ -864,7 +864,7 @@ class New6 {
     }
 
     void b() {
-        int a = 1;
+        int a = 1; // violation 'Distance .* is 5.'
         System.lineSeparator();
         System.lineSeparator();
         System.lineSeparator();
@@ -876,7 +876,7 @@ class New6 {
     }
 
     void c() {
-        int a = 1;
+        int a = 1; // violation 'Distance .* is 5.'
         System.lineSeparator();
         System.lineSeparator();
         System.lineSeparator();
@@ -888,7 +888,7 @@ class New6 {
     }
 
     void d() {
-        int a = 1;
+        int a = 1; // violation 'Distance .* is 5.'
         System.lineSeparator();
         System.lineSeparator();
         System.lineSeparator();
@@ -900,7 +900,7 @@ class New6 {
     }
 
     void f() {
-        int a = 1;
+        int a = 1; // violation 'Distance .* is 5.'
         System.lineSeparator();
         System.lineSeparator();
         System.lineSeparator();
@@ -910,7 +910,7 @@ class New6 {
     }
 
     void h() {
-        int a = 1;
+        int a = 1; // violation 'Distance .* is 5.'
         System.lineSeparator();
         System.lineSeparator();
         System.lineSeparator();
@@ -942,7 +942,7 @@ class New6 {
     }
 
     void k() {
-        int a = 1;
+        int a = 1; // violation 'Distance .* is 5.'
         System.lineSeparator();
         System.lineSeparator();
         System.lineSeparator();
@@ -998,7 +998,7 @@ class New6 {
     }
 
     void test() {
-        int a = 0;
+        int a = 0; // violation 'Distance .* is 4.'
 
         System.lineSeparator();
         System.lineSeparator();
@@ -1033,7 +1033,7 @@ class New6 {
             System.identityHashCode(b);
         }
 
-        int c = 0; // violation
+        int c = 0; // violation 'Distance .* is 4.'
         System.lineSeparator();
         System.lineSeparator();
         System.lineSeparator();
@@ -1063,7 +1063,7 @@ class New6 {
     static int field;
 
     private void n() {
-        long a = 0; // violation
+        long a = 0; // violation 'Distance .* is 4.'
 
         New6.field = 1;
         New6.field = 2;

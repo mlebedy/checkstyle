@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -181,6 +181,46 @@ public class OperatorWrapCheckTest
                     + "whitespace.OperatorWrapCheck - "
                     + "Cannot set property 'option' to 'invalid_option'");
         }
+    }
+
+    @Test
+    public void testTrimOptionProperty() throws Exception {
+        final String[] expected = {
+            "18:21: " + getCheckMessage(MSG_LINE_PREVIOUS, ":"),
+            "19:21: " + getCheckMessage(MSG_LINE_PREVIOUS, "?"),
+        };
+        verifyWithInlineConfigParser(
+                getPath("InputOperatorWrapWithTrimOptionProperty.java"), expected);
+    }
+
+    @Test
+    public void testInstanceOfOperator() throws Exception {
+        final String[] expected = {
+            "17:15: " + getCheckMessage(MSG_LINE_NEW, "instanceof"),
+            "23:15: " + getCheckMessage(MSG_LINE_NEW, "instanceof"),
+            "35:23: " + getCheckMessage(MSG_LINE_NEW, "instanceof"),
+            "39:23: " + getCheckMessage(MSG_LINE_NEW, "instanceof"),
+            "49:33: " + getCheckMessage(MSG_LINE_NEW, "instanceof"),
+            "59:33: " + getCheckMessage(MSG_LINE_NEW, "instanceof"),
+            "72:15: " + getCheckMessage(MSG_LINE_NEW, "instanceof"),
+            "82:38: " + getCheckMessage(MSG_LINE_NEW, "instanceof"),
+        };
+        verifyWithInlineConfigParser(
+                getNonCompilablePath("InputOperatorWrapInstanceOfOperator.java"), expected);
+    }
+
+    @Test
+    public void testInstanceOfOperatorEndOfLine() throws Exception {
+        final String[] expected = {
+            "28:17: " + getCheckMessage(MSG_LINE_PREVIOUS, "instanceof"),
+            "43:17: " + getCheckMessage(MSG_LINE_PREVIOUS, "instanceof"),
+            "65:20: " + getCheckMessage(MSG_LINE_PREVIOUS, "instanceof"),
+            "78:17: " + getCheckMessage(MSG_LINE_PREVIOUS, "instanceof"),
+            "88:21: " + getCheckMessage(MSG_LINE_PREVIOUS, "instanceof"),
+        };
+        verifyWithInlineConfigParser(
+                getNonCompilablePath(
+                        "InputOperatorWrapInstanceOfOperatorEndOfLine.java"), expected);
     }
 
 }

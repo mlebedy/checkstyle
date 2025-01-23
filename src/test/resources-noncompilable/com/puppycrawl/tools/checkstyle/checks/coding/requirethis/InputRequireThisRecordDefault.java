@@ -7,27 +7,27 @@ validateOnlyOverlapping = (default)true
 
 */
 
-//non-compiled with javac: Compilable with Java14
+//non-compiled with javac: Compilable with Java17
 package com.puppycrawl.tools.checkstyle.checks.coding.requirethis;
 
 public record InputRequireThisRecordDefault(int x, int y) {
     private static int i; // all fields must be static in a record definition
 
     public InputRequireThisRecordDefault {
-        method1(); // ok
-        method2(42); // ok
-        method3(); // ok
-        int z = x + y + 2; // ok
-        System.out.println(y + x); // ok
+        method1();
+        method2(42);
+        method3();
+        int z = x + y + 2;
+        System.out.println(y + x);
     }
 
     InputRequireThisRecordDefault(int x) {
         this(x,42);
-        x = x; // violation
+        x = x; // violation 'Reference to instance variable 'x' needs "this.".'
     }
 
     public int getIPlusX() {
-        return  i + x; // ok
+        return  i + x;
     }
 
     public static void setI(int i) {
@@ -35,16 +35,16 @@ public record InputRequireThisRecordDefault(int x, int y) {
     }
 
     void method1() {
-        i = 3 + y; // ok
-        int w = this.x; // ok
+        i = 3 + y;
+        int w = this.x;
     }
 
     void method2(int i) {
         i++;
         this.setI(i);
-        method1(); // ok
+        method1();
         try {
-            this.method1(); // ok
+            this.method1();
         } catch (RuntimeException e) {
             e.toString();
         }
@@ -54,7 +54,7 @@ public record InputRequireThisRecordDefault(int x, int y) {
     }
 
     <T> void method3() {
-        setI(3); // ok
+        setI(3);
     }
 
     void method4() {

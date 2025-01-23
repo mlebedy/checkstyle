@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -29,20 +29,23 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 import com.puppycrawl.tools.checkstyle.utils.CheckUtil;
 
 /**
- * <p>
+ * <div>
  * Restricts the number of boolean operators ({@code &amp;&amp;}, {@code ||},
  * {@code &amp;}, {@code |} and {@code ^}) in an expression.
- * </p>
+ * </div>
+ *
  * <p>
  * Rationale: Too many conditions leads to code that is difficult to read
  * and hence debug and maintain.
  * </p>
+ *
  * <p>
  * Note that the operators {@code &amp;} and {@code |} are not only integer bitwise
  * operators, they are also the
  * <a href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-15.22.2">
  * non-shortcut versions</a> of the boolean operators {@code &amp;&amp;} and {@code ||}.
  * </p>
+ *
  * <p>
  * Note that {@code &amp;}, {@code |} and {@code ^} are not checked if they are part
  * of constructor or method call because they can be applied to non-boolean
@@ -72,80 +75,11 @@ import com.puppycrawl.tools.checkstyle.utils.CheckUtil;
  * BXOR</a>.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name="BooleanExpressionComplexity"/&gt;
- * </pre>
- * <p>Code Example:</p>
- * <pre>
- * public class Test
- * {
- * public static void main(String ... args)
- * {
- * boolean a = true;
- * boolean b = false;
- *
- * boolean c = (a &amp; b) | (b ^ a);       // OK, 1(&amp;) + 1(|) + 1(^) = 3 (max allowed 3)
- *
- * boolean d = (a &amp; b) ^ (a || b) | a;  // violation, 1(&amp;) + 1(^) + 1(||) + 1(|) = 4
- * }
- * }
- * </pre>
- * <p>
- * To configure the check with 5 allowed operation in boolean expression:
- * </p>
- * <pre>
- * &lt;module name="BooleanExpressionComplexity"&gt;
- *   &lt;property name="max" value="5"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Code Example:</p>
- * <pre>
- * public class Test
- * {
- *  public static void main(String ... args)
- *  {
- *   boolean a = true;
- *   boolean b = false;
- *
- *   boolean c = (a &amp; b) | (b ^ a) | (a ^ b);   // OK, 1(&amp;) + 1(|) + 1(^) + 1(|) + 1(^) = 5
- *
- *   boolean d = (a | b) ^ (a | b) ^ (a || b) &amp; b; // violation,
- *                                               // 1(|) + 1(^) + 1(|) + 1(^) + 1(||) + 1(&amp;) = 6
- *  }
- * }
- * </pre>
- * <p>
- * To configure the check to ignore {@code &amp;} and {@code |}:
- * </p>
- * <pre>
- * &lt;module name="BooleanExpressionComplexity"&gt;
- *   &lt;property name="tokens" value="BXOR,LAND,LOR"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Code Example:</p>
- * <pre>
- * public class Test
- * {
- *  public static void main(String ... args)
- *   {
- *     boolean a = true;
- *     boolean b = false;
- *
- *     boolean c = (!a &amp;&amp; b) | (a || !b) ^ a;    // OK, 1(&amp;&amp;) + 1(||) + 1(^) = 3
- *                                                // | is ignored here
- *
- *     boolean d = a ^ (a || b) ^ (b || a) &amp; a; // violation, 1(^) + 1(||) + 1(^) + 1(||) = 4
- *                                               // &amp; is ignored here
- *    }
- *  }
- * </pre>
  *
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -225,6 +159,7 @@ public final class BooleanExpressionComplexityCheck extends AbstractCheck {
      * Setter to specify the maximum number of boolean operations allowed in one expression.
      *
      * @param max new maximum allowed complexity.
+     * @since 3.4
      */
     public void setMax(int max) {
         this.max = max;
@@ -336,7 +271,7 @@ public final class BooleanExpressionComplexityCheck extends AbstractCheck {
      * Represents context (method/expression) in which we check complexity.
      *
      */
-    private class Context {
+    private final class Context {
 
         /**
          * Should we perform check in current context or not.
@@ -351,9 +286,8 @@ public final class BooleanExpressionComplexityCheck extends AbstractCheck {
          *
          * @param checking should we check in current context or not.
          */
-        /* package */ Context(boolean checking) {
+        private Context(boolean checking) {
             this.checking = checking;
-            count = 0;
         }
 
         /**

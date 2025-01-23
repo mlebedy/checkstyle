@@ -2,22 +2,22 @@
 <checkstyle-metadata>
    <module>
       <check fully-qualified-name="com.puppycrawl.tools.checkstyle.checks.naming.AbstractClassNameCheck"
-              name="AbstractClassName"
-              parent="com.puppycrawl.tools.checkstyle.TreeWalker">
-         <description>&lt;p&gt;
+             name="AbstractClassName"
+             parent="com.puppycrawl.tools.checkstyle.TreeWalker">
+         <description>&lt;div&gt;
  Ensures that the names of abstract classes conforming to some pattern
  and check that {@code abstract} modifier exists.
- &lt;/p&gt;
+ &lt;/div&gt;
+
  &lt;p&gt;
  Rationale: Abstract classes are convenience base class implementations of
- interfaces, not types as such. As such they should be named to indicate this.
- Also, if names of classes starts with 'Abstract' it's very convenient that
- they will have abstract modifier.
+ interfaces. For this reason, it should be made obvious that a given class
+ is abstract by prefacing the class name with 'Abstract'.
  &lt;/p&gt;</description>
          <properties>
             <property default-value="^Abstract.+$"
-                       name="format"
-                       type="java.util.regex.Pattern">
+                      name="format"
+                      type="java.util.regex.Pattern">
                <description>Specify valid identifiers.</description>
             </property>
             <property default-value="false" name="ignoreModifier" type="boolean">

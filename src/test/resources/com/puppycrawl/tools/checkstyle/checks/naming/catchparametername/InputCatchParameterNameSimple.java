@@ -1,6 +1,6 @@
 /*
 CatchParameterName
-format = (default)^(e|t|ex|[a-z][a-z][a-zA-Z]+)$
+format = (default)^(e|t|ex|[a-z][a-z][a-zA-Z]+|_)$
 
 
 */
@@ -16,7 +16,7 @@ import java.io.*;
  * - Order of modifiers
  * @author Oliver Burn
  **/
-final class InputCatchParameterNameSimple // ok
+final class InputCatchParameterNameSimple
 {
     /** Invalid format **/
     public static final int badConstant = 2;

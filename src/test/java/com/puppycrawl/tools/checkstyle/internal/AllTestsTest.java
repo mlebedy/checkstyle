@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -49,7 +48,7 @@ public class AllTestsTest {
     public void testAllInputsHaveTest() throws Exception {
         final Map<String, List<String>> allTests = new HashMap<>();
 
-        walk(Paths.get("src/test/java"), filePath -> {
+        walkVisible(Path.of("src/test/java"), filePath -> {
             grabAllTests(allTests, filePath.toFile());
         });
 
@@ -57,10 +56,10 @@ public class AllTestsTest {
             .that(allTests.keySet())
             .isNotEmpty();
 
-        walk(Paths.get("src/test/resources/com/puppycrawl"), filePath -> {
+        walkVisible(Path.of("src/test/resources/com/puppycrawl"), filePath -> {
             verifyInputFile(allTests, filePath.toFile());
         });
-        walk(Paths.get("src/test/resources-noncompilable/com/puppycrawl"), filePath -> {
+        walkVisible(Path.of("src/test/resources-noncompilable/com/puppycrawl"), filePath -> {
             verifyInputFile(allTests, filePath.toFile());
         });
     }
@@ -69,7 +68,7 @@ public class AllTestsTest {
     public void testAllTestsHaveProductionCode() throws Exception {
         final Map<String, List<String>> allTests = new HashMap<>();
 
-        walk(Paths.get("src/main/java"), filePath -> {
+        walkVisible(Path.of("src/main/java"), filePath -> {
             grabAllFiles(allTests, filePath.toFile());
         });
 
@@ -77,14 +76,29 @@ public class AllTestsTest {
             .that(allTests.keySet())
             .isNotEmpty();
 
-        walk(Paths.get("src/test/java"), filePath -> {
+        walkVisible(Path.of("src/test/java"), filePath -> {
             verifyHasProductionFile(allTests, filePath.toFile());
         });
     }
 
-    private static void walk(Path path, Consumer<Path> action) throws IOException {
+    /**
+     * Walks through the file tree rooted at the specified path and performs the given action
+     * on each visible (non-hidden) file path.
+     *
+     * <p>This method recursively traverses the directory tree starting from the specified
+     * {@code path}. It filters out hidden files and directories before applying the provided
+     * {@code action} to each visible file path. The definition of what constitutes a hidden
+     * file or directory is operating system dependent, and this method uses the underlying
+     * file system's criteria for hidden files.</p>
+     *
+     * @param path   the starting path for the file tree traversal
+     * @param action the action to be performed on each visible file path
+     * @throws IOException if an I/O error occurs while accessing the file system
+     */
+    private static void walkVisible(Path path, Consumer<Path> action) throws IOException {
         try (Stream<Path> walk = Files.walk(path)) {
-            walk.forEach(action);
+            walk.filter(filePath -> !filePath.toFile().isHidden())
+                .forEach(action);
         }
     }
 
@@ -144,9 +158,7 @@ public class AllTestsTest {
             }
 
             // until https://github.com/checkstyle/checkstyle/issues/5105
-            if (!path.contains(File.separatorChar + "grammar" + File.separatorChar)
-                    && !path.contains(File.separatorChar + "foo" + File.separatorChar)
-                    && !path.contains(File.separatorChar + "bar" + File.separatorChar)) {
+            if (shouldSkipFileProcessing(path)) {
                 String fileName = file.getName();
                 final boolean skipFileNaming = shouldSkipInputFileNameCheck(path, fileName);
 
@@ -204,6 +216,20 @@ public class AllTestsTest {
                 .isTrue();
     }
 
+    /**
+     * Checks if the file processing should be skipped based on the path.
+     *
+     * @param path The path to check for skip conditions.
+     * @return true if file processing should be skipped, false otherwise.
+     */
+    private static boolean shouldSkipFileProcessing(String path) {
+        return !path.contains(File.separatorChar + "grammar" + File.separatorChar)
+                && !path.contains(File.separatorChar + "foo" + File.separatorChar)
+                && !path.contains(File.separatorChar + "bar" + File.separatorChar)
+                && !path.contains(File.separator + "abc" + File.separatorChar)
+                && !path.contains(File.separator + "zoo" + File.separatorChar);
+    }
+
     private static void verifyHasProductionFile(Map<String, List<String>> allTests, File file) {
         if (file.isFile()) {
             final String fileName = file.getName().replace("Test.java", ".java");
@@ -226,8 +252,8 @@ public class AllTestsTest {
 
                     assertWithMessage("Test must be named after a production class "
                                + "and must be in the same package of the production class: " + path)
-                            .that(classes != null && classes.contains(fileName))
-                            .isTrue();
+                            .that(classes)
+                            .contains(fileName);
                 }
             }
         }

@@ -1,10 +1,11 @@
+/*
+com.puppycrawl.tools.checkstyle.checks.javadoc.AbstractJavadocCheckTest$TokenIsNotInAcceptablesCheck
+javadocTokens: DEPRECATED_LITERAL
+
+*/
+
 package com.puppycrawl.tools.checkstyle.checks.javadoc.abstractjavadoc;
 
-/*
- * Config: TokenIsNotInAcceptablesJavadocCheck
- * javadocTokens: DEPRECATED_LITERAL
- */
-
 /** Javadoc */
-public class InputAbstractJavadocTokensPass { // ok
+public class InputAbstractJavadocTokensPass {
 }

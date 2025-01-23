@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -44,7 +44,7 @@ public class XpathRegressionSimplifyBooleanReturnTest extends AbstractXpathTestS
     public void testIfBooleanEqualsBoolean() throws Exception {
         final File fileToProcess = new File(
             getPath(
-                "SuppressionXpathRegressionSimplifyBooleanReturnIfBooleanEqualsBoolean.java"));
+                "InputXpathSimplifyBooleanReturnIfBooleanEqualsBoolean.java"));
 
         final DefaultConfiguration moduleConfig = createModuleConfig(CLASS);
 
@@ -54,7 +54,7 @@ public class XpathRegressionSimplifyBooleanReturnTest extends AbstractXpathTestS
 
         final List<String> expectedXpathQueries = Collections.singletonList(
             "/COMPILATION_UNIT/CLASS_DEF[./IDENT[@text="
-                + "'SuppressionXpathRegressionSimplifyBooleanReturnIfBooleanEqualsBoolean']]"
+                + "'InputXpathSimplifyBooleanReturnIfBooleanEqualsBoolean']]"
                 + "/OBJBLOCK/METHOD_DEF[./IDENT[@text='toTest']]/SLIST/LITERAL_IF"
         );
 
@@ -66,7 +66,7 @@ public class XpathRegressionSimplifyBooleanReturnTest extends AbstractXpathTestS
     public void testIfBooleanReturnBoolean() throws Exception {
         final File fileToProcess = new File(
             getPath(
-                "SuppressionXpathRegressionSimplifyBooleanReturnIfBooleanReturnBoolean.java"
+                "InputXpathSimplifyBooleanReturnIfBooleanReturnBoolean.java"
             ));
 
         final DefaultConfiguration moduleConfig = createModuleConfig(CLASS);
@@ -77,7 +77,7 @@ public class XpathRegressionSimplifyBooleanReturnTest extends AbstractXpathTestS
 
         final List<String> expectedXpathQueries = Collections.singletonList(
             "/COMPILATION_UNIT/CLASS_DEF[./IDENT[@text="
-                + "'SuppressionXpathRegressionSimplifyBooleanReturnIfBooleanReturnBoolean']]"
+                + "'InputXpathSimplifyBooleanReturnIfBooleanReturnBoolean']]"
                 + "/OBJBLOCK/METHOD_DEF[./IDENT[@text='toTest']]/SLIST/EXPR/METHOD_CALL/ELIST"
                 + "/LAMBDA[./IDENT[@text='statement']]/SLIST/LITERAL_IF"
         );

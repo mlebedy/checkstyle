@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -32,10 +32,11 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 import com.puppycrawl.tools.checkstyle.utils.ScopeUtil;
 
 /**
- * <p>
+ * <div>
  * Checks the number of methods declared in each type declaration by access modifier
  * or total count.
- * </p>
+ * </div>
+ *
  * <p>
  * This check can be configured to flag classes that define too many methods
  * to prevent the class from getting too complex. Counting can be customized
@@ -47,6 +48,7 @@ import com.puppycrawl.tools.checkstyle.utils.ScopeUtil;
  * {@code maxPackage} methods. A violation won't appear for 8 public methods,
  * but one will appear if there is also 3 private methods or any package-private methods.
  * </p>
+ *
  * <p>
  * Methods defined in anonymous classes are not counted towards any totals.
  * Counts only go towards the main type declaration parent, and are kept separate
@@ -74,17 +76,12 @@ import com.puppycrawl.tools.checkstyle.utils.ScopeUtil;
  * </pre>
  * <ul>
  * <li>
- * Property {@code maxTotal} - Specify the maximum number of methods allowed at all scope levels.
+ * Property {@code maxPackage} - Specify the maximum number of {@code package} methods allowed.
  * Type is {@code int}.
  * Default value is {@code 100}.
  * </li>
  * <li>
  * Property {@code maxPrivate} - Specify the maximum number of {@code private} methods allowed.
- * Type is {@code int}.
- * Default value is {@code 100}.
- * </li>
- * <li>
- * Property {@code maxPackage} - Specify the maximum number of {@code package} methods allowed.
  * Type is {@code int}.
  * Default value is {@code 100}.
  * </li>
@@ -95,6 +92,11 @@ import com.puppycrawl.tools.checkstyle.utils.ScopeUtil;
  * </li>
  * <li>
  * Property {@code maxPublic} - Specify the maximum number of {@code public} methods allowed.
+ * Type is {@code int}.
+ * Default value is {@code 100}.
+ * </li>
+ * <li>
+ * Property {@code maxTotal} - Specify the maximum number of methods allowed at all scope levels.
  * Type is {@code int}.
  * Default value is {@code 100}.
  * </li>
@@ -111,39 +113,17 @@ import com.puppycrawl.tools.checkstyle.utils.ScopeUtil;
  * ENUM_DEF</a>,
  * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#INTERFACE_DEF">
  * INTERFACE_DEF</a>,
- * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#INTERFACE_DEF">
+ * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#ANNOTATION_DEF">
  * ANNOTATION_DEF</a>,
  * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#RECORD_DEF">
  * RECORD_DEF</a>.
  * </li>
  * </ul>
- * <p>
- * To configure the default check:
- * </p>
- * <pre>
- * &lt;module name="MethodCount"/&gt;
- * </pre>
- * <p>
- * To configure the check to allow no more than 30 methods per type declaration:
- * </p>
- * <pre>
- * &lt;module name="MethodCount"&gt;
- *   &lt;property name="maxTotal" value="30"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * To configure the check to allow no more than 10 public methods per type declaration,
- * and 40 methods in total:
- * </p>
- * <pre>
- * &lt;module name="MethodCount"&gt;
- *   &lt;property name="maxPublic" value="10"/&gt;
- *   &lt;property name="maxTotal" value="40"/&gt;
- * &lt;/module&gt;
- * </pre>
+ *
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -330,6 +310,7 @@ public final class MethodCountCheck extends AbstractCheck {
      * Setter to specify the maximum number of {@code private} methods allowed.
      *
      * @param value the maximum allowed.
+     * @since 5.3
      */
     public void setMaxPrivate(int value) {
         maxPrivate = value;
@@ -339,6 +320,7 @@ public final class MethodCountCheck extends AbstractCheck {
      * Setter to specify the maximum number of {@code package} methods allowed.
      *
      * @param value the maximum allowed.
+     * @since 5.3
      */
     public void setMaxPackage(int value) {
         maxPackage = value;
@@ -348,6 +330,7 @@ public final class MethodCountCheck extends AbstractCheck {
      * Setter to specify the maximum number of {@code protected} methods allowed.
      *
      * @param value the maximum allowed.
+     * @since 5.3
      */
     public void setMaxProtected(int value) {
         maxProtected = value;
@@ -357,6 +340,7 @@ public final class MethodCountCheck extends AbstractCheck {
      * Setter to specify the maximum number of {@code public} methods allowed.
      *
      * @param value the maximum allowed.
+     * @since 5.3
      */
     public void setMaxPublic(int value) {
         maxPublic = value;
@@ -366,6 +350,7 @@ public final class MethodCountCheck extends AbstractCheck {
      * Setter to specify the maximum number of methods allowed at all scope levels.
      *
      * @param value the maximum allowed.
+     * @since 5.3
      */
     public void setMaxTotal(int value) {
         maxTotal = value;
@@ -376,7 +361,7 @@ public final class MethodCountCheck extends AbstractCheck {
      * class. Objects of this class are used on the Stack to count the
      * methods for each class and layer.
      */
-    private static class MethodCounter {
+    private static final class MethodCounter {
 
         /** Maintains the counts. */
         private final Map<Scope, Integer> counts = new EnumMap<>(Scope.class);
@@ -395,7 +380,7 @@ public final class MethodCountCheck extends AbstractCheck {
          *        The surrounding scope definition (class, enum, etc.) which to count all methods
          *        for.
          */
-        /* package */ MethodCounter(DetailAST scopeDefinition) {
+        private MethodCounter(DetailAST scopeDefinition) {
             this.scopeDefinition = scopeDefinition;
         }
 

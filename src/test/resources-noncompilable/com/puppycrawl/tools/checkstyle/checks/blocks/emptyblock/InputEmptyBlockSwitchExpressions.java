@@ -6,7 +6,7 @@ tokens = LITERAL_DEFAULT, LITERAL_CASE, LITERAL_SWITCH
 
 */
 
-//non-compiled with javac: Compilable with Java14
+//non-compiled with javac: Compilable with Java17
 package com.puppycrawl.tools.checkstyle.checks.blocks.emptyblock;
 
 public class InputEmptyBlockSwitchExpressions {
@@ -113,9 +113,9 @@ public class InputEmptyBlockSwitchExpressions {
     void howMany8(Nums k) {
         switch (k) {
             case ONE -> System.out.println("case two");
-            case TWO, THREE -> {} // ok, empty blocks are allowed for cases
+            case TWO, THREE -> {} // violation, 'Must have at least one statement'
 
-            case FOUR -> {} // ok, empty blocks are allowed for cases
+            case FOUR -> {} // violation, 'Must have at least one statement'
 
             default -> throw new IllegalStateException("Not a nums");
         }

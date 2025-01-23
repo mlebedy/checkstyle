@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -35,7 +35,6 @@ import java.util.stream.Stream;
 
 import com.puppycrawl.tools.checkstyle.api.AbstractCheck;
 import com.puppycrawl.tools.checkstyle.api.AbstractFileSetCheck;
-import com.puppycrawl.tools.checkstyle.api.AutomaticBean;
 import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
 import com.puppycrawl.tools.checkstyle.api.Configuration;
 import com.puppycrawl.tools.checkstyle.api.Context;
@@ -43,6 +42,7 @@ import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.ExternalResourceHolder;
 import com.puppycrawl.tools.checkstyle.api.FileContents;
 import com.puppycrawl.tools.checkstyle.api.FileText;
+import com.puppycrawl.tools.checkstyle.api.SeverityLevel;
 import com.puppycrawl.tools.checkstyle.api.Violation;
 import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
 
@@ -53,6 +53,9 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  */
 @FileStatefulCheck
 public class TreeWalker extends AbstractFileSetCheck implements ExternalResourceHolder {
+
+    /** Message to use when an exception occurs and should be printed as a violation. */
+    public static final String PARSE_EXCEPTION_MSG = "parse.exception";
 
     /** Maps from token name to ordinary checks. */
     private final Map<Integer, Set<AbstractCheck>> tokenToOrdinaryChecks =
@@ -80,6 +83,12 @@ public class TreeWalker extends AbstractFileSetCheck implements ExternalResource
     /** A factory for creating submodules (i.e. the Checks) */
     private ModuleFactory moduleFactory;
 
+    /** Control whether to skip files with Java parsing exceptions. */
+    private boolean skipFileOnJavaParseException;
+
+    /** Specify severity Level to log Java parsing exceptions when they are skipped. */
+    private SeverityLevel javaParseExceptionSeverity = SeverityLevel.ERROR;
+
     /**
      * Creates a new {@code TreeWalker} instance.
      */
@@ -94,6 +103,28 @@ public class TreeWalker extends AbstractFileSetCheck implements ExternalResource
      */
     public void setModuleFactory(ModuleFactory moduleFactory) {
         this.moduleFactory = moduleFactory;
+    }
+
+    /**
+     * Setter to control whether to skip files with Java parsing exceptions.
+     *
+     *  @param skipFileOnJavaParseException whether to skip files with Java parsing errors.
+     *  @since 10.18.0
+     */
+    public void setSkipFileOnJavaParseException(boolean skipFileOnJavaParseException) {
+        this.skipFileOnJavaParseException = skipFileOnJavaParseException;
+    }
+
+    /**
+     * Setter to specify the severity level
+     * to log Java parsing exceptions when they are skipped.
+     *
+     *  @param javaParseExceptionSeverity severity level to log parsing exceptions
+     *      when they are skipped.
+     *  @since 10.18.0
+     */
+    public void setJavaParseExceptionSeverity(SeverityLevel javaParseExceptionSeverity) {
+        this.javaParseExceptionSeverity = javaParseExceptionSeverity;
     }
 
     @Override
@@ -118,8 +149,8 @@ public class TreeWalker extends AbstractFileSetCheck implements ExternalResource
 
         try {
             module = moduleFactory.createModule(name);
-            if (module instanceof AutomaticBean) {
-                final AutomaticBean bean = (AutomaticBean) module;
+            if (module instanceof AbstractAutomaticBean) {
+                final AbstractAutomaticBean bean = (AbstractAutomaticBean) module;
                 bean.contextualize(childContext);
                 bean.configure(childConf);
             }
@@ -145,26 +176,52 @@ public class TreeWalker extends AbstractFileSetCheck implements ExternalResource
         }
     }
 
+    /**
+     * {@inheritDoc} Processes the file.
+     *
+     * @noinspection ProhibitedExceptionThrown
+     * @noinspectionreason ProhibitedExceptionThrown - there is no other way to obey
+     *     skipFileOnJavaParseException field
+     */
     @Override
     protected void processFiltered(File file, FileText fileText) throws CheckstyleException {
         // check if already checked and passed the file
         if (!ordinaryChecks.isEmpty() || !commentChecks.isEmpty()) {
             final FileContents contents = getFileContents();
-            final DetailAST rootAST = JavaParser.parse(contents);
-            if (!ordinaryChecks.isEmpty()) {
-                walk(rootAST, contents, AstState.ORDINARY);
+            DetailAST rootAST = null;
+            // whether skip the procedure after parsing Java files.
+            boolean skip = false;
+            try {
+                rootAST = JavaParser.parse(contents);
             }
-            if (!commentChecks.isEmpty()) {
-                final DetailAST astWithComments = JavaParser.appendHiddenCommentNodes(rootAST);
-                walk(astWithComments, contents, AstState.WITH_COMMENTS);
-            }
-            if (filters.isEmpty()) {
+            // -@cs[IllegalCatch] There is no other way to obey skipFileOnJavaParseException field
+            catch (Exception ex) {
+                if (!skipFileOnJavaParseException) {
+                    throw ex;
+                }
+                skip = true;
+                violations.add(new Violation(1, Definitions.CHECKSTYLE_BUNDLE, PARSE_EXCEPTION_MSG,
+                            new Object[] {ex.getMessage()}, javaParseExceptionSeverity, null,
+                            getClass(), null));
                 addViolations(violations);
             }
-            else {
-                final SortedSet<Violation> filteredViolations =
-                    getFilteredViolations(file.getAbsolutePath(), contents, rootAST);
-                addViolations(filteredViolations);
+
+            if (!skip) {
+                if (!ordinaryChecks.isEmpty()) {
+                    walk(rootAST, contents, AstState.ORDINARY);
+                }
+                if (!commentChecks.isEmpty()) {
+                    final DetailAST astWithComments = JavaParser.appendHiddenCommentNodes(rootAST);
+                    walk(astWithComments, contents, AstState.WITH_COMMENTS);
+                }
+                if (filters.isEmpty()) {
+                    addViolations(violations);
+                }
+                else {
+                    final SortedSet<Violation> filteredViolations =
+                            getFilteredViolations(file.getAbsolutePath(), contents, rootAST);
+                    addViolations(filteredViolations);
+                }
             }
             violations.clear();
         }
@@ -389,9 +446,11 @@ public class TreeWalker extends AbstractFileSetCheck implements ExternalResource
         return Stream.concat(filters.stream(),
                 Stream.concat(ordinaryChecks.stream(), commentChecks.stream()))
             .filter(ExternalResourceHolder.class::isInstance)
-            .map(ExternalResourceHolder.class::cast)
-            .flatMap(resource -> resource.getExternalResourceLocations().stream())
-            .collect(Collectors.toSet());
+            .flatMap(resource -> {
+                return ((ExternalResourceHolder) resource)
+                        .getExternalResourceLocations().stream();
+            })
+            .collect(Collectors.toUnmodifiableSet());
     }
 
     /**
@@ -426,7 +485,7 @@ public class TreeWalker extends AbstractFileSetCheck implements ExternalResource
                 Comparator.<AbstractCheck, String>comparing(check -> check.getClass().getName())
                         .thenComparing(AbstractCheck::getId,
                                 Comparator.nullsLast(Comparator.naturalOrder()))
-                        .thenComparing(AbstractCheck::hashCode));
+                        .thenComparingInt(AbstractCheck::hashCode));
     }
 
     /**

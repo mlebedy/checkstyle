@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -49,7 +49,7 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
 @FileStatefulCheck
 public abstract class AbstractClassCouplingCheck extends AbstractCheck {
 
-    /** A package separator - "." */
+    /** A package separator - ".". */
     private static final char DOT = '.';
 
     /** Class names to ignore. */
@@ -101,8 +101,7 @@ public abstract class AbstractClassCouplingCheck extends AbstractCheck {
     private Set<String> excludedClasses = DEFAULT_EXCLUDED_CLASSES;
 
     /**
-     * Specify user-configured packages to ignore. All excluded packages
-     * should end with a period, so it also appends a dot to a package name.
+     * Specify user-configured packages to ignore.
      */
     private Set<String> excludedPackages = DEFAULT_EXCLUDED_PACKAGES;
 
@@ -157,16 +156,12 @@ public abstract class AbstractClassCouplingCheck extends AbstractCheck {
      *
      * @param from array representing regular expressions of classes to ignore.
      */
-    public void setExcludeClassesRegexps(String... from) {
-        Arrays.stream(from)
-                .map(CommonUtil::createPattern)
-                .distinct()
-                .forEach(excludeClassesRegexps::add);
+    public void setExcludeClassesRegexps(Pattern... from) {
+        excludeClassesRegexps.addAll(Arrays.asList(from));
     }
 
     /**
-     * Setter to specify user-configured packages to ignore. All excluded packages
-     * should end with a period, so it also appends a dot to a package name.
+     * Setter to specify user-configured packages to ignore.
      *
      * @param excludedPackages packages to ignore.
      * @throws IllegalArgumentException if there are invalid identifiers among the packages.
@@ -174,7 +169,7 @@ public abstract class AbstractClassCouplingCheck extends AbstractCheck {
     public final void setExcludedPackages(String... excludedPackages) {
         final List<String> invalidIdentifiers = Arrays.stream(excludedPackages)
             .filter(Predicate.not(CommonUtil::isName))
-            .collect(Collectors.toList());
+            .collect(Collectors.toUnmodifiableList());
         if (!invalidIdentifiers.isEmpty()) {
             throw new IllegalArgumentException(
                 "the following values are not valid identifiers: " + invalidIdentifiers);
@@ -328,7 +323,7 @@ public abstract class AbstractClassCouplingCheck extends AbstractCheck {
      * Encapsulates information about class coupling.
      *
      */
-    private class ClassContext {
+    private final class ClassContext {
 
         /**
          * Set of referenced classes.
@@ -347,7 +342,7 @@ public abstract class AbstractClassCouplingCheck extends AbstractCheck {
          * @param className name of the given class.
          * @param ast ast of class definition.
          */
-        /* package */ ClassContext(String className, DetailAST ast) {
+        private ClassContext(String className, DetailAST ast) {
             this.className = className;
             classAst = ast;
         }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -30,7 +30,7 @@ import javax.swing.tree.TreePath;
  * in the DefaultTreeSelectionModel.
  *
  */
-class ListToTreeSelectionModelWrapper extends DefaultTreeSelectionModel {
+final class ListToTreeSelectionModelWrapper extends DefaultTreeSelectionModel {
 
     /** A unique serial version identifier. */
     private static final long serialVersionUID = 2267930983939339510L;
@@ -58,7 +58,7 @@ class ListToTreeSelectionModelWrapper extends DefaultTreeSelectionModel {
      *
      * @return the list selection model
      */
-    protected final ListSelectionModel getListSelectionModel() {
+    public ListSelectionModel getListSelectionModel() {
         return listSelectionModel;
     }
 

@@ -36,18 +36,28 @@ public class InputOneStatementPerLine {
    * may be considered as two empty statements on the same line
    * and rises violation.
    */
-  ;; // violation
+  ;; // violation 'Only one statement per line allowed.'
   static {
     new JCheckBox().addActionListener((final ActionEvent e) -> {good();});
     List<Integer> ints = new LinkedList<Integer>();
     ints.stream().map( t -> { return t * 2;} ).filter( t -> { return false;});
-    ints.stream().map( t -> { int m = t * 2; return m; } ); // violation
-    ints.stream().map( t -> { int m = t * 2; return m; } ); int i = 3; // 2 violations
-    ints.stream().map( t -> t * 2); int k = 4; // violation
+
+    // violation below 'Only one statement per line allowed.'
+    ints.stream().map( t -> { int m = t * 2; return m; } );
+
+    ints.stream().map( t -> { int m = t * 2; return m; } ); int i = 3;
+    // 2 violations above:
+    // 'Only one statement per line allowed.'
+    // 'Only one statement per line allowed.'
+
+    // violation below 'Only one statement per line allowed.'
+    ints.stream().map( t -> t * 2); int k = 4;
     ints.stream().map( t -> t * 2);
     List<Integer> ints2 = new LinkedList<Integer>();
     ints.stream().map( t -> { return ints2.stream().map(w -> { return w * 2; });});
-    ints.stream().map( t -> { return ints2.stream().map(w -> { int m=w; return m; });});// violation
+
+    // violation below 'Only one statement per line allowed.'
+    ints.stream().map( t -> { return ints2.stream().map(w -> { int m=w; return m; });});
     ints.stream().map( t -> {
       return ints2.stream().map(
           w -> {
@@ -70,7 +80,7 @@ public class InputOneStatementPerLine {
   InputOneStatementPerLine method(foo a) {
     foo obj = () -> {
       method(() ->
-             {method(null);}).method(null); // ok
+             {method(null);}).method(null);
     };
     return this;
   }

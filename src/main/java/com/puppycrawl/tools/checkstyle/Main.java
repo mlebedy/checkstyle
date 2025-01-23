@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -42,13 +42,12 @@ import java.util.stream.Collectors;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.puppycrawl.tools.checkstyle.AbstractAutomaticBean.OutputStreamOptions;
 import com.puppycrawl.tools.checkstyle.api.AuditEvent;
 import com.puppycrawl.tools.checkstyle.api.AuditListener;
-import com.puppycrawl.tools.checkstyle.api.AutomaticBean;
 import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
 import com.puppycrawl.tools.checkstyle.api.Configuration;
 import com.puppycrawl.tools.checkstyle.api.RootModule;
-import com.puppycrawl.tools.checkstyle.api.Violation;
 import com.puppycrawl.tools.checkstyle.utils.ChainedPropertyUtil;
 import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 import com.puppycrawl.tools.checkstyle.utils.XpathUtil;
@@ -147,12 +146,12 @@ public final class Main {
         finally {
             // return exit code base on validation of Checker
             if (errorCounter > 0) {
-                final Violation errorCounterViolation = new Violation(1,
-                        Definitions.CHECKSTYLE_BUNDLE, ERROR_COUNTER,
-                        new String[] {String.valueOf(errorCounter)}, null, Main.class, null);
+                final LocalizedMessage errorCounterViolation = new LocalizedMessage(
+                        Definitions.CHECKSTYLE_BUNDLE, Main.class,
+                        ERROR_COUNTER, String.valueOf(errorCounter));
                 // print error count statistic to error output stream,
                 // output stream might be used by validation report content
-                System.err.println(errorCounterViolation.getViolation());
+                System.err.println(errorCounterViolation.getMessage());
             }
         }
         if (!cliOptions.keepProcessRunning) {
@@ -442,10 +441,10 @@ public final class Main {
             properties.load(stream);
         }
         catch (final IOException ex) {
-            final Violation loadPropertiesExceptionMessage = new Violation(1,
-                    Definitions.CHECKSTYLE_BUNDLE, LOAD_PROPERTIES_EXCEPTION,
-                    new String[] {file.getAbsolutePath()}, null, Main.class, null);
-            throw new CheckstyleException(loadPropertiesExceptionMessage.getViolation(), ex);
+            final LocalizedMessage loadPropertiesExceptionMessage = new LocalizedMessage(
+                    Definitions.CHECKSTYLE_BUNDLE, Main.class,
+                    LOAD_PROPERTIES_EXCEPTION, file.getAbsolutePath());
+            throw new CheckstyleException(loadPropertiesExceptionMessage.getMessage(), ex);
         }
 
         return ChainedPropertyUtil.getResolvedProperties(properties);
@@ -501,13 +500,13 @@ public final class Main {
     private static AuditListener createListener(OutputFormat format, Path outputLocation)
             throws IOException {
         final OutputStream out = getOutputStream(outputLocation);
-        final AutomaticBean.OutputStreamOptions closeOutputStreamOption =
+        final OutputStreamOptions closeOutputStreamOption =
                 getOutputStreamOptions(outputLocation);
         return format.createListener(out, closeOutputStreamOption);
     }
 
     /**
-     * Create output stream or return System.out
+     * Create output stream or return System.out.
      *
      * @param outputPath output location
      * @return output stream
@@ -529,18 +528,18 @@ public final class Main {
     }
 
     /**
-     * Create {@link AutomaticBean.OutputStreamOptions} for the given location.
+     * Create {@link OutputStreamOptions} for the given location.
      *
      * @param outputPath output location
      * @return output stream options
      */
-    private static AutomaticBean.OutputStreamOptions getOutputStreamOptions(Path outputPath) {
-        final AutomaticBean.OutputStreamOptions result;
+    private static OutputStreamOptions getOutputStreamOptions(Path outputPath) {
+        final OutputStreamOptions result;
         if (outputPath == null) {
-            result = AutomaticBean.OutputStreamOptions.NONE;
+            result = OutputStreamOptions.NONE;
         }
         else {
-            result = AutomaticBean.OutputStreamOptions.CLOSE;
+            result = OutputStreamOptions.CLOSE;
         }
         return result;
     }
@@ -569,7 +568,7 @@ public final class Main {
          */
         public AuditListener createListener(
             OutputStream out,
-            AutomaticBean.OutputStreamOptions options) throws IOException {
+            OutputStreamOptions options) throws IOException {
             final AuditListener result;
             if (this == XML) {
                 result = new XMLLogger(out, options);
@@ -630,7 +629,7 @@ public final class Main {
             + "reported to standard out in plain format. Checkstyle requires a configuration "
             + "XML file that configures the checks to apply.",
             mixinStandardHelpOptions = true)
-    private static class CliOptions {
+    private static final class CliOptions {
 
         /** Width of CLI help option. */
         private static final int HELP_WIDTH = 100;
@@ -684,7 +683,7 @@ public final class Main {
                         + "Argument is the line and column number (separated by a : ) in the file "
                         + "that the suppression should be generated for. The option cannot be used "
                         + "with other options and requires exactly one file to run on to be "
-                        + "specified. ATTENTION: generated result will have few queries, joined "
+                        + "specified. Note that the generated result will have few queries, joined "
                         + "by pipe(|). Together they will match all AST nodes on "
                         + "specified line and column. You need to choose only one and recheck "
                         + "that it works. Usage of all of them is also ok, but might result in "
@@ -727,16 +726,16 @@ public final class Main {
 
         /** Option that controls whether to print the AST of the file. */
         @Option(names = {"-t", "--tree"},
-                description = "Prints Abstract Syntax Tree(AST) of the checked file. The option "
-                        + "cannot be used other options and requires exactly one file to run on "
-                        + "to be specified.")
+                description = "This option is used to display the Abstract Syntax Tree (AST) "
+                        + "without any comments of the specified file. It can only be used on "
+                        + "a single file and cannot be combined with other options.")
         private boolean printAst;
 
         /** Option that controls whether to print the AST of the file including comments. */
         @Option(names = {"-T", "--treeWithComments"},
-                description = "Prints Abstract Syntax Tree(AST) with comment nodes "
-                        + "of the checked file. The option cannot be used with other options "
-                        + "and requires exactly one file to run on to be specified.")
+                description = "This option is used to display the Abstract Syntax Tree (AST) "
+                        + "with comment nodes excluding Javadoc of the specified file. It can only"
+                        + " be used on a single file and cannot be combined with other options.")
         private boolean printAstWithComments;
 
         @Option(names = {"-K", "--keepProcessRunning"},
@@ -745,21 +744,18 @@ public final class Main {
 
         /** Option that controls whether to print the parse tree of the javadoc comment. */
         @Option(names = {"-j", "--javadocTree"},
-                description = "Prints Parse Tree of the Javadoc comment. "
-                        + "The file have to contain only Javadoc comment content without "
-                        + "including '/**' and '*/' at the beginning and at the end respectively. "
-                        + "The option cannot be used other options and requires exactly one file "
-                        + "to run on to be specified.")
+                description = "This option is used to print the Parse Tree of the Javadoc comment."
+                        + " The file has to contain only Javadoc comment content "
+                        + "excluding '/**' and '*/' at the beginning and at the end respectively. "
+                        + "It can only be used on a single file and cannot be combined "
+                        + "with other options.")
         private boolean printJavadocTree;
 
         /** Option that controls whether to print the full AST of the file. */
         @Option(names = {"-J", "--treeWithJavadoc"},
-                description = "Prints Abstract Syntax Tree(AST) with Javadoc nodes "
-                        + "and comment nodes of the checked file. Attention that line number and "
-                        + "columns will not be the same as it is a file due to the fact that each "
-                        + "javadoc comment is parsed separately from java file. The option cannot "
-                        + "be used with other options and requires exactly one file to run on to "
-                        + "be specified.")
+                description = "This option is used to display the Abstract Syntax Tree (AST) "
+                        + "with Javadoc nodes of the specified file. It can only be used on a "
+                        + "single file and cannot be combined with other options.")
         private boolean printTreeWithJavadoc;
 
         /** Option that controls whether to print debug info. */

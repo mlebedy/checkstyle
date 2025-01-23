@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -25,33 +25,15 @@ import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
 /**
- * <p>
+ * <div>
  * Detects empty statements (standalone {@code ";"} semicolon).
  * Empty statements often introduce bugs that are hard to spot
- * </p>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;EmptyStatement&quot;/&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <pre>
- * public void foo() {
- *   int i = 5;
- *   if (i &gt; 3); // violation, ";" right after if statement
- *     i++;
- *   for (i = 0; i &lt; 5; i++); // violation
- *     i++;
- *   while (i &gt; 10) // OK
- *     i++;
- * }
- * </pre>
+ * </div>
+ *
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>

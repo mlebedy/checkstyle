@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -40,7 +40,7 @@ public class XpathRegressionMethodParamPadTest extends AbstractXpathTestSupport 
     @Test
     public void testOne() throws Exception {
         final File fileToProcess =
-                new File(getPath("SuppressionXpathRegressionMethodParamPadOne.java"));
+                new File(getPath("InputXpathMethodParamPadOne.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(MethodParamPadCheck.class);
@@ -52,7 +52,7 @@ public class XpathRegressionMethodParamPadTest extends AbstractXpathTestSupport 
 
         final List<String> expectedXpathQueries = Collections.singletonList(
             "/COMPILATION_UNIT/CLASS_DEF[./IDENT"
-                + "[@text='SuppressionXpathRegressionMethodParamPadOne']]/OBJBLOCK"
+                + "[@text='InputXpathMethodParamPadOne']]/OBJBLOCK"
                 + "/METHOD_DEF[./IDENT[@text='InputMethodParamPad']]/LPAREN"
         );
 
@@ -63,7 +63,7 @@ public class XpathRegressionMethodParamPadTest extends AbstractXpathTestSupport 
     @Test
     public void testTwo() throws Exception {
         final File fileToProcess =
-                new File(getPath("SuppressionXpathRegressionMethodParamPadTwo.java"));
+                new File(getPath("InputXpathMethodParamPadTwo.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(MethodParamPadCheck.class);
@@ -75,7 +75,7 @@ public class XpathRegressionMethodParamPadTest extends AbstractXpathTestSupport 
 
         final List<String> expectedXpathQueries = Collections.singletonList(
             "/COMPILATION_UNIT/CLASS_DEF[./IDENT"
-                + "[@text='SuppressionXpathRegressionMethodParamPadTwo']]/OBJBLOCK"
+                + "[@text='InputXpathMethodParamPadTwo']]/OBJBLOCK"
                 + "/METHOD_DEF[./IDENT[@text='sayHello']]/LPAREN"
         );
 
@@ -86,7 +86,7 @@ public class XpathRegressionMethodParamPadTest extends AbstractXpathTestSupport 
     @Test
     public void testThree() throws Exception {
         final File fileToProcess =
-                new File(getPath("SuppressionXpathRegressionMethodParamPadThree.java"));
+                new File(getPath("InputXpathMethodParamPadThree.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(MethodParamPadCheck.class);
@@ -99,7 +99,7 @@ public class XpathRegressionMethodParamPadTest extends AbstractXpathTestSupport 
 
         final List<String> expectedXpathQueries = Collections.singletonList(
             "/COMPILATION_UNIT/CLASS_DEF[./IDENT"
-                + "[@text='SuppressionXpathRegressionMethodParamPadThree']]/OBJBLOCK"
+                + "[@text='InputXpathMethodParamPadThree']]/OBJBLOCK"
                 + "/METHOD_DEF[./IDENT[@text='sayHello']]/LPAREN"
         );
 

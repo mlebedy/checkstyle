@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -19,6 +19,8 @@
 
 package com.puppycrawl.tools.checkstyle.internal.utils;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.io.OutputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -34,12 +36,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.function.Executable;
+
+import com.puppycrawl.tools.checkstyle.AbstractAutomaticBean;
 import com.puppycrawl.tools.checkstyle.PackageNamesLoader;
 import com.puppycrawl.tools.checkstyle.PackageObjectFactory;
 import com.puppycrawl.tools.checkstyle.TreeWalkerAuditEvent;
 import com.puppycrawl.tools.checkstyle.TreeWalkerFilter;
 import com.puppycrawl.tools.checkstyle.api.AbstractCheck;
-import com.puppycrawl.tools.checkstyle.api.AutomaticBean;
 import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
 
@@ -142,7 +146,7 @@ public final class TestUtil {
     }
 
     /**
-     * Checks if stateful field is cleared during {@link AutomaticBean}'s finishLocalSetup.
+     * Checks if stateful field is cleared during {@link AbstractAutomaticBean}'s finishLocalSetup.
      *
      * @param filter filter object which field is to be verified
      * @param event event to pass into filter methods
@@ -202,9 +206,8 @@ public final class TestUtil {
     }
 
     /**
-     * <p>
      * Returns the JDK version as a number that is easy to compare.
-     * </p>
+     *
      * <p>
      * For JDK "1.8" it will be 8; for JDK "11" it will be 11.
      * </p>
@@ -220,9 +223,8 @@ public final class TestUtil {
     }
 
     /**
-     * <p>
      * Adjusts the expected number of flushes for tests that call {@link OutputStream#close} method.
-     * </p>
+     *
      * <p>
      * After <a href="https://bugs.openjdk.java.net/browse/JDK-8220477">JDK-8220477</a>
      * there is one additional flush from {@code sun.nio.cs.StreamEncoder#implClose}.
@@ -376,6 +378,32 @@ public final class TestUtil {
     public static <T> Class<T> getInnerClassType(Class<?> declaringClass, String name)
             throws ClassNotFoundException {
         return (Class<T>) Class.forName(declaringClass.getName() + "$" + name);
+    }
+
+    /**
+     * Executes the provided executable and expects it to throw an exception of the specified type.
+     *
+     * @param expectedType the class of the expected exception type.
+     * @param executable the executable to be executed
+     * @param message the message to be used in case of assertion failure.
+     * @return the expected exception thrown by the executable.
+     */
+    public static <T extends Throwable> T getExpectedThrowable(Class<T> expectedType,
+                                                               Executable executable,
+                                                               String message) {
+        return assertThrows(expectedType, executable, message);
+    }
+
+    /**
+     *  Executes the provided executable and expects it to throw an exception of the specified type.
+     *
+     * @param expectedType the class of the expected exception type.
+     * @param executable the executable to be executed
+     * @return the expected exception thrown by the executable.
+     */
+    public static <T extends Throwable> T getExpectedThrowable(Class<T> expectedType,
+                                                               Executable executable) {
+        return assertThrows(expectedType, executable);
     }
 
 }

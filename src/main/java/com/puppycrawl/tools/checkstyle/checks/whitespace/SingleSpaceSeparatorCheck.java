@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -28,13 +28,13 @@ import com.puppycrawl.tools.checkstyle.utils.CodePointUtil;
 import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 
 /**
- * <p>
+ * <div>
  * Checks that non-whitespace characters are separated by no more than one
  * whitespace. Separating characters by tabs or multiple spaces will be
  * reported. Currently, the check doesn't permit horizontal alignment. To inspect
  * whitespaces before and after comments, set the property
  * {@code validateComments} to true.
- * </p>
+ * </div>
  *
  * <p>
  * Setting {@code validateComments} to false will ignore cases like:
@@ -64,55 +64,11 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * Default value is {@code false}.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
  *
- * <pre>
- * &lt;module name=&quot;SingleSpaceSeparator&quot;/&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * int foo()   { // violation, 3 whitespaces
- *   return  1; // violation, 2 whitespaces
- * }
- * int fun1() { // OK, 1 whitespace
- *   return 3; // OK, 1 whitespace
- * }
- * void  fun2() {} // violation, 2 whitespaces
- * </pre>
- *
- * <p>
- * To configure the check so that it validates comments:
- * </p>
- *
- * <pre>
- * &lt;module name=&quot;SingleSpaceSeparator&quot;&gt;
- *   &lt;property name=&quot;validateComments&quot; value=&quot;true&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * void fun1() {}  // violation, 2 whitespaces before the comment starts
- * void fun2() { return; }  /* violation here, 2 whitespaces before the comment starts *&#47;
- *
- * /* violation, 2 whitespaces after the comment ends *&#47;  int a;
- *
- * String s; /* OK, 1 whitespace *&#47;
- *
- * /**
- * * This is a Javadoc comment
- * *&#47;  int b; // violation, 2 whitespaces after the javadoc comment ends
- *
- * float f1; // OK, 1 whitespace
- *
- * /**
- * * OK, 1 white space after the doc comment ends
- * *&#47; float f2;
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -140,6 +96,7 @@ public class SingleSpaceSeparatorCheck extends AbstractCheck {
      * Setter to control whether to validate whitespaces surrounding comments.
      *
      * @param validateComments {@code true} to validate surrounding whitespaces at comments.
+     * @since 6.19
      */
     public void setValidateComments(boolean validateComments) {
         this.validateComments = validateComments;
@@ -179,7 +136,6 @@ public class SingleSpaceSeparatorCheck extends AbstractCheck {
      */
     private void visitEachToken(DetailAST node) {
         DetailAST currentNode = node;
-        final DetailAST parent = node.getParent();
 
         do {
             final int columnNo = currentNode.getColumnNo() - 1;
@@ -199,7 +155,7 @@ public class SingleSpaceSeparatorCheck extends AbstractCheck {
                 currentNode = currentNode.getFirstChild();
             }
             else {
-                while (currentNode.getNextSibling() == null && currentNode.getParent() != parent) {
+                while (currentNode.getNextSibling() == null && currentNode.getParent() != null) {
                     currentNode = currentNode.getParent();
                 }
                 currentNode = currentNode.getNextSibling();

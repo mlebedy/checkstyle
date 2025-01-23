@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -32,81 +32,22 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
 
 /**
- * <p>
+ * <div>
  * Checks the header of a source file against a header that contains a
  * <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/regex/Pattern.html">
  * pattern</a> for each line of the source header.
- * </p>
- * <p>
- * Rationale: In some projects <a href="https://checkstyle.org/config_header.html#Header">
- * checking against a fixed header</a> is not sufficient, e.g. the header might
- * require a copyright line where the year information is not static.
- * </p>
- * <p>
- * For example, consider the following header:
- * </p>
- * <pre>
- * line  1: ^/{71}$
- * line  2: ^// checkstyle:$
- * line  3: ^// Checks Java source code for adherence to a set of rules\.$
- * line  4: ^// Copyright \(C\) \d\d\d\d  Oliver Burn$
- * line  5: ^// Last modification by \$Author.*\$$
- * line  6: ^/{71}$
- * line  7:
- * line  8: ^package
- * line  9:
- * line 10: ^import
- * line 11:
- * line 12: ^/\*\*
- * line 13: ^ \*([^/]|$)
- * line 14: ^ \*&#47;
- * </pre>
- * <p>
- * Lines 1 and 6 demonstrate a more compact notation for 71 '/' characters.
- * Line 4 enforces that the copyright notice includes a four digit year.
- * Line 5 is an example how to enforce revision control keywords in a file header.
- * Lines 12-14 is a template for javadoc (line 13 is so complicated to remove
- * conflict with and of javadoc comment). Lines 7, 9 and 11 will be treated
- * as '^$' and will forcefully expect the line to be empty.
- * </p>
- * <p>
- * Different programming languages have different comment syntax rules,
- * but all of them start a comment with a non-word character.
- * Hence, you can often use the non-word character class to abstract away
- * the concrete comment syntax and allow checking the header for different
- * languages with a single header definition. For example, consider the following
- * header specification (note that this is not the full Apache license header):
- * </p>
- * <pre>
- * line 1: ^#!
- * line 2: ^&lt;\?xml.*&gt;$
- * line 3: ^\W*$
- * line 4: ^\W*Copyright 2006 The Apache Software Foundation or its licensors, as applicable\.$
- * line 5: ^\W*Licensed under the Apache License, Version 2\.0 \(the "License"\);$
- * line 6: ^\W*$
- * </pre>
- * <p>
- * Lines 1 and 2 leave room for technical header lines, e.g. the "#!/bin/sh"
- * line in Unix shell scripts, or the XML file header of XML files.
- * Set the multiline property to "1, 2" so these lines can be ignored for
- * file types where they do no apply. Lines 3 through 6 define the actual header content.
- * Note how lines 2, 4 and 5 use escapes for characters that have special regexp semantics.
- * </p>
- * <p>
- * In default configuration, if header is not specified, the default value
- * of header is set to null and the check does not rise any violations.
- * </p>
+ * </div>
  * <ul>
- * <li>
- * Property {@code headerFile} - Specify the name of the file containing the required header.
- * Type is {@code java.net.URI}.
- * Default value is {@code null}.
- * </li>
  * <li>
  * Property {@code charset} - Specify the character encoding to use when reading the headerFile.
  * Type is {@code java.lang.String}.
  * Default value is {@code the charset property of the parent
  * <a href="https://checkstyle.org/config.html#Checker">Checker</a> module}.
+ * </li>
+ * <li>
+ * Property {@code fileExtensions} - Specify the file extensions of the files to process.
+ * Type is {@code java.lang.String[]}.
+ * Default value is {@code ""}.
  * </li>
  * <li>
  * Property {@code header} - Define the required header specified inline.
@@ -119,84 +60,21 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * Default value is {@code null}.
  * </li>
  * <li>
+ * Property {@code headerFile} - Specify the name of the file containing the required header.
+ * Type is {@code java.net.URI}.
+ * Default value is {@code null}.
+ * </li>
+ * <li>
  * Property {@code multiLines} - Specify the line numbers to repeat (zero or more times).
  * Type is {@code int[]}.
  * Default value is {@code ""}.
  * </li>
- * <li>
- * Property {@code fileExtensions} - Specify the file type extension of files to process.
- * Type is {@code java.lang.String[]}.
- * Default value is {@code ""}.
- * </li>
  * </ul>
- * <p>
- * To configure the check such that no violations arise.
- * Default values of properties are used.
- * </p>
- * <pre>
- * &lt;module name="RegexpHeader"/&gt;
- * </pre>
- * <p>
- * To configure the check to use header file {@code "config/java.header"} and
- * {@code 10} and {@code 13} multi-lines:
- * </p>
- * <pre>
- * &lt;module name="RegexpHeader"&gt;
- *   &lt;property name="headerFile" value="config/java.header"/&gt;
- *   &lt;property name="multiLines" value="10, 13"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * To configure the check to verify that each file starts with the header
- * </p>
- * <pre>
- * ^// Copyright \(C\) (\d\d\d\d -)? 2004 MyCompany$
- * ^// All rights reserved$
- * </pre>
- * <p>
- * without the need for an external header file:
- * </p>
- * <pre>
- * &lt;module name="RegexpHeader"&gt;
- *   &lt;property
- *     name="header"
- *     value="^// Copyright \(C\) (\d\d\d\d -)? 2004 MyCompany$
- *       \n^// All rights reserved$"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * For regex containing {@code "\n\n"}
- * </p>
- * <pre>
- * &lt;module name="RegexpHeader"&gt;
- *   &lt;property
- *     name="header"
- *     value="^package .*\n\n.*"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * {@code "\n\n"} will be treated as '^$' and will forcefully expect the line
- * to be empty. For example -
- * </p>
- * <pre>
- * package com.some.package;
- * public class ThisWillFail { }
- * </pre>
- * <p>
- * would fail for the regex above. Expected -
- * </p>
- * <pre>
- * package com.some.package;
  *
- * public class ThisWillPass { }
- * </pre>
- * <p>
- * <u>Note</u>: {@code ignoreLines} property has been removed from this check to simplify it.
- * To make some line optional use "^.*$" regexp for this line.
- * </p>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.Checker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -242,6 +120,7 @@ public class RegexpHeaderCheck extends AbstractHeaderCheck {
      * Setter to specify the line numbers to repeat (zero or more times).
      *
      * @param list line numbers to repeat in header.
+     * @since 3.4
      */
     public void setMultiLines(int... list) {
         multiLines = TokenUtil.asBitSet(list);
@@ -363,6 +242,7 @@ public class RegexpHeaderCheck extends AbstractHeaderCheck {
      * Regular expressions must not span multiple lines.
      *
      * @param header the header value to validate and set (in that order)
+     * @since 5.0
      */
     @Override
     public void setHeader(String header) {

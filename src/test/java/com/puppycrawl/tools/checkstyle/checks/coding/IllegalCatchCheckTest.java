@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -34,36 +34,36 @@ public class IllegalCatchCheckTest extends AbstractModuleTestSupport {
     }
 
     @Test
-    public void testDefault() throws Exception {
+    public void testIllegalCatchCheckDefaultTokens() throws Exception {
 
         final String[] expected = {
             "14:11: " + getCheckMessage(MSG_KEY, "RuntimeException"),
             "15:11: " + getCheckMessage(MSG_KEY, "Exception"),
             "16:11: " + getCheckMessage(MSG_KEY, "Throwable"),
             "22:11: " + getCheckMessage(MSG_KEY, "java.lang.RuntimeException"),
-            "23:11: " + getCheckMessage(MSG_KEY, "java.lang.Exception"),
-            "24:11: " + getCheckMessage(MSG_KEY, "java.lang.Throwable"),
+            "24:11: " + getCheckMessage(MSG_KEY, "java.lang.Exception"),
+            "26:11: " + getCheckMessage(MSG_KEY, "java.lang.Throwable"),
         };
 
         verifyWithInlineConfigParser(
-                getPath("InputIllegalCatch.java"), expected);
+                getPath("InputIllegalCatchCheckDefaultTokens.java"), expected);
     }
 
     @Test
-    public void testIllegalClassNames() throws Exception {
+    public void testIllegalCatchCheckSuperclassThrowable() throws Exception {
         final String[] expected = {
             "14:11: " + getCheckMessage(MSG_KEY, "Exception"),
             "15:11: " + getCheckMessage(MSG_KEY, "Throwable"),
             "22:11: " + getCheckMessage(MSG_KEY, "java.lang.Exception"),
-            "23:11: " + getCheckMessage(MSG_KEY, "java.lang.Throwable"),
+            "24:11: " + getCheckMessage(MSG_KEY, "java.lang.Throwable"),
         };
 
         verifyWithInlineConfigParser(
-                getPath("InputIllegalCatch3.java"), expected);
+                getPath("InputIllegalCatchCheckSuperclassThrowable.java"), expected);
     }
 
     @Test
-    public void testIllegalClassNamesBad() throws Exception {
+    public void testIllegalCatchCheckSuperclassException() throws Exception {
         // check that incorrect names don't break the Check
         final String[] expected = {
             "15:11: " + getCheckMessage(MSG_KEY, "Exception"),
@@ -71,27 +71,27 @@ public class IllegalCatchCheckTest extends AbstractModuleTestSupport {
         };
 
         verifyWithInlineConfigParser(
-                getPath("InputIllegalCatch4.java"), expected);
+                getPath("InputIllegalCatchCheckSuperclassException.java"), expected);
     }
 
     @Test
-    public void testMultipleTypes() throws Exception {
+    public void testIllegalCatchCheckMultipleExceptions() throws Exception {
         final String[] expected = {
             "15:11: " + getCheckMessage(MSG_KEY, "RuntimeException"),
             "15:11: " + getCheckMessage(MSG_KEY, "SQLException"),
-            "18:11: " + getCheckMessage(MSG_KEY, "RuntimeException"),
-            "18:11: " + getCheckMessage(MSG_KEY, "SQLException"),
-            "18:11: " + getCheckMessage(MSG_KEY, "OneMoreException"),
-            "21:11: " + getCheckMessage(MSG_KEY, "OneMoreException"),
             "21:11: " + getCheckMessage(MSG_KEY, "RuntimeException"),
             "21:11: " + getCheckMessage(MSG_KEY, "SQLException"),
-            "24:11: " + getCheckMessage(MSG_KEY, "OneMoreException"),
-            "24:11: " + getCheckMessage(MSG_KEY, "SQLException"),
-            "24:11: " + getCheckMessage(MSG_KEY, "RuntimeException"),
+            "21:11: " + getCheckMessage(MSG_KEY, "OneMoreException"),
+            "28:11: " + getCheckMessage(MSG_KEY, "OneMoreException"),
+            "28:11: " + getCheckMessage(MSG_KEY, "RuntimeException"),
+            "28:11: " + getCheckMessage(MSG_KEY, "SQLException"),
+            "35:11: " + getCheckMessage(MSG_KEY, "OneMoreException"),
+            "35:11: " + getCheckMessage(MSG_KEY, "SQLException"),
+            "35:11: " + getCheckMessage(MSG_KEY, "RuntimeException"),
         };
 
         verifyWithInlineConfigParser(
-                getPath("InputIllegalCatch2.java"), expected);
+                getPath("InputIllegalCatchCheckMultipleExceptions.java"), expected);
     }
 
     @Test

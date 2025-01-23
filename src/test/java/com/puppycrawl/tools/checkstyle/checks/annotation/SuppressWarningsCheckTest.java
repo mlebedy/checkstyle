@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -1079,6 +1079,21 @@ public class SuppressWarningsCheckTest extends AbstractModuleTestSupport {
 
         verifyWithInlineConfigParser(
                 getNonCompilablePath("InputSuppressWarningsRecords.java"), expected);
+    }
+
+    @Test
+    public void testSuppressWarningsPatternVariables() throws Exception {
+
+        final String[] expected = {
+            "18:57: " + getCheckMessage(MSG_KEY_SUPPRESSED_WARNING_NOT_ALLOWED, ""),
+            "21:62: " + getCheckMessage(MSG_KEY_SUPPRESSED_WARNING_NOT_ALLOWED, "unused"),
+            "24:44: " + getCheckMessage(MSG_KEY_SUPPRESSED_WARNING_NOT_ALLOWED, "unchecked"),
+            "27:27: " + getCheckMessage(MSG_KEY_SUPPRESSED_WARNING_NOT_ALLOWED, ""),
+        };
+
+        verifyWithInlineConfigParser(
+                getNonCompilablePath("InputSuppressWarningsPatternVariables.java"),
+                expected);
     }
 
 }

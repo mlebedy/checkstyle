@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -28,14 +28,16 @@ import com.puppycrawl.tools.checkstyle.api.FullIdent;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
 /**
- * <p>
+ * <div>
  * Ensures that a class has a package declaration, and (optionally) whether
  * the package name matches the directory name for the source file.
- * </p>
+ * </div>
+ *
  * <p>
  * Rationale: Classes that live in the null package cannot be imported.
  * Many novice developers are not aware of this.
  * </p>
+ *
  * <p>
  * Packages provide logical namespace to classes and should be stored in
  * the form of directory levels to provide physical grouping to your classes.
@@ -50,42 +52,11 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
  * Default value is {@code true}.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;PackageDeclaration&quot;/&gt;
- * </pre>
- * <p>
- * Let us consider the class AnnotationLocationCheck which is in the directory
- * /com/puppycrawl/tools/checkstyle/checks/annotations/
- * </p>
- * <pre>
- * package com.puppycrawl.tools.checkstyle.checks; //Violation
- * public class AnnotationLocationCheck extends AbstractCheck {
- *   //...
- * }
- * </pre>
- * <p>
- * Example of how the check works when matchDirectoryStructure option is set to false.
- * Let us again consider the AnnotationLocationCheck class located at directory
- * /com/puppycrawl/tools/checkstyle/checks/annotations/ along with the following setup,
- * </p>
- * <pre>
- * &lt;module name=&quot;PackageDeclaration&quot;&gt;
- * &lt;property name=&quot;matchDirectoryStructure&quot; value=&quot;false&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <pre>
- * package com.puppycrawl.tools.checkstyle.checks;  //No Violation
  *
- * public class AnnotationLocationCheck extends AbstractCheck {
- *   //...
- * }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -125,6 +96,7 @@ public final class PackageDeclarationCheck extends AbstractCheck {
      * Setter to control whether to check for directory and package name match.
      *
      * @param matchDirectoryStructure the new value.
+     * @since 7.6.1
      */
     public void setMatchDirectoryStructure(boolean matchDirectoryStructure) {
         this.matchDirectoryStructure = matchDirectoryStructure;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,7 @@
 package com.puppycrawl.tools.checkstyle.ant;
 
 import static com.google.common.truth.Truth.assertWithMessage;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static com.puppycrawl.tools.checkstyle.internal.utils.TestUtil.getExpectedThrowable;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,7 +40,6 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Path;
-import org.apache.tools.ant.types.Reference;
 import org.apache.tools.ant.types.resources.FileResource;
 import org.junit.jupiter.api.Test;
 
@@ -54,7 +53,6 @@ import com.puppycrawl.tools.checkstyle.internal.testmodules.CheckstyleAntTaskLog
 import com.puppycrawl.tools.checkstyle.internal.testmodules.CheckstyleAntTaskStub;
 import com.puppycrawl.tools.checkstyle.internal.testmodules.MessageLevelPair;
 import com.puppycrawl.tools.checkstyle.internal.testmodules.TestRootModuleChecker;
-import com.puppycrawl.tools.checkstyle.internal.utils.TestUtil;
 
 public class CheckstyleAntTaskTest extends AbstractPathTestSupport {
 
@@ -247,7 +245,7 @@ public class CheckstyleAntTaskTest extends AbstractPathTestSupport {
         final CheckstyleAntTask antTask = new CheckstyleAntTask();
         antTask.setProject(new Project());
         antTask.setFile(new File(getPath(FLAWLESS_INPUT)));
-        final BuildException ex = assertThrows(BuildException.class,
+        final BuildException ex = getExpectedThrowable(BuildException.class,
                 antTask::execute,
                 "BuildException is expected");
         assertWithMessage("Error message is unexpected")
@@ -261,7 +259,7 @@ public class CheckstyleAntTaskTest extends AbstractPathTestSupport {
         antTask.setConfig(getPath(NOT_EXISTING_FILE));
         antTask.setProject(new Project());
         antTask.setFile(new File(getPath(FLAWLESS_INPUT)));
-        final BuildException ex = assertThrows(BuildException.class,
+        final BuildException ex = getExpectedThrowable(BuildException.class,
                 antTask::execute,
                 "BuildException is expected");
         assertWithMessage("Error message is unexpected")
@@ -275,7 +273,7 @@ public class CheckstyleAntTaskTest extends AbstractPathTestSupport {
         antTask.setConfig(getPath("InputCheckstyleAntTaskEmptyConfig.xml"));
         antTask.setProject(new Project());
         antTask.setFile(new File(getPath(FLAWLESS_INPUT)));
-        final BuildException ex = assertThrows(BuildException.class,
+        final BuildException ex = getExpectedThrowable(BuildException.class,
                 antTask::execute,
                 "BuildException is expected");
         assertWithMessage("Error message is unexpected")
@@ -286,7 +284,7 @@ public class CheckstyleAntTaskTest extends AbstractPathTestSupport {
     @Test
     public final void testNoFile() throws IOException {
         final CheckstyleAntTask antTask = getCheckstyleAntTask();
-        final BuildException ex = assertThrows(BuildException.class,
+        final BuildException ex = getExpectedThrowable(BuildException.class,
                 antTask::execute,
                 "BuildException is expected");
         assertWithMessage("Error message is unexpected")
@@ -299,7 +297,7 @@ public class CheckstyleAntTaskTest extends AbstractPathTestSupport {
         final CheckstyleAntTask antTask = getCheckstyleAntTask();
         antTask.setFile(new File(getPath(WARNING_INPUT)));
         antTask.setMaxWarnings(0);
-        final BuildException ex = assertThrows(BuildException.class,
+        final BuildException ex = getExpectedThrowable(BuildException.class,
                 antTask::execute,
                 "BuildException is expected");
         assertWithMessage("Error message is unexpected")
@@ -333,7 +331,7 @@ public class CheckstyleAntTaskTest extends AbstractPathTestSupport {
 
         antTask.setProject(project);
         antTask.setFailureProperty(failurePropertyName);
-        final BuildException ex = assertThrows(BuildException.class,
+        final BuildException ex = getExpectedThrowable(BuildException.class,
                 antTask::execute,
                 "BuildException is expected");
         assertWithMessage("Error message is unexpected")
@@ -465,7 +463,7 @@ public class CheckstyleAntTaskTest extends AbstractPathTestSupport {
 
         final CheckstyleAntTask antTask = new CheckstyleAntTask();
         antTask.setConfig(url.toString());
-        final BuildException ex = assertThrows(BuildException.class,
+        final BuildException ex = getExpectedThrowable(BuildException.class,
                 () -> antTask.setConfig("Any string value"),
                 "BuildException is expected");
         final String expected = "Attribute 'config' has already been set";
@@ -494,7 +492,7 @@ public class CheckstyleAntTaskTest extends AbstractPathTestSupport {
         final CheckstyleAntTask antTask = getCheckstyleAntTask();
         antTask.setFile(new File(getPath(FLAWLESS_INPUT)));
         antTask.setProperties(new File(getPath(NOT_EXISTING_FILE)));
-        final BuildException ex = assertThrows(BuildException.class,
+        final BuildException ex = getExpectedThrowable(BuildException.class,
                 antTask::execute,
                 "BuildException is expected");
         assertWithMessage("Error message is unexpected")
@@ -574,7 +572,7 @@ public class CheckstyleAntTaskTest extends AbstractPathTestSupport {
         final File outputFile = new File("target/");
         formatter.setTofile(outputFile);
         antTask.addFormatter(formatter);
-        final BuildException ex = assertThrows(BuildException.class,
+        final BuildException ex = getExpectedThrowable(BuildException.class,
                 antTask::execute,
                 "BuildException is expected");
         assertWithMessage("Error message is unexpected")
@@ -593,7 +591,7 @@ public class CheckstyleAntTaskTest extends AbstractPathTestSupport {
         formatterType.setValue("xml");
         formatter.setType(formatterType);
         antTask.addFormatter(formatter);
-        final BuildException ex = assertThrows(BuildException.class,
+        final BuildException ex = getExpectedThrowable(BuildException.class,
                 antTask::execute,
                 "BuildException is expected");
         assertWithMessage("Error message is unexpected")
@@ -612,7 +610,7 @@ public class CheckstyleAntTaskTest extends AbstractPathTestSupport {
         formatterType.setValue("sarif");
         formatter.setType(formatterType);
         antTask.addFormatter(formatter);
-        final BuildException ex = assertThrows(BuildException.class,
+        final BuildException ex = getExpectedThrowable(BuildException.class,
                 antTask::execute,
                 "BuildException is expected");
         assertWithMessage("Error message is unexpected")
@@ -623,7 +621,7 @@ public class CheckstyleAntTaskTest extends AbstractPathTestSupport {
     @Test
     public void testSetInvalidType() {
         final CheckstyleAntTask.FormatterType formatterType = new CheckstyleAntTask.FormatterType();
-        final BuildException ex = assertThrows(BuildException.class,
+        final BuildException ex = getExpectedThrowable(BuildException.class,
                 () -> formatterType.setValue("foo"),
                 "BuildException is expected");
         assertWithMessage("Error message is unexpected")
@@ -743,68 +741,12 @@ public class CheckstyleAntTaskTest extends AbstractPathTestSupport {
                 .isInstanceOf(SarifLogger.class);
     }
 
-    @Test
-    public void testSetClasspath() {
-        final CheckstyleAntTask antTask = new CheckstyleAntTask();
-        final Project project = new Project();
-        final String path1 = "firstPath";
-        final String path2 = "secondPath";
-        antTask.setClasspath(new Path(project, path1));
-        antTask.setClasspath(new Path(project, path2));
-
-        final Path classpath = TestUtil.getInternalState(antTask, "classpath");
-        final String classpathString = classpath.toString();
-        assertWithMessage("Classpath should not be null")
-                .that(classpath)
-                .isNotNull();
-        assertWithMessage("Classpath does not contain provided path")
-                .that(classpathString)
-                .contains(path1);
-        assertWithMessage("Classpath does not contain provided path")
-                .that(classpathString)
-                .contains(path2);
-    }
-
-    @Test
-    public void testSetClasspathRef() {
-        final CheckstyleAntTask antTask = new CheckstyleAntTask();
-        antTask.setClasspathRef(new Reference(new Project(), "id"));
-
-        assertWithMessage("Classpath should not be null")
-                .that(TestUtil.<Path>getInternalState(antTask, "classpath"))
-                .isNotNull();
-    }
-
-    /** This test is created to satisfy pitest, it is hard to emulate Reference by Id. */
-    @Test
-    public void testSetClasspathRef1() {
-        final CheckstyleAntTask antTask = new CheckstyleAntTask();
-        final Project project = new Project();
-        antTask.setClasspath(new Path(project, "firstPath"));
-        antTask.setClasspathRef(new Reference(project, "idXX"));
-
-        assertWithMessage("Classpath should not be null")
-                .that(TestUtil.<Path>getInternalState(antTask, "classpath"))
-                .isNotNull();
-
-        final Path classpath = TestUtil.getInternalState(antTask, "classpath");
-        final BuildException ex = assertThrows(BuildException.class,
-                classpath::list,
-                "BuildException is expected");
-        assertWithMessage("unexpected exception message")
-                .that(ex.getMessage())
-                .isEqualTo("Reference idXX not found.");
-    }
-
+    /**
+     * Testing deprecated method.
+     */
     @Test
     public void testCreateClasspath() {
         final CheckstyleAntTask antTask = new CheckstyleAntTask();
-
-        assertWithMessage("Invalid classpath")
-                .that(antTask.createClasspath().toString())
-                .isEmpty();
-
-        antTask.setClasspath(new Path(new Project(), "/path"));
 
         assertWithMessage("Invalid classpath")
                 .that(antTask.createClasspath().toString())
@@ -890,7 +832,7 @@ public class CheckstyleAntTaskTest extends AbstractPathTestSupport {
         antTask.setConfig(getPath(CONFIG_FILE));
         antTask.setProject(new Project());
         antTask.setFile(new File(""));
-        final BuildException ex = assertThrows(BuildException.class,
+        final BuildException ex = getExpectedThrowable(BuildException.class,
                 antTask::execute,
                 "BuildException is expected");
         assertWithMessage("Error message is unexpected")
@@ -927,7 +869,7 @@ public class CheckstyleAntTaskTest extends AbstractPathTestSupport {
             .that(optionalMessageLevelPair.isPresent())
             .isTrue();
 
-        final long actualTime = getNumberFromLine(optionalMessageLevelPair.get().getMsg());
+        final long actualTime = getNumberFromLine(optionalMessageLevelPair.orElseThrow().getMsg());
 
         assertWithMessage("Logged time in '" + expectedMsg + "' "
                               + "must be less than the testing time")

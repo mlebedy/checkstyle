@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -29,9 +29,10 @@ import com.puppycrawl.tools.checkstyle.api.JavadocTokenTypes;
 import com.puppycrawl.tools.checkstyle.utils.JavadocUtil;
 
 /**
- * <p>
+ * <div>
  * Checks that one blank line before the block tag if it is present in Javadoc.
- * </p>
+ * </div>
+ *
  * <ul>
  * <li>
  * Property {@code violateExecutionOnNonTightHtml} - Control when to print violations
@@ -42,43 +43,11 @@ import com.puppycrawl.tools.checkstyle.utils.JavadocUtil;
  * Default value is {@code false}.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;RequireEmptyLineBeforeBlockTagGroup&quot;/&gt;
- * </pre>
- * <p>
- * By default, the check will report a violation if there is no blank line before the block tag,
- * like in the example below.
- * </p>
- * <pre>
- * &#47;**
- *  * testMethod's javadoc.
- *  * &#64;return something (violation)
- *  *&#47;
- * public boolean testMethod() {
- *     return false;
- * }
- * </pre>
- * <p>
- *  Valid javadoc should have a blank line separating the parameters, return, throw, or
- *  other tags like in the example below.
- *  </p>
- *  <pre>
- *  &#47;**
- *  * testMethod's javadoc.
- *  *
- *  * &#64;param firstParam
- *  * &#64;return something
- *  *&#47;
- *  public boolean testMethod(int firstParam) {
- *      return false;
- *  }
- *  </pre>
+ *
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -91,6 +60,9 @@ import com.puppycrawl.tools.checkstyle.utils.JavadocUtil;
  * </li>
  * <li>
  * {@code javadoc.tag.line.before}
+ * </li>
+ * <li>
+ * {@code javadoc.unclosedHtml}
  * </li>
  * <li>
  * {@code javadoc.wrong.singleton.html.tag}
@@ -242,11 +214,10 @@ public class RequireEmptyLineBeforeBlockTagGroupCheck extends AbstractJavadocChe
     private static boolean hasInsufficientConsecutiveNewlines(DetailNode tagNode) {
         int count = 0;
         DetailNode currentNode = JavadocUtil.getPreviousSibling(tagNode);
-        while (count <= 1
-                && currentNode != null
+        while (currentNode != null
                 && (currentNode.getType() == JavadocTokenTypes.NEWLINE
-                    || currentNode.getType() == JavadocTokenTypes.WS
-                    || currentNode.getType() == JavadocTokenTypes.LEADING_ASTERISK)) {
+                || currentNode.getType() == JavadocTokenTypes.WS
+                || currentNode.getType() == JavadocTokenTypes.LEADING_ASTERISK)) {
             if (currentNode.getType() == JavadocTokenTypes.NEWLINE) {
                 count++;
             }

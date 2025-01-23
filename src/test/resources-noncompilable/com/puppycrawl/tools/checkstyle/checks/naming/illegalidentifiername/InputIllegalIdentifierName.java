@@ -1,6 +1,6 @@
 /*
 IllegalIdentifierName
-format = (default)(?i)^(?!(record|yield|var|permits|sealed|_)$).+$
+format = (default)(?i)^(?!(record|yield|var|permits|sealed)$).+$
 tokens = (default)CLASS_DEF, INTERFACE_DEF, ENUM_DEF, ANNOTATION_DEF, ANNOTATION_FIELD_DEF, \
          PARAMETER_DEF, VARIABLE_DEF, METHOD_DEF, ENUM_CONSTANT_DEF, PATTERN_VARIABLE_DEF, \
          RECORD_DEF, RECORD_COMPONENT_DEF, LAMBDA
@@ -8,13 +8,13 @@ tokens = (default)CLASS_DEF, INTERFACE_DEF, ENUM_DEF, ANNOTATION_DEF, ANNOTATION
 
 */
 
-//non-compiled with javac: Compilable with Java14
+//non-compiled with javac: Compilable with Java17
 package com.puppycrawl.tools.checkstyle.checks.naming.illegalidentifiername;
 
 import java.util.logging.LogRecord;
 
 public class InputIllegalIdentifierName {
-    public Class<Record[]> getRecordType() { // ok
+    public Class<Record[]> getRecordType() {
         return Record[].class;
     }
 
@@ -24,7 +24,7 @@ public class InputIllegalIdentifierName {
         }
     }
 
-    class yieldClass { // ok
+    class yieldClass {
         int yield = 6; // violation
 
         public void yield() { // violation
@@ -68,8 +68,8 @@ public class InputIllegalIdentifierName {
         record MyRecord() {} // ok, part of another word
         var variable = 2; // ok, part of another word
 
-        String recordString = "record"; // ok
-        recordString = recordString.substring(record, 20); // ok
+        String recordString = "record";
+        recordString = recordString.substring(record, 20);
 
         record MyOtherRecord(String record, String yield, String... var) { // 3 violations
         }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -22,6 +22,7 @@ package com.puppycrawl.tools.checkstyle.checks.javadoc;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static com.puppycrawl.tools.checkstyle.checks.javadoc.JavadocParagraphCheck.MSG_LINE_BEFORE;
 import static com.puppycrawl.tools.checkstyle.checks.javadoc.JavadocParagraphCheck.MSG_MISPLACED_TAG;
+import static com.puppycrawl.tools.checkstyle.checks.javadoc.JavadocParagraphCheck.MSG_PRECEDED_BLOCK_TAG;
 import static com.puppycrawl.tools.checkstyle.checks.javadoc.JavadocParagraphCheck.MSG_REDUNDANT_PARAGRAPH;
 import static com.puppycrawl.tools.checkstyle.checks.javadoc.JavadocParagraphCheck.MSG_TAG_AFTER;
 
@@ -58,72 +59,211 @@ public class JavadocParagraphCheckTest extends AbstractModuleTestSupport {
     @Test
     public void testIncorrect() throws Exception {
         final String[] expected = {
-            "13: " + getCheckMessage(MSG_MISPLACED_TAG),
-            "13: " + getCheckMessage(MSG_LINE_BEFORE),
-            "14: " + getCheckMessage(MSG_MISPLACED_TAG),
-            "14: " + getCheckMessage(MSG_LINE_BEFORE),
-            "20: " + getCheckMessage(MSG_MISPLACED_TAG),
-            "20: " + getCheckMessage(MSG_LINE_BEFORE),
-            "22: " + getCheckMessage(MSG_MISPLACED_TAG),
-            "30: " + getCheckMessage(MSG_LINE_BEFORE),
-            "32: " + getCheckMessage(MSG_MISPLACED_TAG),
-            "39: " + getCheckMessage(MSG_MISPLACED_TAG),
-            "39: " + getCheckMessage(MSG_LINE_BEFORE),
-            "39: " + getCheckMessage(MSG_REDUNDANT_PARAGRAPH),
-            "40: " + getCheckMessage(MSG_MISPLACED_TAG),
-            "40: " + getCheckMessage(MSG_LINE_BEFORE),
-            "41: " + getCheckMessage(MSG_MISPLACED_TAG),
-            "41: " + getCheckMessage(MSG_LINE_BEFORE),
-            "42: " + getCheckMessage(MSG_MISPLACED_TAG),
-            "42: " + getCheckMessage(MSG_LINE_BEFORE),
-            "46: " + getCheckMessage(MSG_MISPLACED_TAG),
-            "46: " + getCheckMessage(MSG_LINE_BEFORE),
-            "52: " + getCheckMessage(MSG_MISPLACED_TAG),
-            "52: " + getCheckMessage(MSG_REDUNDANT_PARAGRAPH),
-            "55: " + getCheckMessage(MSG_MISPLACED_TAG),
-            "57: " + getCheckMessage(MSG_MISPLACED_TAG),
-            "57: " + getCheckMessage(MSG_LINE_BEFORE),
-            "58: " + getCheckMessage(MSG_MISPLACED_TAG),
-            "58: " + getCheckMessage(MSG_LINE_BEFORE),
-            "69: " + getCheckMessage(MSG_REDUNDANT_PARAGRAPH),
-            "70: " + getCheckMessage(MSG_TAG_AFTER),
-            "79: " + getCheckMessage(MSG_MISPLACED_TAG),
-            "79: " + getCheckMessage(MSG_LINE_BEFORE),
-            "81: " + getCheckMessage(MSG_MISPLACED_TAG),
-            "84: " + getCheckMessage(MSG_MISPLACED_TAG),
-            "84: " + getCheckMessage(MSG_LINE_BEFORE),
-            "91: " + getCheckMessage(MSG_TAG_AFTER),
-            "92: " + getCheckMessage(MSG_TAG_AFTER),
+            "14:4: " + getCheckMessage(MSG_LINE_BEFORE),
+            "15:19: " + getCheckMessage(MSG_LINE_BEFORE),
+            "22:21: " + getCheckMessage(MSG_LINE_BEFORE),
+            "24:8: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "34:13: " + getCheckMessage(MSG_LINE_BEFORE),
+            "36:8: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "47:8: " + getCheckMessage(MSG_REDUNDANT_PARAGRAPH),
+            "47:24: " + getCheckMessage(MSG_LINE_BEFORE),
+            "48:8: " + getCheckMessage(MSG_LINE_BEFORE),
+            "49:8: " + getCheckMessage(MSG_LINE_BEFORE),
+            "49:11: " + getCheckMessage(MSG_LINE_BEFORE),
+            "50:8: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "50:8: " + getCheckMessage(MSG_LINE_BEFORE),
+            "50:29: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "50:29: " + getCheckMessage(MSG_LINE_BEFORE),
+            "62:25: " + getCheckMessage(MSG_LINE_BEFORE),
+            "69:12: " + getCheckMessage(MSG_REDUNDANT_PARAGRAPH),
+            "75:29: " + getCheckMessage(MSG_LINE_BEFORE),
+            "86:12: " + getCheckMessage(MSG_REDUNDANT_PARAGRAPH),
+            "87:11: " + getCheckMessage(MSG_TAG_AFTER),
+            "97:27: " + getCheckMessage(MSG_LINE_BEFORE),
+            "99:13: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "102:36: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "102:36: " + getCheckMessage(MSG_LINE_BEFORE),
+            "112:11: " + getCheckMessage(MSG_TAG_AFTER),
+            "113:11: " + getCheckMessage(MSG_TAG_AFTER),
         };
         verifyWithInlineConfigParser(
                 getPath("InputJavadocParagraphIncorrect.java"), expected);
     }
 
     @Test
+    public void testIncorrect2() throws Exception {
+        final String[] expected = {
+            "14:4: " + getCheckMessage(MSG_PRECEDED_BLOCK_TAG, "h1"),
+            "22:7: " + getCheckMessage(MSG_PRECEDED_BLOCK_TAG, "ul"),
+            "24:11: " + getCheckMessage(MSG_LINE_BEFORE),
+            "38:8: " + getCheckMessage(MSG_PRECEDED_BLOCK_TAG, "table"),
+            "50:8: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "52:8: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "52:8: " + getCheckMessage(MSG_PRECEDED_BLOCK_TAG, "ol"),
+        };
+        verifyWithInlineConfigParser(
+                getPath("InputJavadocParagraphIncorrect4.java"), expected);
+    }
+
+    @Test
     public void testAllowNewlineParagraph() throws Exception {
         final String[] expected = {
-            "13: " + getCheckMessage(MSG_LINE_BEFORE),
-            "14: " + getCheckMessage(MSG_LINE_BEFORE),
-            "19: " + getCheckMessage(MSG_LINE_BEFORE),
-            "28: " + getCheckMessage(MSG_LINE_BEFORE),
-            "37: " + getCheckMessage(MSG_LINE_BEFORE),
-            "37: " + getCheckMessage(MSG_REDUNDANT_PARAGRAPH),
-            "38: " + getCheckMessage(MSG_LINE_BEFORE),
-            "39: " + getCheckMessage(MSG_LINE_BEFORE),
-            "40: " + getCheckMessage(MSG_LINE_BEFORE),
-            "45: " + getCheckMessage(MSG_LINE_BEFORE),
-            "53: " + getCheckMessage(MSG_REDUNDANT_PARAGRAPH),
-            "58: " + getCheckMessage(MSG_LINE_BEFORE),
-            "59: " + getCheckMessage(MSG_LINE_BEFORE),
-            "70: " + getCheckMessage(MSG_REDUNDANT_PARAGRAPH),
-            "71: " + getCheckMessage(MSG_TAG_AFTER),
-            "80: " + getCheckMessage(MSG_LINE_BEFORE),
-            "85: " + getCheckMessage(MSG_LINE_BEFORE),
-            "93: " + getCheckMessage(MSG_TAG_AFTER),
-            "94: " + getCheckMessage(MSG_TAG_AFTER),
+            "16:4: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "16:4: " + getCheckMessage(MSG_LINE_BEFORE),
+            "17:19: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "17:19: " + getCheckMessage(MSG_LINE_BEFORE),
+            "28:21: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "28:21: " + getCheckMessage(MSG_LINE_BEFORE),
+            "30:8: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "39:13: " + getCheckMessage(MSG_LINE_BEFORE),
+            "41:8: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "56:8: " + getCheckMessage(MSG_REDUNDANT_PARAGRAPH),
+            "56:24: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "56:24: " + getCheckMessage(MSG_LINE_BEFORE),
+            "57:8: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "57:8: " + getCheckMessage(MSG_LINE_BEFORE),
+            "58:8: " + getCheckMessage(MSG_LINE_BEFORE),
+            "58:11: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "58:11: " + getCheckMessage(MSG_LINE_BEFORE),
+            "59:8: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "59:8: " + getCheckMessage(MSG_LINE_BEFORE),
+            "59:29: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "59:29: " + getCheckMessage(MSG_LINE_BEFORE),
+            "75:25: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "75:25: " + getCheckMessage(MSG_LINE_BEFORE),
+            "86:12: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "86:12: " + getCheckMessage(MSG_REDUNDANT_PARAGRAPH),
+            "89:12: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "91:12: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "92:29: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "92:29: " + getCheckMessage(MSG_LINE_BEFORE),
+            "103:12: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "103:12: " + getCheckMessage(MSG_LINE_BEFORE),
+            "103:31: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "103:31: " + getCheckMessage(MSG_LINE_BEFORE),
         };
         verifyWithInlineConfigParser(
                 getPath("InputJavadocParagraphIncorrect2.java"), expected);
     }
 
+    @Test
+    public void testAllowNewlineParagraph2() throws Exception {
+        final String[] expected = {
+            "16:12: " + getCheckMessage(MSG_REDUNDANT_PARAGRAPH),
+            "17:11: " + getCheckMessage(MSG_TAG_AFTER),
+            "30:27: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "30:27: " + getCheckMessage(MSG_LINE_BEFORE),
+            "32:13: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "35:36: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "35:36: " + getCheckMessage(MSG_LINE_BEFORE),
+            "45:11: " + getCheckMessage(MSG_TAG_AFTER),
+            "46:11: " + getCheckMessage(MSG_TAG_AFTER),
+        };
+        verifyWithInlineConfigParser(
+                getPath("InputJavadocParagraphIncorrect3.java"), expected);
+    }
+
+    @Test
+    public void testAllowNewlineParagraph3() throws Exception {
+        final String[] expected = {
+            "15:12: " + getCheckMessage(MSG_LINE_BEFORE),
+            "17:15: " + getCheckMessage(MSG_LINE_BEFORE),
+            "20:9: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "20:9: " + getCheckMessage(MSG_LINE_BEFORE),
+            "34:11: " + getCheckMessage(MSG_LINE_BEFORE),
+            "38:8: " + getCheckMessage(MSG_LINE_BEFORE),
+            "44:8: " + getCheckMessage(MSG_LINE_BEFORE),
+            "48:8: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "52:8: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "52:8: " + getCheckMessage(MSG_PRECEDED_BLOCK_TAG, "h1"),
+            "67:11: " + getCheckMessage(MSG_LINE_BEFORE),
+            "80:8: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "80:8: " + getCheckMessage(MSG_PRECEDED_BLOCK_TAG, "ul"),
+        };
+        verifyWithInlineConfigParser(
+                getPath("InputJavadocParagraphIncorrect5.java"), expected);
+    }
+
+    @Test
+    public void testJavadocParagraph() throws Exception {
+        final String[] expected = {
+            "19:4: " + getCheckMessage(MSG_LINE_BEFORE),
+            "28:7: " + getCheckMessage(MSG_REDUNDANT_PARAGRAPH),
+            "31:7: " + getCheckMessage(MSG_LINE_BEFORE),
+            "50:7: " + getCheckMessage(MSG_PRECEDED_BLOCK_TAG, "ul"),
+            "65:8: " + getCheckMessage(MSG_LINE_BEFORE),
+            "76:8: " + getCheckMessage(MSG_PRECEDED_BLOCK_TAG, "table"),
+            "87:8: " + getCheckMessage(MSG_PRECEDED_BLOCK_TAG, "pre"),
+        };
+
+        verifyWithInlineConfigParser(
+                getPath("InputJavadocParagraphCheck1.java"), expected);
+    }
+
+    @Test
+    public void testJavadocParagraphOpenClosedTag() throws Exception {
+        final String[] expected = {
+            "14:4: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "21:7: " + getCheckMessage(MSG_LINE_BEFORE),
+            "28:20: " + getCheckMessage(MSG_LINE_BEFORE),
+            "29:20: " + getCheckMessage(MSG_LINE_BEFORE),
+            "35:8: " + getCheckMessage(MSG_REDUNDANT_PARAGRAPH),
+            "36:6: " + getCheckMessage(MSG_TAG_AFTER),
+            "38:6: " + getCheckMessage(MSG_TAG_AFTER),
+            "58:7: " + getCheckMessage(MSG_PRECEDED_BLOCK_TAG, "ul"),
+            "73:7: " + getCheckMessage(MSG_PRECEDED_BLOCK_TAG, "h1"),
+            "85:7: " + getCheckMessage(MSG_PRECEDED_BLOCK_TAG, "h1"),
+        };
+
+        verifyWithInlineConfigParser(
+                getPath("InputJavadocParagraphIncorrectOpenClosedTag.java"), expected);
+    }
+
+    @Test
+    public void testJavadocParagraphOpenClosedTag2() throws Exception {
+        final String[] expected = {
+            "14:4: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "21:7: " + getCheckMessage(MSG_LINE_BEFORE),
+            "30:20: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "30:20: " + getCheckMessage(MSG_LINE_BEFORE),
+            "31:20: " + getCheckMessage(MSG_LINE_BEFORE),
+            "37:8: " + getCheckMessage(MSG_REDUNDANT_PARAGRAPH),
+            "38:6: " + getCheckMessage(MSG_TAG_AFTER),
+            "40:6: " + getCheckMessage(MSG_TAG_AFTER),
+            "50:7: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "63:7: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "63:7: " + getCheckMessage(MSG_PRECEDED_BLOCK_TAG, "ul"),
+            "78:7: " + getCheckMessage(MSG_PRECEDED_BLOCK_TAG, "h1"),
+            "87:7: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "91:7: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "91:7: " + getCheckMessage(MSG_PRECEDED_BLOCK_TAG, "h1"),
+        };
+
+        verifyWithInlineConfigParser(
+                getPath("InputJavadocParagraphIncorrectOpenClosedTag2.java"), expected);
+    }
+
+    @Test
+    public void testJavadocParagraphOpenClosedTag3() throws Exception {
+        final String[] expected = {
+            "15:7: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "23:7: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "31:7: " + getCheckMessage(MSG_MISPLACED_TAG),
+        };
+
+        verifyWithInlineConfigParser(
+                getPath("InputJavadocParagraphIncorrectOpenClosedTag3.java"), expected);
+    }
+
+    @Test
+    public void testIncorrect3() throws Exception {
+        final String[] expected = {
+            "15:7: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "23:7: " + getCheckMessage(MSG_MISPLACED_TAG),
+            "31:7: " + getCheckMessage(MSG_MISPLACED_TAG),
+        };
+
+        verifyWithInlineConfigParser(
+                getPath("InputJavadocParagraphIncorrect6.java"), expected);
+    }
 }

@@ -29,7 +29,8 @@ class InputOverloadMethodsDeclarationOrder
     }
 
     //violation: because overloads never split
-    public void overloadMethod(String s, Boolean b, int i) // violation
+    // violation below 'All overloaded methods should be placed next to each other.'
+    public void overloadMethod(String s, Boolean b, int i)
     {
         //some foo code
     }
@@ -57,9 +58,21 @@ class InputOverloadMethodsDeclarationOrder
         }
 
         //violation: because overloads never split
-        public void overloadMethod(String s, Boolean b, int i) // violation
+        // violation below 'All overloaded methods should be placed next to each other.'
+        public void overloadMethod(String s, Boolean b, int i)
         {
             //some foo code
+        };
+
+        public void overloadMethod(double d)
+        {
+          // violation 2 lines above 'All overloaded methods should be placed next to each other.'
+          /*
+           * Explanation of violation:
+           * There is a semicolon at the end of the previous method
+           * which is separating these overloaded methods
+           * and causing the violation.
+           */
         }
     };
 }
@@ -69,7 +82,9 @@ interface Fooable
     public abstract void foo(int i);
     public abstract void foo(String s);
     public abstract void noFoo();
-    public abstract void foo(String s, Boolean b, int i); // violation
+
+    // violation below 'All overloaded methods should be placed next to each other.'
+    public abstract void foo(String s, Boolean b, int i);
 }
 
 enum FooType {
@@ -101,6 +116,7 @@ enum FooType {
         //some foo code
     }
 
+    // comments between overloaded methods are allowed.
     public void overloadMethod(boolean b)
     {
         //some foo code
@@ -112,10 +128,35 @@ enum FooType {
     }
 
     //violation: because overloads never split
-    public void overloadMethod(String s, Boolean b, int i) // violation
+    // violation below 'All overloaded methods should be placed next to each other.'
+    public void overloadMethod(String s, Boolean b, int i)
     {
         //some foo code
     }
+
+    void test() {}
+
+    String str;
+
+    private interface Testing {}
+
+    // violation below 'All overloaded methods should be placed next to each other.'
+    void test(int x) {}
+
+    private class Inner {
+        void test() {}
+
+        void test(String str) {}
+
+        void test2() {}
+
+        String str;
+
+        // violation below 'All overloaded methods should be placed next to each other.'
+        void test(int x) {}
+    }
+    // violation below 'All overloaded methods should be placed next to each other.'
+    void test(double d) {}
 }
 
 enum Foo2 {

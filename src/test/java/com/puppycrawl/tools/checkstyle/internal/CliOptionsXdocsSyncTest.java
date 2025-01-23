@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -23,7 +23,7 @@ import static com.google.common.truth.Truth.assertWithMessage;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -46,14 +46,9 @@ public class CliOptionsXdocsSyncTest {
 
     @Test
     public void validateCliDocSections() throws Exception {
-        final Map<String, String> cmdDesc = new HashMap<>();
-
-        final NodeList sections = getSectionsFromXdoc("src/xdocs/cmdline.xml.vm");
-        final Set<String> cmdOptions = getListById(sections.item(2), "CLI_Options");
-        for (String option : cmdOptions) {
-            final String text = option.trim().replaceAll("\\s+", " ");
-            cmdDesc.put(text.substring(0, 2), text.substring(text.indexOf(" - ") + 3));
-        }
+        final NodeList sections = getSectionsFromXdoc("src/site/xdoc/cmdline.xml.vm");
+        final Node cmdUsageSection = sections.item(2);
+        final Map<String, String> cmdOptions = getOptions(cmdUsageSection);
 
         final Class<?> cliOptions = Class.forName("com.puppycrawl.tools.checkstyle"
                 + ".Main$CliOptions");
@@ -63,10 +58,10 @@ public class CliOptionsXdocsSyncTest {
         for (OptionSpec opt : optionSpecList) {
             final String option = opt.names()[0];
             if ("-h".equals(option) || "-V".equals(option)) {
-                cmdDesc.remove(option);
+                cmdOptions.remove(option);
                 continue;
             }
-            final String descXdoc = cmdDesc.get(option);
+            final String descXdoc = cmdOptions.get(option);
             final String descMain = opt.description()[0];
             assertWithMessage("CLI Option: " + option + " present in "
                     + "Main.java but not documented in cmdline.xml.vm")
@@ -74,19 +69,19 @@ public class CliOptionsXdocsSyncTest {
                     .isNotNull();
             assertWithMessage("CLI options descriptions in xdoc: "
                     + " should match that of in Main.java")
-                .that(descMain)
-                .isEqualTo(descXdoc);
-            cmdDesc.remove(option);
+                    .that(descMain)
+                    .isEqualTo(descXdoc);
+            cmdOptions.remove(option);
         }
         assertWithMessage("CLI Options: %s present in cmdline.xml.vm, not documented in Main.java",
-                    cmdDesc)
-                .that(cmdDesc)
+                cmdOptions)
+                .that(cmdOptions)
                 .isEmpty();
     }
 
     @Test
     public void validateCliUsageSection() throws Exception {
-        final NodeList sections = getSectionsFromXdoc("src/xdocs/cmdline.xml.vm");
+        final NodeList sections = getSectionsFromXdoc("src/site/xdoc/cmdline.xml.vm");
         final Node usageSource = XmlUtil.getFirstChildElement(sections.item(2));
         final String usageText = XmlUtil.getFirstChildElement(usageSource).getTextContent();
 
@@ -99,12 +94,12 @@ public class CliOptionsXdocsSyncTest {
         final Set<String> shortParamsMain = commandLine.getCommandSpec().options()
                         .stream()
                         .map(OptionSpec::shortestName)
-                        .collect(Collectors.toSet());
+                        .collect(Collectors.toUnmodifiableSet());
         final Set<String> longParamsMain = commandLine.getCommandSpec().options()
                         .stream()
                         .map(OptionSpec::longestName)
                         .filter(names -> names.length() != 2)
-                        .collect(Collectors.toSet());
+                        .collect(Collectors.toUnmodifiableSet());
 
         assertWithMessage("Short parameters in Main.java and cmdline"
                 + ".xml.vm should match")
@@ -127,20 +122,32 @@ public class CliOptionsXdocsSyncTest {
     }
 
     private static NodeList getSectionsFromXdoc(String xdocPath) throws Exception {
-        final Path path = Paths.get(xdocPath);
+        final Path path = Path.of(xdocPath);
         final String input = Files.readString(path);
         final Document document = XmlUtil.getRawXml(path.getFileName().toString(), input, input);
         return document.getElementsByTagName("section");
     }
 
-    private static Set<String> getListById(Node subSection, String id) {
-        Set<String> result = null;
-        final Node node = XmlUtil.findChildElementById(subSection, id);
-        if (node != null) {
-            result = XmlUtil.getChildrenElements(node)
-                    .stream()
-                    .map(Node::getTextContent)
-                    .collect(Collectors.toSet());
+    private static Map<String, String> getOptions(Node subSection) {
+        final Map<String, String> result = new HashMap<>();
+        final Node subsectionNode = XmlUtil.findChildElementById(subSection,
+                "Command_line_usage_Command_Line_Options");
+        if (subsectionNode != null) {
+            final Node divNode = XmlUtil.getFirstChildElement(subsectionNode);
+            final Node tableNode = XmlUtil.getFirstChildElement(divNode);
+            final Node tbodyNode = XmlUtil.findChildElementById(tableNode, "body");
+            final Set<Node> rows = XmlUtil.findChildElementsByTag(tbodyNode, "tr");
+            final List<List<Node>> columns = rows.stream()
+                    .map(row -> new ArrayList<>(XmlUtil.getChildrenElements(row)))
+                    .collect(Collectors.toUnmodifiableList());
+            for (List<Node> column : columns) {
+                final Node command = column.get(1);
+                final Node description = column.get(2);
+                if (command != null && description != null) {
+                    result.put(command.getTextContent().trim().substring(0, 2),
+                            description.getTextContent().trim().replaceAll("\\s+", " "));
+                }
+            }
         }
         return result;
     }

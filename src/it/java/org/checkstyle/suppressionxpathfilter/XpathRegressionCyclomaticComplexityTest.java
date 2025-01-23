@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -38,10 +38,10 @@ public class XpathRegressionCyclomaticComplexityTest extends AbstractXpathTestSu
     }
 
     @Test
-    public void testOne() throws Exception {
+    public void testConditionals() throws Exception {
 
         final File fileToProcess =
-                new File(getPath("SuppressionXpathRegressionCyclomaticComplexityOne.java"));
+                new File(getPath("InputXpathCyclomaticComplexityConditionals.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(CyclomaticComplexityCheck.class);
@@ -54,13 +54,13 @@ public class XpathRegressionCyclomaticComplexityTest extends AbstractXpathTestSu
 
         final List<String> expectedXpathQueries = Arrays.asList(
             "/COMPILATION_UNIT/CLASS_DEF"
-                + "[./IDENT[@text='SuppressionXpathRegressionCyclomaticComplexityOne']]"
+                + "[./IDENT[@text='InputXpathCyclomaticComplexityConditionals']]"
                 + "/OBJBLOCK/METHOD_DEF[./IDENT[@text='test']]",
             "/COMPILATION_UNIT/CLASS_DEF"
-                + "[./IDENT[@text='SuppressionXpathRegressionCyclomaticComplexityOne']]"
+                + "[./IDENT[@text='InputXpathCyclomaticComplexityConditionals']]"
                 + "/OBJBLOCK/METHOD_DEF[./IDENT[@text='test']]/MODIFIERS",
             "/COMPILATION_UNIT/CLASS_DEF"
-                + "[./IDENT[@text='SuppressionXpathRegressionCyclomaticComplexityOne']]"
+                + "[./IDENT[@text='InputXpathCyclomaticComplexityConditionals']]"
                 + "/OBJBLOCK/METHOD_DEF[./IDENT[@text='test']]/MODIFIERS/LITERAL_PUBLIC"
                 );
 
@@ -69,9 +69,9 @@ public class XpathRegressionCyclomaticComplexityTest extends AbstractXpathTestSu
     }
 
     @Test
-    public void testTwo() throws Exception {
+    public void testSwitchBlock() throws Exception {
         final File fileToProcess =
-                new File(getPath("SuppressionXpathRegressionCyclomaticComplexityTwo.java"));
+                new File(getPath("InputXpathCyclomaticComplexitySwitchBlock.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(CyclomaticComplexityCheck.class);
@@ -84,13 +84,13 @@ public class XpathRegressionCyclomaticComplexityTest extends AbstractXpathTestSu
 
         final List<String> expectedXpathQueries = Arrays.asList(
             "/COMPILATION_UNIT/CLASS_DEF"
-                    + "[./IDENT[@text='SuppressionXpathRegressionCyclomaticComplexityTwo']]"
+                    + "[./IDENT[@text='InputXpathCyclomaticComplexitySwitchBlock']]"
                     + "/OBJBLOCK/METHOD_DEF[./IDENT[@text='foo2']]",
             "/COMPILATION_UNIT/CLASS_DEF"
-                    + "[./IDENT[@text='SuppressionXpathRegressionCyclomaticComplexityTwo']]"
+                    + "[./IDENT[@text='InputXpathCyclomaticComplexitySwitchBlock']]"
                     + "/OBJBLOCK/METHOD_DEF[./IDENT[@text='foo2']]/MODIFIERS",
             "/COMPILATION_UNIT/CLASS_DEF"
-                    + "[./IDENT[@text='SuppressionXpathRegressionCyclomaticComplexityTwo']]"
+                    + "[./IDENT[@text='InputXpathCyclomaticComplexitySwitchBlock']]"
                     + "/OBJBLOCK/METHOD_DEF[./IDENT[@text='foo2']]/MODIFIERS/LITERAL_PUBLIC"
         );
 

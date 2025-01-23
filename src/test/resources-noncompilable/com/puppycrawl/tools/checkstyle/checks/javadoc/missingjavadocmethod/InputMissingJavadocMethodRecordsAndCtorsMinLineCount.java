@@ -11,10 +11,10 @@ tokens = (default)METHOD_DEF, CTOR_DEF, ANNOTATION_FIELD_DEF, COMPACT_CTOR_DEF
 
 */
 
-//non-compiled with javac: Compilable with Java14
+//non-compiled with javac: Compilable with Java17
 package com.puppycrawl.tools.checkstyle.checks.javadoc.missingjavadocmethod;
 
-public class InputMissingJavadocMethodRecordsAndCtorsMinLineCount { // ok
+public class InputMissingJavadocMethodRecordsAndCtorsMinLineCount {
     public record MyRecord(Integer number) {
         private static int mNumber;
 

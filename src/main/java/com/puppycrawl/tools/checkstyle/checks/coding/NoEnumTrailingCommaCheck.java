@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -26,18 +26,19 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
 
 /**
- * <p>
+ * <div>
  *  Checks that enum definition does not contain a trailing comma.
  *  Rationale: JLS allows trailing commas in arrays and enumerations, but does not allow
  *  them in other locations. To unify the coding style, the use of trailing commas should
  *  be prohibited.
- * </p>
+ * </div>
  * <pre>
  * enum Foo1 {
  *   FOO,
  *   BAR;
  * }
  * </pre>
+ *
  * <p>
  *  The check demands that there should not be any comma after last constant in
  *  enum definition.
@@ -48,50 +49,11 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  *   BAR, //violation
  * }
  * </pre>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;NoEnumTrailingComma&quot;/&gt;
- * </pre>
- * <p>
- * Which results in the following violations:
- * </p>
- * <pre>
- * enum Foo1 {
- *   FOO,
- *   BAR; //OK
- * }
- * enum Foo2 {
- *   FOO,
- *   BAR //OK
- * }
- * enum Foo3 {
- *   FOO,
- *   BAR, //violation
- * }
- * enum Foo4 {
- *   FOO,
- *   BAR, // violation
- *   ;
- * }
- * enum Foo5 {
- *   FOO,
- *   BAR,; // violation
- * }
- * enum Foo6 { FOO, BAR,; } // violation
- * enum Foo7 { FOO, BAR, } // violation
- * enum Foo8 {
- *   FOO,
- *   BAR // OK
- *   ;
- * }
- * enum Foo9 { FOO, BAR; } // OK
- * enum Foo10 { FOO, BAR } // OK
- * </pre>
+ *
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>

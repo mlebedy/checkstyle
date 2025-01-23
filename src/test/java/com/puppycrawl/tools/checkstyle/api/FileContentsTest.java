@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -20,6 +20,7 @@
 package com.puppycrawl.tools.checkstyle.api;
 
 import static com.google.common.truth.Truth.assertWithMessage;
+import static com.puppycrawl.tools.checkstyle.internal.utils.TestUtil.getExpectedThrowable;
 
 import java.io.File;
 import java.util.Arrays;
@@ -332,4 +333,29 @@ public class FileContentsTest {
                 .isTrue();
     }
 
+    @Test
+    public void testUnmodifiableGetSingleLineComment() {
+        final FileContents cppComments = new FileContents(new FileText(new File("filename"),
+                Arrays.asList("// comment ", " A + B ", " ")));
+        cppComments.reportSingleLineComment(1, 0);
+        final Map<Integer, TextBlock> comments = cppComments.getSingleLineComments();
+        final Exception ex = getExpectedThrowable(UnsupportedOperationException.class,
+                () -> comments.remove(0));
+        assertWithMessage("Exception message not expected")
+                .that(ex.getClass())
+                .isEqualTo(UnsupportedOperationException.class);
+    }
+
+    @Test
+    public void testUnmodifiableGetBlockComments() {
+        final FileContents clangComments = new FileContents(new FileText(new File("filename"),
+                Arrays.asList("/* comment ", " ", " comment */")));
+        clangComments.reportBlockComment(1, 0, 3, 9);
+        final Map<Integer, List<TextBlock>> comments = clangComments.getBlockComments();
+        final Exception ex = getExpectedThrowable(UnsupportedOperationException.class,
+                () -> comments.remove(0));
+        assertWithMessage("Exception message not expected")
+                .that(ex.getClass())
+                .isEqualTo(UnsupportedOperationException.class);
+    }
 }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -25,20 +25,21 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 
 /**
- * <p>
+ * <div>
  * Checks identifiers with a pattern for a set of illegal names, such as those
- * that are restricted or contextual keywords. Examples include "yield", "record", "_", and
+ * that are restricted or contextual keywords. Examples include "yield", "record", and
  * "var". Please read more at
- * <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-3.html#jls-3.9">
+ * <a href="https://docs.oracle.com/javase/specs/jls/se22/html/jls-3.html#jls-3.9">
  * Java Language Specification</a> to get to know more about restricted keywords. Since this
  * check uses a pattern to specify valid identifiers, users can also prohibit the usage
  * of certain symbols, such as "$", or any non-ascii character.
- * </p>
+ * </div>
+ *
  * <ul>
  * <li>
- * Property {@code format} - Specifies valid identifiers.
+ * Property {@code format} - Sets the pattern to match valid identifiers.
  * Type is {@code java.util.regex.Pattern}.
- * Default value is {@code "(?i)^(?!(record|yield|var|permits|sealed|_)$).+$"}.
+ * Default value is {@code "(?i)^(?!(record|yield|var|permits|sealed)$).+$"}.
  * </li>
  * <li>
  * Property {@code tokens} - tokens to check
@@ -73,61 +74,11 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * LAMBDA</a>.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <p>Configuration:</p>
- * <pre>
- * &lt;module name="IllegalIdentifierName"/&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <pre>
- * public class TestClass {
- *     public static void main(String... args) {
- *         var var = 4; // violation, "var" should not be used as an identifier.
- *         int record = 15; // violation, "record" should not be used as an identifier.
- *         String yield = "yield"; // violation, "yield" should not be used as an identifier.
  *
- *         record Record // violation, "Record" should not be used as an identifier.
- *             (Record record) { // violation, "record" should not be used as an identifier.
- *         }
- *
- *         String yieldString = "yieldString"; // ok, part of another word
- *         record MyRecord(){} // ok, part of another word
- *         var variable = 2; // ok, part of another word
- *         String _; // violation, underscore should not be used as an identifier.
- *     }
- * }
- * </pre>
- * <p>
- * To configure the check to include "open" and "transitive" in the set of illegal identifiers:
- * </p>
- * <p>Configuration:</p>
- * <pre>
- * &lt;module name="IllegalIdentifierName"&gt;
- *     &lt;property name="format" value="(?i)^(?!(record|yield|var
- *                        |permits|sealed|open|transitive|_)$).+$"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public class TestClass {
- *     public static void main(String... args) {
- *
- *         int open = 4; // violation, "open" should not be used as an identifier
- *         Object transitive = "transitive"; // violation, "transitive" should not
- *                                                // be used as an identifier
- *
- *         int openInt = 4; // ok, "open" is part of another word
- *         Object transitiveObject = "transitiveObject"; // ok, "transitive" is part of another word
- *     }
- * }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -146,7 +97,7 @@ public class IllegalIdentifierNameCheck extends AbstractNameCheck {
      * Creates a new {@code IllegalIdentifierNameCheck} instance.
      */
     public IllegalIdentifierNameCheck() {
-        super("(?i)^(?!(record|yield|var|permits|sealed|_)$).+$");
+        super("(?i)^(?!(record|yield|var|permits|sealed)$).+$");
     }
 
     @Override

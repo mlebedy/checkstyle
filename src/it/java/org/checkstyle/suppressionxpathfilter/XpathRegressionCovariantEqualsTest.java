@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -40,7 +40,7 @@ public class XpathRegressionCovariantEqualsTest extends AbstractXpathTestSupport
     @Test
     public void testCovariantEqualsInClass() throws Exception {
         final File fileToProcess =
-                new File(getPath("SuppressionXpathRegressionCovariantEqualsInClass.java"));
+                new File(getPath("InputXpathCovariantEqualsInClass.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(CovariantEqualsCheck.class);
@@ -52,7 +52,7 @@ public class XpathRegressionCovariantEqualsTest extends AbstractXpathTestSupport
 
         final List<String> expectedXpathQueries = Collections.singletonList(
             "/COMPILATION_UNIT/CLASS_DEF"
-                + "[./IDENT[@text='SuppressionXpathRegressionCovariantEqualsInClass']]"
+                + "[./IDENT[@text='InputXpathCovariantEqualsInClass']]"
                 + "/OBJBLOCK/METHOD_DEF/IDENT[@text='equals']"
         );
 
@@ -63,7 +63,7 @@ public class XpathRegressionCovariantEqualsTest extends AbstractXpathTestSupport
     @Test
     public void testCovariantEqualsInEnum() throws Exception {
         final File fileToProcess =
-                new File(getPath("SuppressionXpathRegressionCovariantEqualsInEnum.java"));
+                new File(getPath("InputXpathCovariantEqualsInEnum.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(CovariantEqualsCheck.class);
@@ -75,7 +75,7 @@ public class XpathRegressionCovariantEqualsTest extends AbstractXpathTestSupport
 
         final List<String> expectedXpathQueries = Collections.singletonList(
                 "/COMPILATION_UNIT/ENUM_DEF"
-                + "[./IDENT[@text='SuppressionXpathRegressionCovariantEqualsInEnum']]"
+                + "[./IDENT[@text='InputXpathCovariantEqualsInEnum']]"
                         + "/OBJBLOCK/METHOD_DEF/IDENT[@text='equals']");
 
         runVerifications(moduleConfig, fileToProcess, expectedViolation,
@@ -86,7 +86,7 @@ public class XpathRegressionCovariantEqualsTest extends AbstractXpathTestSupport
     public void testCovariantEqualsInRecord() throws Exception {
         final File fileToProcess =
                 new File(getNonCompilablePath(
-                        "SuppressionXpathRegressionCovariantEqualsInRecord.java"));
+                        "InputXpathCovariantEqualsInRecord.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(CovariantEqualsCheck.class);
@@ -98,7 +98,7 @@ public class XpathRegressionCovariantEqualsTest extends AbstractXpathTestSupport
 
         final List<String> expectedXpathQueries = Collections.singletonList(
                 "/COMPILATION_UNIT/RECORD_DEF"
-                + "[./IDENT[@text='SuppressionXpathRegressionCovariantEqualsInRecord']]"
+                + "[./IDENT[@text='InputXpathCovariantEqualsInRecord']]"
                         + "/OBJBLOCK/METHOD_DEF/IDENT[@text='equals']");
 
         runVerifications(moduleConfig, fileToProcess, expectedViolation,

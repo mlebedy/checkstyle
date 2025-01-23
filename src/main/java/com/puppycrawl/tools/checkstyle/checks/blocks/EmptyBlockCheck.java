@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -21,6 +21,7 @@ package com.puppycrawl.tools.checkstyle.checks.blocks;
 
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Optional;
 
 import com.puppycrawl.tools.checkstyle.StatelessCheck;
 import com.puppycrawl.tools.checkstyle.api.AbstractCheck;
@@ -30,27 +31,21 @@ import com.puppycrawl.tools.checkstyle.utils.CodePointUtil;
 import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 
 /**
+ * <div>
+ * Checks for empty blocks.
+ * </div>
+ *
  * <p>
- * Checks for empty blocks. This check does not validate sequential blocks.
+ * This check does not validate sequential blocks. This check does not violate fallthrough.
  * </p>
- * <p>
- * Sequential blocks won't be checked. Also, no violations for fallthrough:
- * </p>
- * <pre>
- * switch (a) {
- *   case 1:                          // no violation
- *   case 2:                          // no violation
- *   case 3: someMethod(); { }        // no violation
- *   default: break;
- * }
- * </pre>
+ *
  * <p>
  * NOTE: This check processes LITERAL_CASE and LITERAL_DEFAULT separately.
  * Verification empty block is done for single nearest {@code case} or {@code default}.
  * </p>
  * <ul>
  * <li>
- * Property {@code option} - specify the policy on block contents.
+ * Property {@code option} - Specify the policy on block contents.
  * Type is {@code com.puppycrawl.tools.checkstyle.checks.blocks.BlockOption}.
  * Default value is {@code statement}.
  * </li>
@@ -83,81 +78,11 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * LITERAL_SYNCHRONIZED</a>.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name="EmptyBlock"/&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <pre>
- * public class Test {
- *   private void emptyLoop() {
- *     for (int i = 0; i &lt; 10; i++) { // violation
- *     }
  *
- *     try { // violation
- *
- *     } catch (Exception e) {
- *       // ignored
- *     }
- *   }
- * }
- * </pre>
- * <p>
- * To configure the check for the {@code text} policy and only {@code try} blocks:
- * </p>
- * <pre>
- * &lt;module name=&quot;EmptyBlock&quot;&gt;
- *   &lt;property name=&quot;option&quot; value=&quot;text&quot;/&gt;
- *   &lt;property name=&quot;tokens&quot; value=&quot;LITERAL_TRY&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p> Example: </p>
- * <pre>
- * public class Test {
- *   private void emptyLoop() {
- *     for (int i = 0; i &lt; 10; i++) {
- *       // ignored
- *     }
- *
- *     // violation on next line
- *     try {
- *
- *     } catch (Exception e) {
- *       // ignored
- *     }
- *   }
- * }
- * </pre>
- * <p>
- * To configure the check for default in switch block:
- * </p>
- * <pre>
- * &lt;module name=&quot;EmptyBlock&quot;&gt;
- *   &lt;property name=&quot;tokens&quot; value=&quot;LITERAL_DEFAULT&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p> Example: </p>
- * <pre>
- * public class Test {
- *   private void test(int a) {
- *     switch (a) {
- *       case 1: someMethod();
- *       default: // OK, as there is no block
- *     }
- *     switch (a) {
- *       case 1: someMethod();
- *       default: {} // violation
- *     }
- *   }
- * }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -196,6 +121,7 @@ public class EmptyBlockCheck
      *
      * @param optionStr string to decode option from
      * @throws IllegalArgumentException if unable to decode
+     * @since 3.0
      */
     public void setOption(String optionStr) {
         option = BlockOption.valueOf(optionStr.trim().toUpperCase(Locale.ENGLISH));
@@ -246,26 +172,26 @@ public class EmptyBlockCheck
 
     @Override
     public void visitToken(DetailAST ast) {
-        final DetailAST leftCurly = findLeftCurly(ast);
-        if (leftCurly != null) {
+        final Optional<DetailAST> leftCurly = getLeftCurly(ast);
+        if (leftCurly.isPresent()) {
+            final DetailAST leftCurlyAST = leftCurly.orElseThrow();
             if (option == BlockOption.STATEMENT) {
                 final boolean emptyBlock;
-                if (leftCurly.getType() == TokenTypes.LCURLY) {
-                    final DetailAST nextSibling = leftCurly.getNextSibling();
+                if (leftCurlyAST.getType() == TokenTypes.LCURLY) {
+                    final DetailAST nextSibling = leftCurlyAST.getNextSibling();
                     emptyBlock = nextSibling.getType() != TokenTypes.CASE_GROUP
                             && nextSibling.getType() != TokenTypes.SWITCH_RULE;
                 }
                 else {
-                    emptyBlock = leftCurly.getChildCount() <= 1;
+                    emptyBlock = leftCurlyAST.getChildCount() <= 1;
                 }
                 if (emptyBlock) {
-                    log(leftCurly,
-                        MSG_KEY_BLOCK_NO_STATEMENT,
-                        ast.getText());
+                    log(leftCurlyAST,
+                        MSG_KEY_BLOCK_NO_STATEMENT);
                 }
             }
-            else if (!hasText(leftCurly)) {
-                log(leftCurly,
+            else if (!hasText(leftCurlyAST)) {
+                log(leftCurlyAST,
                     MSG_KEY_BLOCK_EMPTY,
                     ast.getText());
             }
@@ -342,21 +268,28 @@ public class EmptyBlockCheck
      * @param ast a {@code DetailAST} value
      * @return the left curly corresponding to the block to be checked
      */
-    private static DetailAST findLeftCurly(DetailAST ast) {
-        final DetailAST leftCurly;
-        final DetailAST slistAST = ast.findFirstToken(TokenTypes.SLIST);
-        if ((ast.getType() == TokenTypes.LITERAL_CASE
-                || ast.getType() == TokenTypes.LITERAL_DEFAULT)
-                && ast.getNextSibling() != null
-                && ast.getNextSibling().getFirstChild() != null
-                && ast.getNextSibling().getFirstChild().getType() == TokenTypes.SLIST) {
-            leftCurly = ast.getNextSibling().getFirstChild();
+    private static Optional<DetailAST> getLeftCurly(DetailAST ast) {
+        final DetailAST parent = ast.getParent();
+        final int parentType = parent.getType();
+        final Optional<DetailAST> leftCurly;
+
+        if (parentType == TokenTypes.SWITCH_RULE) {
+            // get left curly of a case or default that is in switch rule
+            leftCurly = Optional.ofNullable(parent.findFirstToken(TokenTypes.SLIST));
         }
-        else if (slistAST == null) {
-            leftCurly = ast.findFirstToken(TokenTypes.LCURLY);
+        else if (parentType == TokenTypes.CASE_GROUP) {
+            // get left curly of a case or default that is in switch statement
+            leftCurly = Optional.ofNullable(ast.getNextSibling())
+                         .map(DetailAST::getFirstChild)
+                         .filter(node -> node.getType() == TokenTypes.SLIST);
+        }
+        else if (ast.findFirstToken(TokenTypes.SLIST) != null) {
+            // we have a left curly that is part of a statement list, but not in a case or default
+            leftCurly = Optional.of(ast.findFirstToken(TokenTypes.SLIST));
         }
         else {
-            leftCurly = slistAST;
+            // get the first left curly that we can find, if it is present
+            leftCurly = Optional.ofNullable(ast.findFirstToken(TokenTypes.LCURLY));
         }
         return leftCurly;
     }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -32,12 +32,13 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 import com.puppycrawl.tools.checkstyle.utils.ScopeUtil;
 
 /**
- * <p>
+ * <div>
  * Checks that the parts of a class, record, or interface declaration appear in the order
  * suggested by the
  * <a href="https://checkstyle.org/styleguides/sun-code-conventions-19990420/CodeConventions.doc2.html#a1852">
  * Code Conventions for the Java Programming Language</a>.
- * </p>
+ * </div>
+ *
  * <p>
  * According to
  * <a href="https://checkstyle.org/styleguides/sun-code-conventions-19990420/CodeConventions.doc2.html#a1852">
@@ -55,10 +56,12 @@ import com.puppycrawl.tools.checkstyle.utils.ScopeUtil;
  * <li> Constructors </li>
  * <li> Methods </li>
  * </ol>
+ *
  * <p>
  * Purpose of <b>ignore*</b> option is to ignore related violations,
  * however it still impacts on other class members.
  * </p>
+ *
  * <p>ATTENTION: the check skips class fields which have
  * <a href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-8.html#jls-8.3.3">
  * forward references </a> from validation due to the fact that we have Checkstyle's limitations
@@ -73,110 +76,21 @@ import com.puppycrawl.tools.checkstyle.utils.ScopeUtil;
  * </pre>
  * <ul>
  * <li>
- * Property {@code ignoreConstructors} - control whether to ignore constructors.
+ * Property {@code ignoreConstructors} - Control whether to ignore constructors.
  * Type is {@code boolean}.
  * Default value is {@code false}.
  * </li>
  * <li>
- * Property {@code ignoreModifiers} - control whether to ignore modifiers (fields, ...).
+ * Property {@code ignoreModifiers} - Control whether to ignore modifiers (fields, ...).
  * Type is {@code boolean}.
  * Default value is {@code false}.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;DeclarationOrder&quot;/&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public class Test {
  *
- *   public int a;
- *   protected int b;
- *   public int c;            // violation, variable access definition in wrong order
- *
- *   Test() {
- *     this.a = 0;
- *   }
- *
- *   public void foo() {
- *     // This method does nothing
- *   }
- *
- *   Test(int a) {            // violation, constructor definition in wrong order
- *     this.a = a;
- *   }
- *
- *   private String name;     // violation, instance variable declaration in wrong order
- * }
- * </pre>
- * <p>
- * To configure the check to ignore validation of constructors:
- * </p>
- * <pre>
- * &lt;module name=&quot;DeclarationOrder&quot;&gt;
- *   &lt;property name=&quot;ignoreConstructors&quot; value=&quot;true&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public class Test {
- *
- *   public int a;
- *   protected int b;
- *   public int c;            // violation, variable access definition in wrong order
- *
- *   Test() {
- *     this.a = 0;
- *   }
- *
- *   public void foo() {
- *     // This method does nothing
- *   }
- *
- *   Test(int a) {            // OK, validation of constructors ignored
- *     this.a = a;
- *   }
- *
- *   private String name;     // violation, instance variable declaration in wrong order
- * }
- * </pre>
- * <p>
- * To configure the check to ignore modifiers:
- * </p>
- * <pre>
- * &lt;module name=&quot;DeclarationOrder&quot;&gt;
- *   &lt;property name=&quot;ignoreModifiers&quot; value=&quot;true&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public class Test {
- *
- *   public int a;
- *   protected int b;
- *   public int c;            // OK, access modifiers not considered while validating
- *
- *   Test() {
- *     this.a = 0;
- *   }
- *
- *   public void foo() {
- *     // This method does nothing
- *   }
- *
- *   Test(int a) {            // violation, constructor definition in wrong order
- *     this.a = a;
- *   }
- *
- *   private String name;     // violation, instance variable declaration in wrong order
- * }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -366,17 +280,10 @@ public class DeclarationOrderCheck extends AbstractCheck {
                 state.currentScopeState = STATE_INSTANCE_VARIABLE_DEF;
             }
         }
-        else {
-            if (state.currentScopeState > STATE_STATIC_VARIABLE_DEF) {
-                if (!ignoreModifiers
-                        || state.currentScopeState > STATE_INSTANCE_VARIABLE_DEF) {
-                    isStateValid = false;
-                    log(modifierAst, MSG_STATIC);
-                }
-            }
-            else {
-                state.currentScopeState = STATE_STATIC_VARIABLE_DEF;
-            }
+        else if (state.currentScopeState > STATE_INSTANCE_VARIABLE_DEF
+                || state.currentScopeState > STATE_STATIC_VARIABLE_DEF && !ignoreModifiers) {
+            isStateValid = false;
+            log(modifierAst, MSG_STATIC);
         }
         return isStateValid;
     }
@@ -463,6 +370,7 @@ public class DeclarationOrderCheck extends AbstractCheck {
      * Setter to control whether to ignore constructors.
      *
      * @param ignoreConstructors whether to ignore constructors.
+     * @since 5.2
      */
     public void setIgnoreConstructors(boolean ignoreConstructors) {
         this.ignoreConstructors = ignoreConstructors;
@@ -472,6 +380,7 @@ public class DeclarationOrderCheck extends AbstractCheck {
      * Setter to control whether to ignore modifiers (fields, ...).
      *
      * @param ignoreModifiers whether to ignore modifiers.
+     * @since 5.2
      */
     public void setIgnoreModifiers(boolean ignoreModifiers) {
         this.ignoreModifiers = ignoreModifiers;
@@ -480,7 +389,7 @@ public class DeclarationOrderCheck extends AbstractCheck {
     /**
      * Private class to encapsulate the state.
      */
-    private static class ScopeState {
+    private static final class ScopeState {
 
         /** The state the check is in. */
         private int currentScopeState = STATE_STATIC_VARIABLE_DEF;

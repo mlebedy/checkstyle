@@ -5,7 +5,7 @@ ignoreEqualsIgnoreCase = (default)false
 
 */
 
-//non-compiled with javac: Compilable with Java14
+//non-compiled with javac: Compilable with Java17
 package com.puppycrawl.tools.checkstyle.checks.coding.equalsavoidnull;
 
 public class InputEqualsAvoidNullTextBlocks {
@@ -36,7 +36,7 @@ public class InputEqualsAvoidNullTextBlocks {
           System.out.println("this is my other string");
         }
         else if ("""
-            one more string""".equals(s)) { // ok
+            one more string""".equals(s)) {
           System.out.println("This is one more string");
         }
       }

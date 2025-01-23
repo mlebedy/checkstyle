@@ -9,7 +9,7 @@ tokens = (default)ANNOTATION, ANNOTATION_FIELD_DEF, CTOR_CALL, CTOR_DEF, DOT, \
 
 */
 
-//non-compiled with javac: Compilable with Java14
+//non-compiled with javac: Compilable with Java17
 package com.puppycrawl.tools.checkstyle.checks.whitespace.parenpad;
 
 import java.util.HashMap;
@@ -27,19 +27,19 @@ public class InputParenPadCheckRecords {
 
         static int n;
 
-        public void fun() {  // ok
+        public void fun() {
             bar( 1);  // violation
         }
 
         public void bar(int k ) {  // violation
-            while (k > 0) {  // ok
+            while (k > 0) {
             }
         }
 
-        public void fun2() {  // ok
+        public void fun2() {
             switch( n) {  // violation
                 case 2:
-                    bar(n);  // ok
+                    bar(n);
                 default:
                     break;
             }

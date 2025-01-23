@@ -5,7 +5,7 @@ format = ^foo$
 
 */
 
-//non-compiled with javac: Compilable with Java14
+//non-compiled with javac: Compilable with Java17
 package com.puppycrawl.tools.checkstyle.checks.naming.recordtypeparametername;
 
 import java.io.Serializable;
@@ -31,11 +31,11 @@ record Other <T extends Serializable & Cloneable> // violation
         return null;
     }
 
-    <foo extends Runnable> foo getShadow() { // ok
+    <foo extends Runnable> foo getShadow() {
         return null;
     }
 
-    static record Junk <foo>() { // ok
+    static record Junk <foo>() {
         <_fo extends foo> void getMoreFoo() {
         }
     }

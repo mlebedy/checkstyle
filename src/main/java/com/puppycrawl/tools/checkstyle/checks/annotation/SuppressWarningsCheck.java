@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -19,6 +19,8 @@
 
 package com.puppycrawl.tools.checkstyle.checks.annotation;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,16 +33,18 @@ import com.puppycrawl.tools.checkstyle.utils.AnnotationUtil;
 import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 
 /**
- * <p>
+ * <div>
  * Allows to specify what warnings that
  * {@code @SuppressWarnings} is not allowed to suppress.
  * You can also specify a list of TokenTypes that
  * the configured warning(s) cannot be suppressed on.
- * </p>
+ * </div>
+ *
  * <p>
  * Limitations:  This check does not consider conditionals
  * inside the &#64;SuppressWarnings annotation.
  * </p>
+ *
  * <p>
  * For example:
  * {@code @SuppressWarnings((false) ? (true) ? "unchecked" : "foo" : "unused")}.
@@ -52,16 +56,19 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * {@code @SuppressWarnings((String) "unused")} or
  * {@code @SuppressWarnings({('u' + (char)'n') + (""+("used" + (String)"")),})}.
  * </p>
+ *
  * <p>
  * By default, any warning specified will be disallowed on
  * all legal TokenTypes unless otherwise specified via
  * the tokens property.
  * </p>
+ *
  * <p>
  * Also, by default warnings that are empty strings or all
  * whitespace (regex: ^$|^\s+$) are flagged.  By specifying,
  * the format property these defaults no longer apply.
  * </p>
+ *
  * <p>This check can be configured so that the "unchecked"
  * and "unused" warnings cannot be suppressed on
  * anything but variable and parameter declarations.
@@ -102,34 +109,16 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#COMPACT_CTOR_DEF">
  * COMPACT_CTOR_DEF</a>,
  * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#RECORD_DEF">
- * RECORD_DEF</a>.
+ * RECORD_DEF</a>,
+ * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#PATTERN_VARIABLE_DEF">
+ * PATTERN_VARIABLE_DEF</a>.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;SuppressWarnings&quot;/&gt;
- * </pre>
- * <p>
- * To configure the check so that the "unchecked" and "unused"
- * warnings cannot be suppressed on anything but variable and parameter declarations.
- * </p>
- * <pre>
- * &lt;module name=&quot;SuppressWarnings&quot;&gt;
- *   &lt;property name=&quot;format&quot;
- *       value=&quot;^unchecked$|^unused$&quot;/&gt;
- *   &lt;property name=&quot;tokens&quot;
- *     value=&quot;
- *     CLASS_DEF,INTERFACE_DEF,ENUM_DEF,
- *     ANNOTATION_DEF,ANNOTATION_FIELD_DEF,
- *     ENUM_CONSTANT_DEF,METHOD_DEF,CTOR_DEF
- *     &quot;/&gt;
- * &lt;/module&gt;
- * </pre>
+ *
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -172,6 +161,7 @@ public class SuppressWarningsCheck extends AbstractCheck {
      * being suppressed matching this pattern will be flagged.
      *
      * @param pattern the new pattern
+     * @since 5.0
      */
     public final void setFormat(Pattern pattern) {
         format = pattern;
@@ -197,6 +187,7 @@ public class SuppressWarningsCheck extends AbstractCheck {
             TokenTypes.CTOR_DEF,
             TokenTypes.COMPACT_CTOR_DEF,
             TokenTypes.RECORD_DEF,
+            TokenTypes.PATTERN_VARIABLE_DEF,
         };
     }
 
@@ -242,18 +233,15 @@ public class SuppressWarningsCheck extends AbstractCheck {
                             case TokenTypes.QUESTION:
                                 walkConditional(fChild);
                                 break;
-                            // param in constant case
-                            // ex: public static final String UNCHECKED = "unchecked";
-                            // @SuppressWarnings(UNCHECKED)
-                            // or
-                            // @SuppressWarnings(SomeClass.UNCHECKED)
-                            case TokenTypes.IDENT:
-                            case TokenTypes.DOT:
-                                break;
                             default:
                                 // Known limitation: cases like @SuppressWarnings("un" + "used") or
                                 // @SuppressWarnings((String) "unused") are not properly supported,
                                 // but they should not cause exceptions.
+                                // Also constant as param
+                                // ex: public static final String UNCHECKED = "unchecked";
+                                // @SuppressWarnings(UNCHECKED)
+                                // or
+                                // @SuppressWarnings(SomeClass.UNCHECKED)
                         }
                     }
                     warning = warning.getNextSibling();
@@ -327,7 +315,7 @@ public class SuppressWarningsCheck extends AbstractCheck {
     }
 
     /**
-     * Recursively walks a conditional expression checking the left
+     * Walks a conditional expression checking the left
      * and right sides, checking for matches and
      * logging violations.
      *
@@ -335,14 +323,19 @@ public class SuppressWarningsCheck extends AbstractCheck {
      *     {@link TokenTypes#QUESTION QUESTION}
      */
     private void walkConditional(final DetailAST cond) {
-        if (cond.getType() == TokenTypes.QUESTION) {
-            walkConditional(getCondLeft(cond));
-            walkConditional(getCondRight(cond));
-        }
-        else {
-            final String warningText =
-                    removeQuotes(cond.getText());
-            logMatch(cond, warningText);
+        final Deque<DetailAST> condStack = new ArrayDeque<>();
+        condStack.push(cond);
+
+        while (!condStack.isEmpty()) {
+            final DetailAST currentCond = condStack.pop();
+            if (currentCond.getType() == TokenTypes.QUESTION) {
+                condStack.push(getCondRight(currentCond));
+                condStack.push(getCondLeft(currentCond));
+            }
+            else {
+                final String warningText = removeQuotes(currentCond.getText());
+                logMatch(currentCond, warningText);
+            }
         }
     }
 

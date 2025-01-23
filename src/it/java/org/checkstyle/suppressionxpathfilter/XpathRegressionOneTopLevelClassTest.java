@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -40,7 +40,7 @@ public class XpathRegressionOneTopLevelClassTest extends AbstractXpathTestSuppor
     @Test
     public void testOne() throws Exception {
         final File fileToProcess =
-                new File(getPath("SuppressionXpathRegressionOneTopLevelClassFirst.java"));
+                new File(getPath("InputXpathOneTopLevelClassFirst.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(OneTopLevelClassCheck.class);
@@ -63,7 +63,7 @@ public class XpathRegressionOneTopLevelClassTest extends AbstractXpathTestSuppor
     @Test
     public void testTwo() throws Exception {
         final File fileToProcess =
-            new File(getPath("SuppressionXpathRegressionOneTopLevelClassSecond.java"));
+            new File(getPath("InputXpathOneTopLevelClassSecond.java"));
 
         final DefaultConfiguration moduleConfig =
             createModuleConfig(OneTopLevelClassCheck.class);

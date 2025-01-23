@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -30,8 +30,15 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
 
 /**
+ * <div>
+ * Checks the policy on how to wrap lines on
+ * <a href="https://docs.oracle.com/javase/tutorial/java/nutsandbolts/opsummary.html">
+ * operators</a>.
+ * </div>
+ *
  * <p>
- * Checks the policy on how to wrap lines on operators.
+ * See the <a href="https://docs.oracle.com/javase/specs/jls/se22/html/jls-15.html#jls-15.20.2">
+ * Java Language Specification</a> for more information about {@code instanceof} operator.
  * </p>
  * <ul>
  * <li>
@@ -92,97 +99,11 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * LITERAL_INSTANCEOF</a>.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name="OperatorWrap"/&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <pre>
- * class Test {
- *     public static void main(String[] args) {
- *         String s = "Hello" +
- *         "World"; // violation, '+' should be on new line
  *
- *         if (10 ==
- *                 20) { // violation, '==' should be on new line.
- *         // body
- *         }
- *         if (10
- *                 ==
- *                 20) { // ok
- *         // body
- *         }
- *
- *         int c = 10 /
- *                 5; // violation, '/' should be on new line.
- *
- *         int d = c
- *                 + 10; // ok
- *     }
- *
- * }
- * </pre>
- * <p>
- * To configure the check for assignment operators at the end of a line:
- * </p>
- * <pre>
- * &lt;module name="OperatorWrap"&gt;
- *   &lt;property name="tokens"
- *     value="ASSIGN,DIV_ASSIGN,PLUS_ASSIGN,MINUS_ASSIGN,STAR_ASSIGN,MOD_ASSIGN,
- *            SR_ASSIGN,BSR_ASSIGN,SL_ASSIGN,BXOR_ASSIGN,BOR_ASSIGN,BAND_ASSIGN"/&gt;
- *   &lt;property name="option" value="eol"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <pre>
- * class Test {
- *     public static void main(String[] args) {
- *             int b
- *                     = 10; // violation, '=' should be on previous line
- *             int c =
- *                     10; // ok
- *             b
- *                     += 10; // violation, '+=' should be on previous line
- *             b +=
- *                     10; // ok
- *             c
- *                     *= 10; // violation, '*=' should be on previous line
- *             c *=
- *                     10; // ok
- *             c
- *                     -= 5; // violation, '-=' should be on previous line
- *             c -=
- *                     5; // ok
- *             c
- *                     /= 2; // violation, '/=' should be on previous line
- *             c
- *                     %= 1; // violation, '%=' should be on previous line
- *             c
- *                     &gt;&gt;= 1; // violation, '&gt;&gt;=' should be on previous line
- *             c
- *                 &gt;&gt;&gt;= 1; // violation, '&gt;&gt;&gt;=' should be on previous line
- *         }
- *         public void myFunction() {
- *             c
- *                     ^= 1; // violation, '^=' should be on previous line
- *             c
- *                     |= 1; // violation, '|=' should be on previous line
- *             c
- *                     &amp;=1 ; // violation, '&amp;=' should be on previous line
- *             c
- *                     &lt;&lt;= 1; // violation, '&lt;&lt;=' should be on previous line
- *     }
- * }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -221,6 +142,7 @@ public class OperatorWrapCheck
      *
      * @param optionStr string to decode option from
      * @throws IllegalArgumentException if unable to decode
+     * @since 3.0
      */
     public void setOption(String optionStr) {
         option = WrapOption.valueOf(optionStr.trim().toUpperCase(Locale.ENGLISH));

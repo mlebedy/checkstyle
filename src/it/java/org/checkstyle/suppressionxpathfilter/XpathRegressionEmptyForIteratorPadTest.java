@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -41,7 +41,7 @@ public class XpathRegressionEmptyForIteratorPadTest extends AbstractXpathTestSup
     @Test
     public void testFollowed() throws Exception {
         final File fileToProcess =
-                new File(getPath("SuppressionXpathRegressionEmptyForIteratorPadFollowed.java"));
+                new File(getPath("InputXpathEmptyForIteratorPadFollowed.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(EmptyForIteratorPadCheck.class);
@@ -53,10 +53,10 @@ public class XpathRegressionEmptyForIteratorPadTest extends AbstractXpathTestSup
 
         final List<String> expectedXpathQueries = Arrays.asList(
             "/COMPILATION_UNIT/CLASS_DEF[./IDENT["
-                + "@text='SuppressionXpathRegressionEmptyForIteratorPadFollowed']]/OBJBLOCK"
+                + "@text='InputXpathEmptyForIteratorPadFollowed']]/OBJBLOCK"
                 + "/METHOD_DEF[./IDENT[@text='method']]/SLIST/LITERAL_FOR/FOR_ITERATOR",
             "/COMPILATION_UNIT/CLASS_DEF[./IDENT["
-                + "@text='SuppressionXpathRegressionEmptyForIteratorPadFollowed']]/OBJBLOCK"
+                + "@text='InputXpathEmptyForIteratorPadFollowed']]/OBJBLOCK"
                 + "/METHOD_DEF[./IDENT[@text='method']]/SLIST/LITERAL_FOR/RPAREN"
         );
 
@@ -67,7 +67,7 @@ public class XpathRegressionEmptyForIteratorPadTest extends AbstractXpathTestSup
     @Test
     public void testNotFollowed() throws Exception {
         final File fileToProcess =
-                new File(getPath("SuppressionXpathRegressionEmptyForIteratorPadNotFollowed.java"));
+                new File(getPath("InputXpathEmptyForIteratorPadNotFollowed.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(EmptyForIteratorPadCheck.class);
@@ -80,10 +80,10 @@ public class XpathRegressionEmptyForIteratorPadTest extends AbstractXpathTestSup
 
         final List<String> expectedXpathQueries = Arrays.asList(
             "/COMPILATION_UNIT/CLASS_DEF[./IDENT["
-                + "@text='SuppressionXpathRegressionEmptyForIteratorPadNotFollowed']]/OBJBLOCK"
+                + "@text='InputXpathEmptyForIteratorPadNotFollowed']]/OBJBLOCK"
                 + "/METHOD_DEF[./IDENT[@text='method']]/SLIST/LITERAL_FOR/FOR_ITERATOR",
             "/COMPILATION_UNIT/CLASS_DEF[./IDENT["
-                + "@text='SuppressionXpathRegressionEmptyForIteratorPadNotFollowed']]/OBJBLOCK"
+                + "@text='InputXpathEmptyForIteratorPadNotFollowed']]/OBJBLOCK"
                 + "/METHOD_DEF[./IDENT[@text='method']]/SLIST/LITERAL_FOR/RPAREN"
         );
 

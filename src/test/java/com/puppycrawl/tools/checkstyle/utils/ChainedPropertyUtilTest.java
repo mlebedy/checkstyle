@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -20,8 +20,8 @@
 package com.puppycrawl.tools.checkstyle.utils;
 
 import static com.google.common.truth.Truth.assertWithMessage;
+import static com.puppycrawl.tools.checkstyle.internal.utils.TestUtil.getExpectedThrowable;
 import static com.puppycrawl.tools.checkstyle.internal.utils.TestUtil.isUtilsClassHasPrivateConstructor;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.File;
 import java.io.IOException;
@@ -89,7 +89,7 @@ public class ChainedPropertyUtilTest extends AbstractModuleTestSupport {
         final String message = "Undefined property reference expected.";
 
         final CheckstyleException exception =
-            assertThrows(CheckstyleException.class,
+            getExpectedThrowable(CheckstyleException.class,
                 () -> ChainedPropertyUtil.getResolvedProperties(properties));
 
         assertWithMessage(message)
@@ -107,7 +107,7 @@ public class ChainedPropertyUtilTest extends AbstractModuleTestSupport {
         final String message = "Undefined property reference expected.";
 
         final CheckstyleException exception =
-            assertThrows(CheckstyleException.class,
+            getExpectedThrowable(CheckstyleException.class,
                 () -> ChainedPropertyUtil.getResolvedProperties(properties));
 
         assertWithMessage(message)

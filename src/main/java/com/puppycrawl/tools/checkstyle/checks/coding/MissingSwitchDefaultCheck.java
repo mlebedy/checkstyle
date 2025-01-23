@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -19,6 +19,8 @@
 
 package com.puppycrawl.tools.checkstyle.checks.coding;
 
+import java.util.Set;
+
 import com.puppycrawl.tools.checkstyle.StatelessCheck;
 import com.puppycrawl.tools.checkstyle.api.AbstractCheck;
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
@@ -26,9 +28,10 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
 
 /**
- * <p>
+ * <div>
  * Checks that switch statement has a {@code default} clause.
- * </p>
+ * </div>
+ *
  * <p>
  * Rationale: It's usually a good idea to introduce a
  * default case in every switch statement. Even if
@@ -38,125 +41,35 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * the code is protected against later changes, e.g.
  * introduction of new types in an enumeration type.
  * </p>
+ *
  * <p>
  * This check does not validate any switch expressions. Rationale:
  * The compiler requires switch expressions to be exhaustive. This means
  * that all possible inputs must be covered.
  * </p>
+ *
  * <p>
  * This check does not validate switch statements that use pattern or null
  * labels. Rationale: Switch statements that use pattern or null labels are
  * checked by the compiler for exhaustiveness. This means that all possible
  * inputs must be covered.
  * </p>
+ *
  * <p>
- * See the <a href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-15.html#jls-15.28">
+ * See the <a href="https://docs.oracle.com/javase/specs/jls/se22/html/jls-15.html#jls-15.28">
  *     Java Language Specification</a> for more information about switch statements
  *     and expressions.
  * </p>
+ *
  * <p>
- * To configure the check:
+ * See the <a href="https://docs.oracle.com/javase/specs/jls/se22/html/jls-14.html#jls-14.30">
+ *     Java Language Specification</a> for more information about patterns.
  * </p>
- * <pre>
- * &lt;module name=&quot;MissingSwitchDefault&quot;/&gt;
- * </pre>
- * <p>Example of violation:</p>
- * <pre>
- * switch (i) {    // violation
- *  case 1:
- *    break;
- *  case 2:
- *    break;
- * }
- * </pre>
- * <p>Example of correct code:</p>
- * <pre>
- * switch (i) {
- *  case 1:
- *    break;
- *  case 2:
- *    break;
- *  default: // OK
- *    break;
- * }
- * switch (o) {
- *     case String s: // type pattern
- *         System.out.println(s);
- *         break;
- *     case Integer i: // type pattern
- *         System.out.println("Integer");
- *         break;
- *     default:    // will not compile without default label, thanks to type pattern label usage
- *         break;
- * }
- * </pre>
- * <p>Example of correct code which does not require default labels:</p>
- * <pre>
- *    sealed interface S permits A, B, C {}
- *    final class A implements S {}
- *    final class B implements S {}
- *    record C(int i) implements S {}  // Implicitly final
  *
- *    /**
- *     * The completeness of a switch statement can be
- *     * determined by the contents of the permits clause
- *     * of interface S. No default label or default case
- *     * label is allowed by the compiler in this situation, so
- *     * this check does not enforce a default label in such
- *     * statements.
- *     *&#47;
- *    static void showSealedCompleteness(S s) {
- *        switch (s) {
- *            case A a: System.out.println("A"); break;
- *            case B b: System.out.println("B"); break;
- *            case C c: System.out.println("C"); break;
- *        }
- *    }
- *
- *    /**
- *     * A total type pattern matches all possible inputs,
- *     * including null. A default label or
- *     * default case is not allowed by the compiler in this
- *     * situation. Accordingly, check does not enforce a
- *     * default label in this case.
- *     *&#47;
- *    static void showTotality(String s) {
- *        switch (s) {
- *            case Object o: // total type pattern
- *                System.out.println("o!");
- *        }
- *    }
- *
- *    enum Color { RED, GREEN, BLUE }
- *
- *    static int showSwitchExpressionExhaustiveness(Color color) {
- *        switch (color) {
- *            case RED: System.out.println("RED"); break;
- *            case BLUE: System.out.println("BLUE"); break;
- *            case GREEN: System.out.println("GREEN"); break;
- *            // Check will require default label below, compiler
- *            // does not enforce a switch statement with constants
- *            // to be complete.
- *            default: System.out.println("Something else");
- *        }
- *
- *        // Check will not require default label in switch
- *        // expression below, because code will not compile
- *        // if all possible values are not handled. If the
- *        // 'Color' enum is extended, code will fail to compile.
- *        return switch (color) {
- *            case RED:
- *                yield 1;
- *            case GREEN:
- *                yield 2;
- *            case BLUE:
- *                yield 3;
- *        };
- *    }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -176,6 +89,19 @@ public class MissingSwitchDefaultCheck extends AbstractCheck {
      * file.
      */
     public static final String MSG_KEY = "missing.switch.default";
+
+    /**
+     * Represents the possible parent tokens of a switch statement.
+     */
+    private static final Set<Integer> SWITCH_STATEMENT_PARENTS = Set.of(
+            TokenTypes.SLIST,
+            TokenTypes.LITERAL_IF,
+            TokenTypes.LITERAL_ELSE,
+            TokenTypes.LITERAL_DO,
+            TokenTypes.LITERAL_WHILE,
+            TokenTypes.LITERAL_FOR,
+            TokenTypes.LABELED_STAT
+    );
 
     @Override
     public int[] getDefaultTokens() {
@@ -197,6 +123,7 @@ public class MissingSwitchDefaultCheck extends AbstractCheck {
         if (!containsDefaultLabel(ast)
                 && !containsPatternCaseLabelElement(ast)
                 && !containsDefaultCaseLabelElement(ast)
+                && !containsNullCaseLabelElement(ast)
                 && !isSwitchExpression(ast)) {
             log(ast, MSG_KEY);
         }
@@ -215,7 +142,8 @@ public class MissingSwitchDefaultCheck extends AbstractCheck {
     }
 
     /**
-     * Checks if a switch block contains a case label with a pattern variable definition.
+     * Checks if a switch block contains a case label with a pattern variable definition
+     * or record pattern definition.
      * In this situation, the compiler enforces the given switch block to cover
      * all possible inputs, and we do not need a default label.
      *
@@ -225,7 +153,8 @@ public class MissingSwitchDefaultCheck extends AbstractCheck {
     private static boolean containsPatternCaseLabelElement(DetailAST detailAst) {
         return TokenUtil.findFirstTokenByPredicate(detailAst, ast -> {
             return ast.getFirstChild() != null
-                    && ast.getFirstChild().findFirstToken(TokenTypes.PATTERN_VARIABLE_DEF) != null;
+                    && (ast.getFirstChild().findFirstToken(TokenTypes.PATTERN_VARIABLE_DEF) != null
+                    || ast.getFirstChild().findFirstToken(TokenTypes.RECORD_PATTERN_DEF) != null);
         }).isPresent();
     }
 
@@ -243,13 +172,38 @@ public class MissingSwitchDefaultCheck extends AbstractCheck {
     }
 
     /**
+     * Checks if a switch block contains a null case label.
+     *
+     * @param detailAst first case group to check.
+     * @return true if switch block contains null case label
+     */
+    private static boolean containsNullCaseLabelElement(DetailAST detailAst) {
+        return TokenUtil.findFirstTokenByPredicate(detailAst, ast -> {
+            return ast.getFirstChild() != null
+                     && hasNullCaseLabel(ast.getFirstChild());
+        }).isPresent();
+    }
+
+    /**
      * Checks if this LITERAL_SWITCH token is part of a switch expression.
      *
      * @param ast the switch statement we are checking
      * @return true if part of a switch expression
      */
     private static boolean isSwitchExpression(DetailAST ast) {
-        return ast.getParent().getType() == TokenTypes.EXPR
-                || ast.getParent().getParent().getType() == TokenTypes.EXPR;
+        return !TokenUtil.isOfType(ast.getParent().getType(), SWITCH_STATEMENT_PARENTS);
+    }
+
+    /**
+     * Checks if the case contains null label.
+     *
+     * @param detailAST the switch statement we are checking
+     * @return returnValue the ast of null label
+     */
+    private static boolean hasNullCaseLabel(DetailAST detailAST) {
+        return TokenUtil.findFirstTokenByPredicate(detailAST.getParent(), ast -> {
+            final DetailAST expr = ast.findFirstToken(TokenTypes.EXPR);
+            return expr != null && expr.findFirstToken(TokenTypes.LITERAL_NULL) != null;
+        }).isPresent();
     }
 }

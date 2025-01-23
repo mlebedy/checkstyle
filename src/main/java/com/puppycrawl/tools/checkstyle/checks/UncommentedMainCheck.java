@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -30,9 +30,10 @@ import com.puppycrawl.tools.checkstyle.api.FullIdent;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
 /**
- * <p>
+ * <div>
  * Detects uncommented {@code main} methods.
- * </p>
+ * </div>
+ *
  * <p>
  * Rationale: A {@code main} method is often used for debugging purposes.
  * When debugging is finished, developers often forget to remove the method,
@@ -48,73 +49,11 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
  * Default value is {@code "^$"}.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;UncommentedMain&quot;/&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public class Game {
- *    public static void main(String... args){}   // violation
- * }
  *
- * public class Main {
- *    public static void main(String[] args){}   // violation
- * }
- *
- * public class Launch {
- *    //public static void main(String[] args){} // OK
- * }
- *
- * public class Start {
- *    public void main(){}                       // OK
- * }
- *
- * public record MyRecord1 {
- *    public void main(){}                       // violation
- * }
- *
- * public record MyRecord2 {
- *    //public void main(){}                       // OK
- * }
- *
- * </pre>
- * <p>
- * To configure the check to allow the {@code main} method for all classes with "Main" name:
- * </p>
- * <pre>
- * &lt;module name=&quot;UncommentedMain&quot;&gt;
- *   &lt;property name=&quot;excludedClasses&quot; value=&quot;\.Main$&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public class Game {
- *    public static void main(String... args){}   // violation
- * }
- *
- * public class Main {
- *    public static void main(String[] args){}   // OK
- * }
- *
- * public class Launch {
- *    //public static void main(String[] args){} // OK
- * }
- *
- * public class Start {
- *    public void main(){}                       // OK
- * }
- *
- * public record MyRecord1 {
- *    public void main(){}                       // OK
- * }
- *
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -161,6 +100,7 @@ public class UncommentedMainCheck
      * to have a {@code main} method.
      *
      * @param excludedClasses a pattern
+     * @since 3.2
      */
     public void setExcludedClasses(Pattern excludedClasses) {
         this.excludedClasses = excludedClasses;
@@ -189,7 +129,6 @@ public class UncommentedMainCheck
     @Override
     public void beginTree(DetailAST rootAST) {
         packageName = FullIdent.createFullIdent(null);
-        currentClass = null;
         classDepth = 0;
     }
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -29,11 +29,11 @@ import com.puppycrawl.tools.checkstyle.utils.CodePointUtil;
 import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 
 /**
- * <p>
+ * <div>
  * Checks the padding of an empty for initializer; that is whether a white
  * space is required at an empty for initializer, or such white space is
  * forbidden.  No check occurs if there is a line wrap at the initializer, as in
- * </p>
+ * </div>
  * <pre>
  * for (
  *     ; i &lt; j; i++, j--)
@@ -45,45 +45,11 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * Default value is {@code nospace}.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;EmptyForInitializerPad&quot;/&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <pre>
- * for ( ; i &lt; 1; i++ );  // violation semicolon is preceded with whitespace
- * for (; i &lt; 2; i++ );   // ok
- * for (;i&lt;2;i++);        // ok
- * for ( ;i&lt;2;i++);       // violation semicolon is preceded with whitespace
- * for (
- *       ; i &lt; 2; i++ );  // ok
- * </pre>
- * <p>
- * To configure the check to require white space at an empty for iterator:
- * </p>
- * <pre>
- * &lt;module name=&quot;EmptyForInitializerPad&quot;&gt;
- *   &lt;property name=&quot;option&quot; value=&quot;space&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <pre>
- * for ( ; i &lt; 2; i++ );   // ok
- * for (; i &lt; 2; i++ );    // violation semicolon is not preceded with whitespace
- * for (;i&lt;2;i++);         // violation semicolon is not preceded with whitespace
- * for ( ;i&lt;2;i++);        // ok
- * for (
- *       ; i &lt; 2; i++ );   // ok
- * </pre>
+ *
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -125,6 +91,7 @@ public class EmptyForInitializerPadCheck
      *
      * @param optionStr string to decode option from
      * @throws IllegalArgumentException if unable to decode
+     * @since 3.4
      */
     public void setOption(String optionStr) {
         option = PadOption.valueOf(optionStr.trim().toUpperCase(Locale.ENGLISH));
@@ -148,13 +115,11 @@ public class EmptyForInitializerPadCheck
     @Override
     public void visitToken(DetailAST ast) {
         if (!ast.hasChildren()) {
-            // empty for initializer. test pad before semi.
-            final DetailAST semi = ast.getNextSibling();
-            final int semiLineIdx = semi.getLineNo() - 1;
-            final int[] line = getLineCodePoints(semiLineIdx);
-            final int before = semi.getColumnNo() - 1;
+            final int lineIdx = ast.getLineNo() - 1;
+            final int[] line = getLineCodePoints(lineIdx);
+            final int before = ast.getColumnNo() - 1;
             // don't check if semi at beginning of line
-            if (!CodePointUtil.hasWhitespaceBefore(before, line)) {
+            if (ast.getColumnNo() > 0 && !CodePointUtil.hasWhitespaceBefore(before, line)) {
                 if (option == PadOption.NOSPACE
                     && CommonUtil.isCodePointWhitespace(line, before)) {
                     log(ast, MSG_PRECEDED, SEMICOLON);

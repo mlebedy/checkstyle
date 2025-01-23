@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -23,7 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * <p>
+ * <div>
  * Helper class used to parse HTML tags or generic type identifiers
  * from a single-line of text. Just the beginning of the HTML tag
  * is located.  No attempt is made to parse out the complete tag,
@@ -31,7 +31,7 @@ import java.util.List;
  * on the following line of text.  The {@code hasNextTag} and
  * {@code nextTag} methods are used to iterate through the HTML
  * tags or generic type identifiers that were found on the line of text.
- * </p>
+ * </div>
  *
  * <p>
  * This class isn't really specific to HTML tags. Currently, the only HTML
@@ -97,7 +97,7 @@ class TagParser {
      */
     private void parseTags(String[] text, int lineNo) {
         final int nLines = text.length;
-        Point position = findChar(text, '<', new Point(0, 0));
+        Point position = new Point(0, 0);
         while (position.getLineNo() < nLines) {
             // if this is html comment then skip it
             if (isCommentTag(text, position)) {
@@ -127,14 +127,7 @@ class TagParser {
         final Point endTag = findChar(text, '>', position);
         final boolean incompleteTag = endTag.getLineNo() >= nLines;
         // get tag id (one word)
-        final String tagId;
-
-        if (incompleteTag) {
-            tagId = "";
-        }
-        else {
-            tagId = getTagId(text, position);
-        }
+        final String tagId = getTagId(text, position);
         // is this closed tag
         final boolean closedTag =
                 endTag.getLineNo() < nLines
@@ -183,15 +176,13 @@ class TagParser {
             if (text.charAt(column) == '/') {
                 column++;
             }
-
-            text = text.substring(column).trim();
+            text = text.substring(column);
             int position = 0;
 
             // Character.isJavaIdentifier... may not be a valid HTML
             // identifier but is valid for generics
             while (position < text.length()
-                    && (Character.isJavaIdentifierStart(text.charAt(position))
-                        || Character.isJavaIdentifierPart(text.charAt(position)))) {
+                    && Character.isJavaIdentifierPart(text.charAt(position))) {
                 position++;
             }
 
@@ -221,7 +212,6 @@ class TagParser {
      */
     private static Point skipHtmlComment(String[] text, Point fromPoint) {
         Point toPoint = fromPoint;
-        toPoint = findChar(text, '>', toPoint);
         while (toPoint.getLineNo() < text.length && !text[toPoint.getLineNo()]
                 .substring(0, toPoint.getColumnNo() + 1).endsWith("-->")) {
             toPoint = findChar(text, '>', getNextPoint(text, toPoint));
@@ -282,7 +272,7 @@ class TagParser {
          * @param lineNo line number
          * @param columnNo column number
          */
-        /* package */ Point(int lineNo, int columnNo) {
+        private Point(int lineNo, int columnNo) {
             this.lineNo = lineNo;
             this.columnNo = columnNo;
         }

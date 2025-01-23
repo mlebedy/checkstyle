@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -20,6 +20,7 @@
 package com.puppycrawl.tools.checkstyle.checks.coding;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -31,9 +32,10 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 import com.puppycrawl.tools.checkstyle.utils.CheckUtil;
 
 /**
- * <p>
+ * <div>
  * Checks that certain exception types do not appear in a {@code catch} statement.
- * </p>
+ * </div>
+ *
  * <p>
  * Rationale: catching {@code java.lang.Exception}, {@code java.lang.Error} or
  * {@code java.lang.RuntimeException} is almost never acceptable.
@@ -49,88 +51,11 @@ import com.puppycrawl.tools.checkstyle.utils.CheckUtil;
  * java.lang.Exception, java.lang.RuntimeException, java.lang.Throwable}.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;IllegalCatch&quot;/&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * try {
- *     // some code here
- * } catch (Exception e) { // violation
  *
- * }
- *
- * try {
- *     // some code here
- * } catch (ArithmeticException e) { // OK
- *
- * } catch (Exception e) { // violation, catching Exception is illegal
- *                           and order of catch blocks doesn't matter
- * }
- *
- * try {
- *     // some code here
- * } catch (ArithmeticException | Exception e) { // violation, catching Exception is illegal
- *
- * }
- *
- * try {
- *     // some code here
- * } catch (ArithmeticException e) { // OK
- *
- * }
- *
- * </pre>
- * <p>
- * To configure the check to override the default list
- * with ArithmeticException and OutOfMemoryError:
- * </p>
- * <pre>
- * &lt;module name=&quot;IllegalCatch&quot;&gt;
- *   &lt;property name=&quot;illegalClassNames&quot; value=&quot;ArithmeticException,
- *               OutOfMemoryError&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * try {
- *     // some code here
- * } catch (OutOfMemoryError e) { // violation
- *
- * }
- *
- * try {
- *     // some code here
- * } catch (ArithmeticException e) { // violation
- *
- * }
- *
- * try {
- *     // some code here
- * } catch (NullPointerException e) { // OK
- *
- * } catch (OutOfMemoryError e) { // violation
- *
- * }
- *
- * try {
- *     // some code here
- * } catch (ArithmeticException | Exception e) {  // violation
- *
- * }
- *
- * try {
- *     // some code here
- * } catch (Exception e) { // OK
- *
- * }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -154,13 +79,15 @@ public final class IllegalCatchCheck extends AbstractCheck {
     /** Specify exception class names to reject. */
     private final Set<String> illegalClassNames = Arrays.stream(new String[] {"Exception", "Error",
         "RuntimeException", "Throwable", "java.lang.Error", "java.lang.Exception",
-        "java.lang.RuntimeException", "java.lang.Throwable", }).collect(Collectors.toSet());
+        "java.lang.RuntimeException", "java.lang.Throwable", })
+            .collect(Collectors.toCollection(HashSet::new));
 
     /**
      * Setter to specify exception class names to reject.
      *
      * @param classNames
      *            array of illegal exception classes
+     * @since 3.2
      */
     public void setIllegalClassNames(final String... classNames) {
         illegalClassNames.clear();

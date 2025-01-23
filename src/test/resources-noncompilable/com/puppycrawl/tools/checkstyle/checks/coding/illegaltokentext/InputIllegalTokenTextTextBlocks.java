@@ -8,18 +8,18 @@ tokens = STRING_LITERAL, TEXT_BLOCK_CONTENT
 
 */
 
-//non-compiled with javac: Compilable with Java14
+//non-compiled with javac: Compilable with Java17
 package com.puppycrawl.tools.checkstyle.checks.coding.illegaltokentext;
 
 public class InputIllegalTokenTextTextBlocks {
     public void methodWithLiterals() {
         final String ref = "<a href=\""; // violation
-        final String refCase1 = "<A hReF=\""; // ok
+        final String refCase1 = "<A hReF=\"";
 
         final String ref2 = """
                 <a href=\""""; // violation above
         final String refCase2 = """
-                <A hReF=\""""; // ok
+                <A hReF=\"""";
 
         String escape = """
                 <html>\u000D\u000A\n

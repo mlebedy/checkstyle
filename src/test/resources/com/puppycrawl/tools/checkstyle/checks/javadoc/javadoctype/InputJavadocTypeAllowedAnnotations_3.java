@@ -17,15 +17,15 @@ package com.puppycrawl.tools.checkstyle.checks.javadoc.javadoctype;
 
 import java.lang.SuppressWarnings;
 
-@ThisIsOk_3 // ok
+@ThisIsOk_3
 class InputJavadocTypeAllowedAnnotations_3 {
 }
 
-@com.puppycrawl.tools.checkstyle.checks.javadoc.javadoctype.ThisIsOk_3 // ok
+@com.puppycrawl.tools.checkstyle.checks.javadoc.javadoctype.ThisIsOk_3
 class InputJavadocTypeAllowedAnnotationsFQN_3 {
 }
 
-@SuppressWarnings(value = "some code generator") // ok
+@SuppressWarnings(value = "some code generator")
 class InputJavadocTypeAllowedAnnotationByDefault_3 {
 }
 
@@ -33,3 +33,10 @@ class InputJavadocTypeAllowedAnnotationByDefault_3 {
  * Annotation for unit tests.
  */
 @interface ThisIsOk_3 {}
+
+/** */
+@Generated // violation 'Type Javadoc comment is missing @param <T> tag'
+class Application<T> {}
+
+@interface Generated {
+}

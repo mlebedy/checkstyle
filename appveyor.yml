@@ -11,21 +11,21 @@ branches:
 install:
   - ps: |
       Add-Type -AssemblyName System.IO.Compression.FileSystem
-      if (!(Test-Path -Path "C:\maven\apache-maven-3.8.5" )) {
+      if (!(Test-Path -Path "C:\maven\apache-maven-3.8.8" )) {
         (new-object System.Net.WebClient).DownloadFile(
-          'https://downloads.apache.org/maven/maven-3/3.8.5/binaries/apache-maven-3.8.5-bin.zip',
+          'https://downloads.apache.org/maven/maven-3/3.8.8/binaries/apache-maven-3.8.8-bin.zip',
           'C:\maven-bin.zip'
         )
         [System.IO.Compression.ZipFile]::ExtractToDirectory("C:\maven-bin.zip", "C:\maven")
       }
-  - cmd: SET M2_HOME=C:\maven\apache-maven-3.8.5
+  - cmd: SET M2_HOME=C:\maven\apache-maven-3.8.8
   - cmd: SET PATH=%M2_HOME%\bin;%JAVA_HOME%\bin;%PATH%
   - cmd: git config core.autocrlf
   - cmd: mvn --version
   - cmd: java -version
 
 cache:
-  - C:\maven\apache-maven-3.8.5
+  - C:\maven\apache-maven-3.8.8
   - C:\Users\appveyor\.m2
 
 matrix:
@@ -39,10 +39,14 @@ environment:
   # We do matrix as AppVeyor could fail to finish simple "mvn -e verify"
   #    if he loose maven cache (happens from time to time)
   matrix:
-    # checkstyle and sevntu.checkstyle (JDK11)
+    # sevntu (JDK11)
     - JAVA_HOME: C:\Program Files\Java\jdk11
-      DESC: "checkstyle and sevntu.checkstyle (JDK11)"
+      DESC: "sevntu (JDK11)"
       CMD: "./.ci/validation.cmd sevntu"
+    # run checkstyle (JDK11)
+    - JAVA_HOME: C:\Program Files\Java\jdk11
+      DESC: "run checkstyle (JDK11)"
+      CMD: "./.ci/validation.cmd run_checkstyle"
     # verify without checkstyle (JDK11)
     - JAVA_HOME: C:\Program Files\Java\jdk11
       DESC: "verify without checkstyle (JDK11)"
@@ -66,6 +70,7 @@ build_script:
       } else {
         Write-Host "build is skipped ..."
       }
+  - ps: ./.ci/validation.cmd git_diff
   - ps: echo "Size of caches (bytes):"
-  - ps: Get-ChildItem -Recurse 'C:\maven\apache-maven-3.8.5' | Measure-Object -Property Length -Sum
+  - ps: Get-ChildItem -Recurse 'C:\maven\apache-maven-3.8.8' | Measure-Object -Property Length -Sum
   - ps: Get-ChildItem -Recurse 'C:\Users\appveyor\.m2' | Measure-Object -Property Length -Sum

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -22,6 +22,7 @@ package com.puppycrawl.tools.checkstyle;
 import static com.google.common.truth.Truth.assertWithMessage;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
@@ -45,6 +46,7 @@ import com.puppycrawl.tools.checkstyle.grammar.java.JavaLanguageParser;
 import com.puppycrawl.tools.checkstyle.grammar.java.JavaLanguageParserBaseVisitor;
 import com.puppycrawl.tools.checkstyle.internal.utils.TestUtil;
 
+// -@cs[ClassDataAbstractionCoupling] No way to split up class usage.
 public class JavaAstVisitorTest extends AbstractModuleTestSupport {
 
     /**
@@ -85,7 +87,8 @@ public class JavaAstVisitorTest extends AbstractModuleTestSupport {
             "visitFieldAccessNoIdent",
             "visitClassType",
             "visitClassOrInterfaceTypeExtended",
-            "visitQualifiedNameExtended"
+            "visitQualifiedNameExtended",
+            "visitGuard"
     );
 
     @Override
@@ -104,16 +107,16 @@ public class JavaAstVisitorTest extends AbstractModuleTestSupport {
                 .filter(method -> method.getName().contains("visit"))
                 .filter(method -> method.getModifiers() == Modifier.PUBLIC)
                 .map(Method::getName)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toUnmodifiableSet());
 
         final Set<String> filteredVisitMethodNames = Arrays.stream(visitMethods)
                 .filter(method -> method.getName().contains("visit"))
+                // remove overridden 'visit' method from ParseTreeVisitor interface in
+                // JavaAstVisitor
+                .filter(method -> !"visit".equals(method.getName()))
                 .filter(method -> method.getModifiers() == Modifier.PUBLIC)
                 .map(Method::getName)
-                .collect(Collectors.toSet());
-
-        // remove overridden 'visit' method from ParseTreeVisitor interface in JavaAstVisitor
-        filteredVisitMethodNames.remove("visit");
+                .collect(Collectors.toUnmodifiableSet());
 
         final String message = "Visit methods in 'JavaLanguageParserBaseVisitor' generated from "
                 + "production rules and labeled alternatives in 'JavaLanguageParser.g4' should "
@@ -154,6 +157,42 @@ public class JavaAstVisitorTest extends AbstractModuleTestSupport {
                 .that(orderedVisitorMethodNames)
                 .containsExactlyElementsIn(orderedBaseVisitorMethodNames)
                 .inOrder();
+    }
+
+    /**
+     * The reason we have this test is that we forgot to add the imaginary 'EXPR' node
+     * to a production rule in the parser grammar (we should have used 'expression'
+     * instead of 'expr'). This test is a reminder to question the usage of the 'expr' parser
+     * rule in the parser grammar when we update the count to make sure we are not missing
+     * an imaginary 'EXPR' node in the AST.
+     *
+     * @throws IOException if file does not exist
+     */
+    @Test
+    public void countExprUsagesInParserGrammar() throws IOException {
+        final String parserGrammarFilename = "src/main/resources/com/puppycrawl"
+                + "/tools/checkstyle/grammar/java/JavaLanguageParser.g4";
+
+        final int actualExprCount = Arrays.stream(new FileText(new File(parserGrammarFilename),
+                        StandardCharsets.UTF_8.name()).toLinesArray())
+                .mapToInt(JavaAstVisitorTest::countExprInLine)
+                .sum();
+
+        // Any time we update this count, we should question why we are not building an imaginary
+        // 'EXPR' node.
+        final int expectedExprCount = 44;
+
+        assertWithMessage("The 'expr' parser rule does not build an imaginary"
+                + " 'EXPR' node. Any usage of this rule should be questioned.")
+                .that(actualExprCount)
+                .isEqualTo(expectedExprCount);
+
+    }
+
+    private static int countExprInLine(String line) {
+        return (int) Arrays.stream(line.split(" "))
+                .filter("expr"::equals)
+                .count();
     }
 
     /**

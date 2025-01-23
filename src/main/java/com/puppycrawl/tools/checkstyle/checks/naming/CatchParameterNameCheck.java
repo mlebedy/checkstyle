@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -23,9 +23,10 @@ import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
 /**
- * <p>
+ * <div>
  * Checks that {@code catch} parameter names conform to a specified pattern.
- * </p>
+ * </div>
+ *
  * <p>
  * Default pattern has the following characteristic:
  * </p>
@@ -35,6 +36,7 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
  * <li>allows {@code e} abbreviation (suitable for exceptions end errors)</li>
  * <li>allows {@code ex} abbreviation (suitable for exceptions)</li>
  * <li>allows {@code t} abbreviation (suitable for throwables)</li>
+ * <li>allows {@code _} for unnamed catch parameters</li>
  * <li>prohibits numbered abbreviations like {@code e1} or {@code t2}</li>
  * <li>prohibits one letter prefixes like {@code pException}</li>
  * <li>prohibits two letter abbreviations like {@code ie} or {@code ee}</li>
@@ -42,80 +44,16 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
  * </ul>
  * <ul>
  * <li>
- * Property {@code format} - Specifies valid identifiers.
+ * Property {@code format} - Sets the pattern to match valid identifiers.
  * Type is {@code java.util.regex.Pattern}.
- * Default value is {@code "^(e|t|ex|[a-z][a-z][a-zA-Z]+)$"}.
+ * Default value is {@code "^(e|t|ex|[a-z][a-z][a-zA-Z]+|_)$"}.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name="CatchParameterName"/&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public class MyTest {
- *   public void myTest() {
- *     try {
- *       // ...
- *     } catch (ArithmeticException e) { // OK
- *       // ...
- *     } catch (ArrayIndexOutOfBoundsException ex) { // OK
- *       // ...
- *     } catch (Throwable t) { // OK
- *       // ...
- *     } catch (IndexOutOfBoundsException e123) { // violation, digits
- *                                // not allowed
- *       // ...
- *     } catch (NullPointerException ab) { // violation, should have at least
- *                              // three characters if not e|t|ex
- *       // ...
- *     } catch (ArrayStoreException abc) { // OK
- *       // ...
- *     } catch (InterruptedException aBC) { // violation, first two characters
- *                               // should be in lowercase
- *       // ...
- *     } catch (RuntimeException abC) { // OK
- *       // ...
- *     } catch (Exception abCD) { // OK
- *       // ...
- *     }
- *   }
- * }
- * </pre>
- * <p>
- * An example of how to configure the check for names that begin with a lower case letter,
- * followed by any letters or digits is:
- * </p>
- * <p>Configuration:</p>
- * <pre>
- * &lt;module name="CatchParameterName"&gt;
- *   &lt;property name="format" value="^[a-z][a-zA-Z0-9]+$"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public class MyTest {
- *   public void myTest() {
- *     try {
- *       // ...
- *     } catch (ArithmeticException ex) { // OK
- *       // ...
- *     } catch (ArrayIndexOutOfBoundsException ex2) { // OK
- *       // ...
- *     } catch (IOException thirdException) { // OK
- *       // ...
- *     } catch (Exception FourthException) { // violation, the initial letter
- *                                           // should be lowercase
- *       // ...
- *     }
- *   }
- * }
- * </pre>
+ *
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -133,7 +71,7 @@ public class CatchParameterNameCheck extends AbstractNameCheck {
      * Creates a new {@code CatchParameterNameCheck} instance.
      */
     public CatchParameterNameCheck() {
-        super("^(e|t|ex|[a-z][a-z][a-zA-Z]+)$");
+        super("^(e|t|ex|[a-z][a-z][a-zA-Z]+|_)$");
     }
 
     @Override

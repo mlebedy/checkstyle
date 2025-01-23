@@ -11,21 +11,21 @@ ignoreOverriddenMethods = (default)true
 package com.puppycrawl.tools.checkstyle.checks.coding.illegalthrows;
 
 public class InputIllegalThrowsTestIllegalClassNames {
-
-    public void method() throws NullPointerException // violation
+    // violation below, 'Throwing 'NullPointerException' is not allowed'
+    public void method() throws NullPointerException
     { // no code
     }
 
-    public java.lang.Throwable methodOne() throws RuntimeException // ok
+    public java.lang.Throwable methodOne() throws RuntimeException
     {
         return null;
     }
-
-    public void methodTwo() throws java.lang.RuntimeException, java.lang.Error // violation
+    // violation below, 'Throwing 'java.lang.Error' is not allowed'
+    public void methodTwo() throws java.lang.RuntimeException, java.lang.Error
     {
     }
 
-    public void finalize() throws Throwable { // ok
+    public void finalize() throws Throwable {
 
     }
 }

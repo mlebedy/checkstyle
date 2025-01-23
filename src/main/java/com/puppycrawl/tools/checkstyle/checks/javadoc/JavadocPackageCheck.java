@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -21,6 +21,8 @@ package com.puppycrawl.tools.checkstyle.checks.javadoc;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -30,11 +32,12 @@ import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
 import com.puppycrawl.tools.checkstyle.api.FileText;
 
 /**
- * <p>
+ * <div>
  * Checks that each Java package has a Javadoc file used for commenting.
  * By default, it only allows a {@code package-info.java} file,
  * but can be configured to allow a {@code package.html} file.
- * </p>
+ * </div>
+ *
  * <p>
  * A violation will be reported if both files exist as this is not allowed by the Javadoc tool.
  * </p>
@@ -45,29 +48,16 @@ import com.puppycrawl.tools.checkstyle.api.FileText;
  * Default value is {@code false}.
  * </li>
  * <li>
- * Property {@code fileExtensions} - Specify the file type extension of files to process.
+ * Property {@code fileExtensions} - Specify the file extensions of the files to process.
  * Type is {@code java.lang.String[]}.
  * Default value is {@code .java}.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name="JavadocPackage"/&gt;
- * </pre>
- * <p>
- * To configure the check to use legacy {@code package.html} file
- * when {@code package-info.java} file is absent:
- * </p>
- * <pre>
- * &lt;module name="JavadocPackage"&gt;
- *   &lt;property name="allowLegacy" value="true"/&gt;
- * &lt;/module&gt;
- * </pre>
+ *
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.Checker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -126,15 +116,15 @@ public class JavadocPackageCheck extends AbstractFileSetCheck {
         final boolean isDirChecked = !directoriesChecked.add(dir);
         if (!isDirChecked) {
             // Check for the preferred file.
-            final File packageInfo = new File(dir, "package-info.java");
-            final File packageHtml = new File(dir, "package.html");
+            final Path packageInfo = Path.of(dir.getPath(), "package-info.java");
+            final Path packageHtml = Path.of(dir.getPath(), "package.html");
 
-            if (packageInfo.exists()) {
-                if (packageHtml.exists()) {
+            if (Files.exists(packageInfo)) {
+                if (Files.exists(packageHtml)) {
                     log(1, MSG_LEGACY_PACKAGE_HTML);
                 }
             }
-            else if (!allowLegacy || !packageHtml.exists()) {
+            else if (!allowLegacy || !Files.exists(packageHtml)) {
                 log(1, MSG_PACKAGE_INFO);
             }
         }
@@ -144,6 +134,7 @@ public class JavadocPackageCheck extends AbstractFileSetCheck {
      * Setter to allow legacy {@code package.html} file to be used.
      *
      * @param allowLegacy whether to allow support.
+     * @since 5.0
      */
     public void setAllowLegacy(boolean allowLegacy) {
         this.allowLegacy = allowLegacy;

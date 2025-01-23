@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -185,7 +185,11 @@ public class UnnecessaryParenthesesCheckTest extends AbstractModuleTestSupport {
 
     @Test
     public void testUnnecessaryParenthesesPatterns() throws Exception {
-        final String[] expected = CommonUtil.EMPTY_STRING_ARRAY;
+        final String[] expected = {
+            "24:22: " + getCheckMessage(MSG_ASSIGN),
+            "27:21: " + getCheckMessage(MSG_ASSIGN),
+            "31:13: " + getCheckMessage(MSG_EXPR),
+        };
         verifyWithInlineConfigParser(
                 getNonCompilablePath(
                 "InputUnnecessaryParenthesesCheckPatterns.java"),
@@ -258,4 +262,117 @@ public class UnnecessaryParenthesesCheckTest extends AbstractModuleTestSupport {
                 getPath("InputUnnecessaryParenthesesIfStatement2.java"), expected);
     }
 
+    @Test
+    public void testIdentifier() throws Exception {
+        final String[] expected = {
+            "22:17: " + getCheckMessage(MSG_IDENT, "test"),
+            "31:18: " + getCheckMessage(MSG_ASSIGN),
+            "32:13: " + getCheckMessage(MSG_IDENT, "square"),
+            "46:22: " + getCheckMessage(MSG_IDENT, "clazz"),
+            "56:18: " + getCheckMessage(MSG_IDENT, "test"),
+            "57:22: " + getCheckMessage(MSG_IDENT, "clazz"),
+            "75:18: " + getCheckMessage(MSG_EXPR),
+            "76:17: " + getCheckMessage(MSG_EXPR),
+            "77:25: " + getCheckMessage(MSG_EXPR),
+            "82:48: " + getCheckMessage(MSG_IDENT, "get"),
+            "100:34: " + getCheckMessage(MSG_IDENT, "isComment"),
+
+        };
+        verifyWithInlineConfigParser(
+                getPath("InputUnnecessaryParenthesesIdentifier.java"), expected);
+    }
+
+    @Test
+    public void testOperator1() throws Exception {
+        final String[] expected = {
+            "20:17: " + getCheckMessage(MSG_EXPR),
+            "22:17: " + getCheckMessage(MSG_EXPR),
+            "24:17: " + getCheckMessage(MSG_EXPR),
+            "26:17: " + getCheckMessage(MSG_EXPR),
+            "28:17: " + getCheckMessage(MSG_EXPR),
+            "30:17: " + getCheckMessage(MSG_EXPR),
+            "32:17: " + getCheckMessage(MSG_EXPR),
+            "34:17: " + getCheckMessage(MSG_EXPR),
+            "36:17: " + getCheckMessage(MSG_EXPR),
+            "38:17: " + getCheckMessage(MSG_EXPR),
+            "40:17: " + getCheckMessage(MSG_EXPR),
+            "42:17: " + getCheckMessage(MSG_EXPR),
+            "47:19: " + getCheckMessage(MSG_EXPR),
+            "49:18: " + getCheckMessage(MSG_EXPR),
+            "51:18: " + getCheckMessage(MSG_EXPR),
+            "53:17: " + getCheckMessage(MSG_EXPR),
+            "55:18: " + getCheckMessage(MSG_EXPR),
+            "57:19: " + getCheckMessage(MSG_EXPR),
+            "59:18: " + getCheckMessage(MSG_EXPR),
+            "61:19: " + getCheckMessage(MSG_EXPR),
+            "63:18: " + getCheckMessage(MSG_EXPR),
+            "65:18: " + getCheckMessage(MSG_EXPR),
+            "67:19: " + getCheckMessage(MSG_EXPR),
+            "69:18: " + getCheckMessage(MSG_EXPR),
+            "85:20: " + getCheckMessage(MSG_EXPR),
+            "102:14: " + getCheckMessage(MSG_EXPR),
+            "106:13: " + getCheckMessage(MSG_EXPR),
+        };
+        verifyWithInlineConfigParser(
+                getPath("InputUnnecessaryParenthesesOperator.java"), expected);
+    }
+
+    @Test
+    public void testOperator2() throws Exception {
+        final String[] expected = {
+            "66:18: " + getCheckMessage(MSG_EXPR),
+            "67:17: " + getCheckMessage(MSG_EXPR),
+            "68:25: " + getCheckMessage(MSG_EXPR),
+            "82:14: " + getCheckMessage(MSG_EXPR),
+            "83:19: " + getCheckMessage(MSG_EXPR),
+            "92:21: " + getCheckMessage(MSG_EXPR),
+            "95:19: " + getCheckMessage(MSG_EXPR),
+            "98:20: " + getCheckMessage(MSG_EXPR),
+            "101:21: " + getCheckMessage(MSG_EXPR),
+            "107:20: " + getCheckMessage(MSG_EXPR),
+            "110:21: " + getCheckMessage(MSG_EXPR),
+        };
+        verifyWithInlineConfigParser(
+                getPath("InputUnnecessaryParenthesesOperator2.java"), expected);
+    }
+
+    @Test
+    public void testOperator3() throws Exception {
+        final String[] expected = CommonUtil.EMPTY_STRING_ARRAY;
+        verifyWithInlineConfigParser(
+                getPath("InputUnnecessaryParenthesesOperator3.java"), expected);
+    }
+
+    @Test
+    public void testWhenExpressions() throws Exception {
+        final String[] expected = {
+            "22:33: " + getCheckMessage(MSG_EXPR),
+            "24:32: " + getCheckMessage(MSG_EXPR),
+            "28:26: " + getCheckMessage(MSG_EXPR),
+            "31:31: " + getCheckMessage(MSG_EXPR),
+            "31:32: " + getCheckMessage(MSG_EXPR),
+            "37:44: " + getCheckMessage(MSG_EXPR),
+            "40:44: " + getCheckMessage(MSG_EXPR),
+        };
+        verifyWithInlineConfigParser(
+                getNonCompilablePath("InputUnnecessaryParenthesesWhenExpressions.java"), expected);
+    }
+
+    @Test
+    public void testUnnecessaryParenthesesConditionalExpression() throws Exception {
+        final String[] expected = {
+            "19:17: " + getCheckMessage(MSG_EXPR),
+            "19:29: " + getCheckMessage(MSG_LITERAL, "3"),
+            "19:35: " + getCheckMessage(MSG_LITERAL, "4"),
+            "25:18: " + getCheckMessage(MSG_EXPR),
+            "28:18: " + getCheckMessage(MSG_EXPR),
+            "28:33: " + getCheckMessage(MSG_EXPR),
+            "35:26: " + getCheckMessage(MSG_EXPR),
+            "36:17: " + getCheckMessage(MSG_EXPR),
+            "36:41: " + getCheckMessage(MSG_EXPR),
+        };
+        verifyWithInlineConfigParser(
+                getPath("InputUnnecessaryParenthesesConditionalExpression.java"), expected);
+
+    }
 }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -25,7 +25,7 @@ import static com.puppycrawl.tools.checkstyle.internal.utils.TestUtil.isUtilsCla
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
 
@@ -97,7 +97,7 @@ public class AstTreeStringPrinterTest extends AbstractTreeTestSupport {
                 System.getProperty("file.encoding", StandardCharsets.UTF_8.name()));
         final String actual = toLfLineEnding(AstTreeStringPrinter.printAst(text,
                 JavaParser.Options.WITHOUT_COMMENTS));
-        final String expected = toLfLineEnding(Files.readString(Paths.get(
+        final String expected = toLfLineEnding(Files.readString(Path.of(
                 getPath("ExpectedAstTreeStringPrinter.txt"))));
 
         assertWithMessage("Print AST output is invalid")

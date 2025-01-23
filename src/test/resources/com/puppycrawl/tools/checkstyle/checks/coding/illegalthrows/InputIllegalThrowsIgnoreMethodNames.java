@@ -12,20 +12,20 @@ package com.puppycrawl.tools.checkstyle.checks.coding.illegalthrows;
 
 public class InputIllegalThrowsIgnoreMethodNames {
 
-    public void method() throws NullPointerException // ok
+    public void method() throws NullPointerException
     { // no code
     }
-
-    public java.lang.Throwable methodOne() throws RuntimeException // violation
+    // violation below, 'Throwing 'RuntimeException' is not allowed'
+    public java.lang.Throwable methodOne() throws RuntimeException
     {
         return null;
     }
 
-    public void methodTwo() throws java.lang.RuntimeException, java.lang.Error // ok
+    public void methodTwo() throws java.lang.RuntimeException, java.lang.Error
     {
     }
 
-    public void finalize() throws Throwable { // violation
+    public void finalize() throws Throwable { // violation, 'Throwable' is not allowed'
 
     }
 }

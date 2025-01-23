@@ -6,7 +6,7 @@ tokens = (default)COMMA, SEMI, POST_INC, POST_DEC, ELLIPSIS, LABELED_STAT
 
 */
 
-//non-compiled with javac: Compilable with Java14
+//non-compiled with javac: Compilable with Java17
 package com.puppycrawl.tools.checkstyle.checks.whitespace.nowhitespacebefore;
 
 public class InputNoWhitespaceBeforeTextBlocksTabIndent {
@@ -34,18 +34,18 @@ public class InputNoWhitespaceBeforeTextBlocksTabIndent {
     private void brokenCheck_space_before_tabs() {
         String x = """
             Some Text
- 		"""; // ok
+ 		""";
     }
 
     private void brokenCheck_space_after_tabs() {
         String x = """
             Some Text
-		 """; // ok
+		 """;
     }
 
     private void brokenCheck_just_tabs() {
         String x = """
             Some Text
-		"""; // ok
+		""";
     }
 }

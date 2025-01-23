@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -26,9 +26,10 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
 
 /**
- * <p>
+ * <div>
  * Checks that array initialization contains a trailing comma.
- * </p>
+ * </div>
+ *
  * <pre>
  * int[] a = new int[]
  * {
@@ -37,6 +38,7 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  *   3,
  * };
  * </pre>
+ *
  * <p>
  * By default, the check demands a comma at the end if neither left nor right curly braces
  * are on the same line as the last element of the array.
@@ -48,6 +50,7 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * return new int[] {
  *   0 };
  * </pre>
+ *
  * <p>
  * Rationale: Putting this comma in makes it easier to change the
  * order of the elements or add new elements on the end. Main benefit of a trailing
@@ -65,6 +68,7 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  *   300000000000000000000,  // Just this line added, no other changes
  * }
  * </pre>
+ *
  * <p>
  * If closing brace is on the same line as trailing comma, this benefit is gone
  * (as the check does not demand a certain location of curly braces the following
@@ -78,6 +82,7 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  *  200000000000000000000, // Modified line
  *  300000000000000000000,} // Added line
  * </pre>
+ *
  * <p>
  * If opening brace is on the same line as trailing comma there's also (more arguable) problem:
  * </p>
@@ -97,92 +102,11 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * Default value is {@code false}.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;ArrayTrailingComma&quot;/&gt;
- * </pre>
- * <p>
- * Which results in the following violations:
- * </p>
- * <pre>
- * int[] numbers = {1, 2, 3};        //no violation
- * boolean[] bools = {
- * true,
- * true,
- * false
- * };        //violation
  *
- * String[][] text = {{},{},};        //no violation
- *
- * double[][] decimals = {
- * {0.5, 2.3, 1.1,},        //no violation
- * {1.7, 1.9, 0.6},
- * {0.8, 7.4, 6.5}
- * };        // violation as previous line misses a comma
- *
- * char[] chars = {'a', 'b', 'c'
- *   };        / /no violation
- *
- * String[] letters = {
- *   "a", "b", "c"};        // no violation
- *
- * int[] a1 = new int[]{
- *   1,
- *   2
- *   ,
- * };        // no violation
- *
- * int[] a2 = new int[]{
- *   1,
- *   2
- *   ,};        // no violation
- * </pre>
- *
- * <p>To configure check to always validate trailing comma:</p>
- * <pre>
- * &lt;module name="ArrayTrailingComma"&gt;
- *   &lt;property name="alwaysDemandTrailingComma" value="true"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * int[] numbers = {1, 2, 3}; // violation
- * boolean[] bools = {
- * true,
- * true,
- * false // violation
- * };
- *
- * String[][] text = {{},{},}; // OK
- *
- * double[][] decimals = {
- * {0.5, 2.3, 1.1,}, // OK
- * {1.7, 1.9, 0.6}, // violation
- * {0.8, 7.4, 6.5} // violation
- * }; // violation, previous line misses a comma
- *
- * char[] chars = {'a', 'b', 'c'  // violation
- *   };
- *
- * String[] letters = {
- *   "a", "b", "c"}; // violation
- *
- * int[] a1 = new int[]{
- *   1,
- *   2
- *   ,
- * }; // OK
- *
- * int[] a2 = new int[]{
- *   1,
- *   2
- *   ,}; // OK
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -212,6 +136,7 @@ public class ArrayTrailingCommaCheck extends AbstractCheck {
      * Setter to control whether to always check for a trailing comma, even when an array is inline.
      *
      * @param alwaysDemandTrailingComma whether to always check for a trailing comma.
+     * @since 8.33
      */
     public void setAlwaysDemandTrailingComma(boolean alwaysDemandTrailingComma) {
         this.alwaysDemandTrailingComma = alwaysDemandTrailingComma;

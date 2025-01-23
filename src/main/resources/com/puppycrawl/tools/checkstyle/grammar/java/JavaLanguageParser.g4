@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -649,7 +649,9 @@ caseConstant
     ;
 
 forControl
-    : LPAREN enhancedForControl RPAREN                                     #enhancedFor
+    : LPAREN
+        ( enhancedForControl | enhancedForControlWithRecordPattern )
+      RPAREN                                                               #enhancedFor
     | LPAREN forInit? SEMI forCond=expression?
       SEMI forUpdate=expressionList? RPAREN                                #forFor
     ;
@@ -662,6 +664,10 @@ forInit
 enhancedForControl
     : mods+=variableModifier* type=typeType[true]
       variableDeclaratorId[$ctx.mods, $ctx.type] COLON expression
+    ;
+
+enhancedForControlWithRecordPattern
+    : pattern COLON expression
     ;
 
 // EXPRESSIONS
@@ -720,16 +726,11 @@ expr
         | BAND_ASSIGN | BOR_ASSIGN | BXOR_ASSIGN | SR_ASSIGN | BSR_ASSIGN
         | SL_ASSIGN | MOD_ASSIGN)
       expr                                                                 #binOp
-    | lambdaExpression                                                     #lambdaExp
+    | lambdaParameters LAMBDA (expr | block)                               #lambdaExp
     ;
 
 typeCastParameters
     : typeType[true] (BAND typeType[true])*
-    ;
-
-// Java8
-lambdaExpression
-    : lambdaParameters LAMBDA lambdaBody
     ;
 
 // Java8
@@ -741,12 +742,6 @@ lambdaParameters
 
 multiLambdaParams
     : id (COMMA id)*
-    ;
-
-// Java8
-lambdaBody
-    : expression
-    | block
     ;
 
 primary
@@ -864,27 +859,52 @@ arguments
     : LPAREN expressionList? RPAREN
     ;
 
+/**
+ * We do for patterns as we do for expressions; namely we have one parent
+ * 'PATTERN_DEF' node, then have all nested pattern definitions inside of
+ * the parent node.
+ */
 pattern
+    : innerPattern
+    ;
+
+innerPattern
     : guardedPattern
+    | recordPattern
     | primaryPattern
     ;
 
 guardedPattern
-    : primaryPattern LAND expr
+    : primaryPattern guard expression
     ;
+
+/**
+ * We do not need to enforce what the compiler already does; namely, the '&&' syntax
+ * in case labels was only supported as a preview feature in JDK18 and will fail compilation
+ * now. Guarded patterns in expressions still uses '&&', while case labels now use 'when'.
+ * We can allow both alternatives here, since this will help us to maintain backwards
+ * compatibility and avoid more alternatives/complexity of maintaining two
+ * separate pattern grammars for case labels and expressions.
+ */
+guard: ( LAND | LITERAL_WHEN );
 
 primaryPattern
     : typePattern                                                          #patternVariableDef
-    | LPAREN
-      // Set of production rules below should mirror `pattern` production rule
-      // above. We do not reuse `pattern` production rule here to avoid a bunch
-      // of nested `PATTERN_DEF` nodes, as we also do for expressions.
-      (guardedPattern | primaryPattern)
-      RPAREN                                                               #parenPattern
+    | LPAREN innerPattern RPAREN                                           #parenPattern
+    | recordPattern                                                        #recordPatternDef
     ;
 
 typePattern
-    : mods+=modifier* type=typeType[true] id
+    : mods+=modifier* type=typeType[true] id             #typePatternDef
+    | LITERAL_UNDERSCORE                                 #unnamedPatternDef
+    ;
+
+recordPattern
+    : mods+=modifier* type=typeType[true] LPAREN recordComponentPatternList? RPAREN id?
+    ;
+
+recordComponentPatternList
+    : innerPattern (COMMA innerPattern)*
     ;
 
 permittedSubclassesAndInterfaces
@@ -892,10 +912,12 @@ permittedSubclassesAndInterfaces
     ;
 
 // Handle the 'keyword as identifier' problem
-id  : LITERAL_RECORD
+id:  LITERAL_UNDERSCORE
+    | LITERAL_RECORD
     | LITERAL_YIELD
     | LITERAL_NON_SEALED
     | LITERAL_SEALED
     | LITERAL_PERMITS
     | IDENT
+    | LITERAL_WHEN
     ;

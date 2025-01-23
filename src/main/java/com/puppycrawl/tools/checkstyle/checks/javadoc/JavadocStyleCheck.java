@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -20,10 +20,12 @@
 package com.puppycrawl.tools.checkstyle.checks.javadoc;
 
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.puppycrawl.tools.checkstyle.JavadocDetailNodeParser;
@@ -39,9 +41,10 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 import com.puppycrawl.tools.checkstyle.utils.ScopeUtil;
 
 /**
- * <p>
+ * <div>
  * Validates Javadoc comments to help ensure they are well formed.
- * </p>
+ * </div>
+ *
  * <p>
  * The following checks are performed:
  * </p>
@@ -49,6 +52,9 @@ import com.puppycrawl.tools.checkstyle.utils.ScopeUtil;
  * <li>
  * Ensures the first sentence ends with proper punctuation
  * (That is a period, question mark, or exclamation mark, by default).
+ * Note that this check is not applied to inline {@code @return} tags,
+ * because the Javadoc tools automatically appends a period to the end of the tag
+ * content.
  * Javadoc automatically places the first sentence in the method summary
  * table and index. Without proper punctuation the Javadoc may be malformed.
  * All items eligible for the {@code {@inheritDoc}} tag are exempt from this
@@ -66,8 +72,7 @@ import com.puppycrawl.tools.checkstyle.utils.ScopeUtil;
  * a previous open tag.
  * </li>
  * <li>
- * Check that a package Javadoc comment is well-formed (as described above) and
- * NOT missing from any package-info.java files.
+ * Check that a package Javadoc comment is well-formed (as described above).
  * </li>
  * <li>
  * Check for allowed HTML tags. The list of allowed HTML tags is
@@ -79,26 +84,27 @@ import com.puppycrawl.tools.checkstyle.utils.ScopeUtil;
  * "thead", "tr", "tt", "u", "ul", "var".
  * </li>
  * </ul>
+ *
  * <p>
  * These checks were patterned after the checks made by the
- * <a href="http://maven-doccheck.sourceforge.net/">DocCheck</a> doclet
+ * <a href="https://maven-doccheck.sourceforge.net">DocCheck</a> doclet
  * available from Sun. Note: Original Sun's DocCheck tool does not exist anymore.
  * </p>
  * <ul>
  * <li>
- * Property {@code scope} - Specify the visibility scope where Javadoc comments are checked.
- * Type is {@code com.puppycrawl.tools.checkstyle.api.Scope}.
- * Default value is {@code private}.
- * </li>
- * <li>
- * Property {@code excludeScope} - Specify the visibility scope where
- * Javadoc comments are not checked.
- * Type is {@code com.puppycrawl.tools.checkstyle.api.Scope}.
- * Default value is {@code null}.
+ * Property {@code checkEmptyJavadoc} - Control whether to check if the Javadoc
+ * is missing a describing text.
+ * Type is {@code boolean}.
+ * Default value is {@code false}.
  * </li>
  * <li>
  * Property {@code checkFirstSentence} - Control whether to check the first
  * sentence for proper end of sentence.
+ * Type is {@code boolean}.
+ * Default value is {@code true}.
+ * </li>
+ * <li>
+ * Property {@code checkHtml} - Control whether to check for incomplete HTML tags.
  * Type is {@code boolean}.
  * Default value is {@code true}.
  * </li>
@@ -109,15 +115,15 @@ import com.puppycrawl.tools.checkstyle.utils.ScopeUtil;
  * Default value is {@code "([.?!][ \t\n\r\f&lt;])|([.?!]$)"}.
  * </li>
  * <li>
- * Property {@code checkEmptyJavadoc} - Control whether to check if the Javadoc
- * is missing a describing text.
- * Type is {@code boolean}.
- * Default value is {@code false}.
+ * Property {@code excludeScope} - Specify the visibility scope where
+ * Javadoc comments are not checked.
+ * Type is {@code com.puppycrawl.tools.checkstyle.api.Scope}.
+ * Default value is {@code null}.
  * </li>
  * <li>
- * Property {@code checkHtml} - Control whether to check for incomplete HTML tags.
- * Type is {@code boolean}.
- * Default value is {@code true}.
+ * Property {@code scope} - Specify the visibility scope where Javadoc comments are checked.
+ * Type is {@code com.puppycrawl.tools.checkstyle.api.Scope}.
+ * Default value is {@code private}.
  * </li>
  * <li>
  * Property {@code tokens} - tokens to check
@@ -150,130 +156,11 @@ import com.puppycrawl.tools.checkstyle.utils.ScopeUtil;
  * COMPACT_CTOR_DEF</a>.
  * </li>
  * </ul>
- * <p>
- * To configure the default check:
- * </p>
- * <pre>
- * &lt;module name="JavadocStyle"/&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public class Test {
- *     &#47;**
- *      * Some description here. // OK
- *      *&#47;
- *     private void methodWithValidCommentStyle() {}
  *
- *     &#47;**
- *      * Some description here // violation, the sentence must end with a proper punctuation
- *      *&#47;
- *     private void methodWithInvalidCommentStyle() {}
- * }
- * </pre>
- * <p>
- * To configure the check for {@code public} scope:
- * </p>
- * <pre>
- * &lt;module name="JavadocStyle"&gt;
- *   &lt;property name="scope" value="public"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public class Test {
- *     &#47;**
- *      * Some description here // violation, the sentence must end with a proper punctuation
- *      *&#47;
- *     public void test1() {}
- *
- *     &#47;**
- *      * Some description here // OK
- *      *&#47;
- *     private void test2() {}
- * }
- * </pre>
- * <p>
- * To configure the check for javadoc which is in {@code private}, but not in {@code package} scope:
- * </p>
- * <pre>
- * &lt;module name="JavadocStyle"&gt;
- *   &lt;property name="scope" value="private"/&gt;
- *   &lt;property name="excludeScope" value="package"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public class Test {
- *     &#47;**
- *      * Some description here // violation, the sentence must end with a proper punctuation
- *      *&#47;
- *     private void test1() {}
- *
- *     &#47;**
- *      * Some description here // OK
- *      *&#47;
- *     void test2() {}
- * }
- * </pre>
- * <p>
- * To configure the check to turn off first sentence checking:
- * </p>
- * <pre>
- * &lt;module name="JavadocStyle"&gt;
- *   &lt;property name="checkFirstSentence" value="false"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public class Test {
- *     &#47;**
- *      * Some description here // OK
- *      * Second line of description // violation, the sentence must end with a proper punctuation
- *      *&#47;
- *     private void test1() {}
- * }
- * </pre>
- * <p>
- * To configure the check to turn off validation of incomplete html tags:
- * </p>
- * <pre>
- * &lt;module name="JavadocStyle"&gt;
- * &lt;property name="checkHtml" value="false"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public class Test {
- *     &#47;**
- *      * Some description here // violation, the sentence must end with a proper punctuation
- *      * &lt;p // OK
- *      *&#47;
- *     private void test1() {}
- * }
- * </pre>
- * <p>
- * To configure the check for only class definitions:
- * </p>
- * <pre>
- * &lt;module name="JavadocStyle"&gt;
- * &lt;property name="tokens" value="CLASS_DEF"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * &#47;**
- *  * Some description here // violation, the sentence must end with a proper punctuation
- *  *&#47;
- * public class Test {
- *     &#47;**
- *      * Some description here // OK
- *      *&#47;
- *     private void test1() {}
- * }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -288,9 +175,6 @@ import com.puppycrawl.tools.checkstyle.utils.ScopeUtil;
  * {@code javadoc.incompleteTag}
  * </li>
  * <li>
- * {@code javadoc.missing}
- * </li>
- * <li>
  * {@code javadoc.noPeriod}
  * </li>
  * <li>
@@ -303,9 +187,6 @@ import com.puppycrawl.tools.checkstyle.utils.ScopeUtil;
 @StatelessCheck
 public class JavadocStyleCheck
     extends AbstractCheck {
-
-    /** Message property key for the Missing Javadoc message. */
-    public static final String MSG_JAVADOC_MISSING = "javadoc.missing";
 
     /** Message property key for the Empty Javadoc message. */
     public static final String MSG_EMPTY = "javadoc.empty";
@@ -342,6 +223,13 @@ public class JavadocStyleCheck
         "sub", "sup", "table", "tbody", "td", "tfoot", "th", "thead",
         "tr", "tt", "u", "ul", "var"
     );
+
+    /** Specify the format for inline return Javadoc. */
+    private static final Pattern INLINE_RETURN_TAG_PATTERN =
+            Pattern.compile("\\{@return.*?}\\s*");
+
+    /** Specify the format for first word in javadoc. */
+    private static final Pattern SENTENCE_SEPARATOR = Pattern.compile("\\.(?=\\s|$)");
 
     /** Specify the visibility scope where Javadoc comments are checked. */
     private Scope scope = Scope.PRIVATE;
@@ -428,11 +316,9 @@ public class JavadocStyleCheck
             final Scope surroundingScope = ScopeUtil.getSurroundingScope(ast);
 
             check = customScope.isIn(scope)
-                    && (surroundingScope == null || surroundingScope.isIn(scope))
-                    && (excludeScope == null
-                        || !customScope.isIn(excludeScope)
-                        || surroundingScope != null
-                            && !surroundingScope.isIn(excludeScope));
+                    && surroundingScope.isIn(scope)
+                    && (excludeScope == null || !customScope.isIn(excludeScope)
+                            || !surroundingScope.isIn(excludeScope));
         }
         return check;
     }
@@ -447,16 +333,7 @@ public class JavadocStyleCheck
      * @see #checkHtmlTags(DetailAST, TextBlock)
      */
     private void checkComment(final DetailAST ast, final TextBlock comment) {
-        if (comment == null) {
-            // checking for missing docs in JavadocStyleCheck is not consistent
-            // with the rest of CheckStyle...  Even though, I didn't think it
-            // made sense to make another check just to ensure that the
-            // package-info.java file actually contains package Javadocs.
-            if (CheckUtil.isPackageInfo(getFilePath())) {
-                log(ast, MSG_JAVADOC_MISSING);
-            }
-        }
-        else {
+        if (comment != null) {
             if (checkFirstSentence) {
                 checkFirstSentenceEnding(ast, comment);
             }
@@ -483,8 +360,14 @@ public class JavadocStyleCheck
      */
     private void checkFirstSentenceEnding(final DetailAST ast, TextBlock comment) {
         final String commentText = getCommentText(comment.getText());
+        final boolean hasInLineReturnTag = Arrays.stream(SENTENCE_SEPARATOR.split(commentText))
+                .findFirst()
+                .map(INLINE_RETURN_TAG_PATTERN::matcher)
+                .filter(Matcher::find)
+                .isPresent();
 
-        if (!commentText.isEmpty()
+        if (!hasInLineReturnTag
+            && !commentText.isEmpty()
             && !endOfSentenceFormat.matcher(commentText).find()
             && !(commentText.startsWith("{@inheritDoc}")
             && JavadocTagInfo.INHERIT_DOC.isValidOn(ast))) {
@@ -544,10 +427,8 @@ public class JavadocStyleCheck
         int index = 0;
         while (index < line.length()) {
             if (!Character.isWhitespace(line.charAt(index))) {
-                if (line.regionMatches(index, "/**", 0, "/**".length())) {
-                    index += 2;
-                }
-                else if (line.regionMatches(index, "*/", 0, 2)) {
+                if (line.regionMatches(index, "/**", 0, "/**".length())
+                    || line.regionMatches(index, "*/", 0, 2)) {
                     index++;
                 }
                 else if (line.charAt(index) != '*') {
@@ -751,6 +632,7 @@ public class JavadocStyleCheck
      * Setter to specify the visibility scope where Javadoc comments are checked.
      *
      * @param scope a scope.
+     * @since 3.2
      */
     public void setScope(Scope scope) {
         this.scope = scope;
@@ -760,6 +642,7 @@ public class JavadocStyleCheck
      * Setter to specify the visibility scope where Javadoc comments are not checked.
      *
      * @param excludeScope a scope.
+     * @since 3.4
      */
     public void setExcludeScope(Scope excludeScope) {
         this.excludeScope = excludeScope;
@@ -769,6 +652,7 @@ public class JavadocStyleCheck
      * Setter to specify the format for matching the end of a sentence.
      *
      * @param pattern a pattern.
+     * @since 5.0
      */
     public void setEndOfSentenceFormat(Pattern pattern) {
         endOfSentenceFormat = pattern;
@@ -778,6 +662,7 @@ public class JavadocStyleCheck
      * Setter to control whether to check the first sentence for proper end of sentence.
      *
      * @param flag {@code true} if the first sentence is to be checked
+     * @since 3.2
      */
     public void setCheckFirstSentence(boolean flag) {
         checkFirstSentence = flag;
@@ -787,6 +672,7 @@ public class JavadocStyleCheck
      * Setter to control whether to check for incomplete HTML tags.
      *
      * @param flag {@code true} if HTML checking is to be performed.
+     * @since 3.2
      */
     public void setCheckHtml(boolean flag) {
         checkHtml = flag;
@@ -796,6 +682,7 @@ public class JavadocStyleCheck
      * Setter to control whether to check if the Javadoc is missing a describing text.
      *
      * @param flag {@code true} if empty Javadoc checking should be done.
+     * @since 3.4
      */
     public void setCheckEmptyJavadoc(boolean flag) {
         checkEmptyJavadoc = flag;

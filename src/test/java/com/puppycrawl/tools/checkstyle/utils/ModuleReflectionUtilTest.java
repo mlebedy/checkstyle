@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -20,13 +20,18 @@
 package com.puppycrawl.tools.checkstyle.utils;
 
 import static com.google.common.truth.Truth.assertWithMessage;
+import static com.puppycrawl.tools.checkstyle.PackageObjectFactory.BASE_PACKAGE;
 import static com.puppycrawl.tools.checkstyle.internal.utils.TestUtil.isUtilsClassHasPrivateConstructor;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
+import com.puppycrawl.tools.checkstyle.AbstractAutomaticBean;
 import com.puppycrawl.tools.checkstyle.DefaultLogger;
 import com.puppycrawl.tools.checkstyle.TreeWalkerAuditEvent;
 import com.puppycrawl.tools.checkstyle.TreeWalkerFilter;
@@ -35,7 +40,6 @@ import com.puppycrawl.tools.checkstyle.api.AbstractCheck;
 import com.puppycrawl.tools.checkstyle.api.AbstractFileSetCheck;
 import com.puppycrawl.tools.checkstyle.api.AuditEvent;
 import com.puppycrawl.tools.checkstyle.api.AuditListener;
-import com.puppycrawl.tools.checkstyle.api.AutomaticBean;
 import com.puppycrawl.tools.checkstyle.api.BeforeExecutionFileFilter;
 import com.puppycrawl.tools.checkstyle.api.FileText;
 import com.puppycrawl.tools.checkstyle.api.Filter;
@@ -75,25 +79,40 @@ public class ModuleReflectionUtilTest {
                 .isTrue();
     }
 
+    /**
+     * This test case is designed to verify the behavior of getCheckstyleModules method.
+     * It is provided with a package name that does not contain any checkstyle modules.
+     * It ensures that ModuleReflectionUtil.getCheckstyleModules is returning an empty set.
+     */
+    @Test
+    public void testGetCheckStyleModules() throws IOException {
+        final ClassLoader classLoader = ClassLoader.getSystemClassLoader();
+        final Set<String> packages = Collections.singleton(BASE_PACKAGE + ".checks.javadoc.utils");
+
+        assertWithMessage("specified package has no checkstyle modules")
+                .that(ModuleReflectionUtil.getCheckstyleModules(packages, classLoader))
+                .isEmpty();
+    }
+
     @Test
     public void testIsValidCheckstyleClass() {
         assertWithMessage("Should return true when valid checkstyle class is passed")
-                .that(ModuleReflectionUtil.isValidCheckstyleClass(ValidCheckstyleClass.class))
+                .that(ModuleReflectionUtil.isCheckstyleModule(ValidCheckstyleClass.class))
                 .isTrue();
         assertWithMessage("Should return false when invalid class is passed")
                 .that(
-                    ModuleReflectionUtil.isValidCheckstyleClass(InvalidNonAutomaticBeanClass.class))
+                    ModuleReflectionUtil.isCheckstyleModule(InvalidNonAutomaticBeanClass.class))
                 .isFalse();
         assertWithMessage("Should return false when invalid class is passed")
-                .that(ModuleReflectionUtil.isValidCheckstyleClass(AbstractInvalidClass.class))
+                .that(ModuleReflectionUtil.isCheckstyleModule(AbstractInvalidClass.class))
                 .isFalse();
         assertWithMessage("Should return false when invalid class is passed")
                 .that(ModuleReflectionUtil
-                    .isValidCheckstyleClass(InvalidNonDefaultConstructorClass.class))
+                    .isCheckstyleModule(InvalidNonDefaultConstructorClass.class))
                 .isFalse();
         assertWithMessage("Should return false when forced invalid class is passed")
                 .that(
-                    ModuleReflectionUtil.isValidCheckstyleClass(XpathFileGeneratorAstFilter.class))
+                    ModuleReflectionUtil.isCheckstyleModule(XpathFileGeneratorAstFilter.class))
                 .isFalse();
     }
 
@@ -179,7 +198,7 @@ public class ModuleReflectionUtilTest {
             .isEqualTo(1);
     }
 
-    private static class ValidCheckstyleClass extends AutomaticBean {
+    private static final class ValidCheckstyleClass extends AbstractAutomaticBean {
 
         // empty, use default constructor
 
@@ -190,7 +209,7 @@ public class ModuleReflectionUtilTest {
 
     }
 
-    private static class InvalidNonAutomaticBeanClass {
+    private static final class InvalidNonAutomaticBeanClass {
 
         // empty, use default constructor
 
@@ -202,13 +221,13 @@ public class ModuleReflectionUtilTest {
      * @noinspection AbstractClassNeverImplemented
      * @noinspectionreason AbstractClassNeverImplemented - class is only used in testing
      */
-    private abstract static class AbstractInvalidClass extends AutomaticBean {
+    private abstract static class AbstractInvalidClass extends AbstractAutomaticBean {
 
         public abstract void method();
 
     }
 
-    private static class CheckClass extends AbstractCheck {
+    private static final class CheckClass extends AbstractCheck {
 
         @Override
         public int[] getDefaultTokens() {
@@ -227,7 +246,7 @@ public class ModuleReflectionUtilTest {
 
     }
 
-    private static class FileSetModuleClass extends AbstractFileSetCheck {
+    private static final class FileSetModuleClass extends AbstractFileSetCheck {
 
         @Override
         protected void processFiltered(File file, FileText fileText) {
@@ -236,7 +255,7 @@ public class ModuleReflectionUtilTest {
 
     }
 
-    private static class FilterClass extends AutomaticBean implements Filter {
+    private static final class FilterClass extends AbstractAutomaticBean implements Filter {
 
         @Override
         protected void finishLocalSetup() {
@@ -250,7 +269,7 @@ public class ModuleReflectionUtilTest {
 
     }
 
-    private static class FileFilterModuleClass extends AutomaticBean
+    private static final class FileFilterModuleClass extends AbstractAutomaticBean
             implements BeforeExecutionFileFilter {
 
         @Override
@@ -265,7 +284,7 @@ public class ModuleReflectionUtilTest {
 
     }
 
-    private static class RootModuleClass extends AutomaticBean implements RootModule {
+    private static final class RootModuleClass extends AbstractAutomaticBean implements RootModule {
 
         @Override
         protected void finishLocalSetup() {
@@ -294,7 +313,8 @@ public class ModuleReflectionUtilTest {
 
     }
 
-    private static class TreeWalkerFilterClass extends AutomaticBean implements TreeWalkerFilter {
+    private static final class TreeWalkerFilterClass
+            extends AbstractAutomaticBean implements TreeWalkerFilter {
 
         @Override
         protected void finishLocalSetup() {
@@ -308,7 +328,8 @@ public class ModuleReflectionUtilTest {
 
     }
 
-    private static class AuditListenerClass extends AutomaticBean implements AuditListener {
+    private static final class AuditListenerClass
+            extends AbstractAutomaticBean implements AuditListener {
 
         @Override
         protected void finishLocalSetup() {
@@ -347,13 +368,13 @@ public class ModuleReflectionUtilTest {
 
     }
 
-    private static class NotCheckstyleCheck {
+    private static final class NotCheckstyleCheck {
 
         // empty, use default constructor
 
     }
 
-    private static class InvalidNonDefaultConstructorClass extends AutomaticBean {
+    private static class InvalidNonDefaultConstructorClass extends AbstractAutomaticBean {
 
         private int field;
 
@@ -363,11 +384,13 @@ public class ModuleReflectionUtilTest {
             method(data);
         }
 
+        /**
+         * Increments the field.
+         *
+         * @param data of int type.
+         */
         public final void method(int data) {
-            field++;
-            if (data > 0) {
-                method(data - 1);
-            }
+            field = data + 1;
         }
 
         public int getField() {

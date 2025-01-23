@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -38,9 +38,9 @@ public class XpathRegressionIllegalTokenTest extends AbstractXpathTestSupport {
     }
 
     @Test
-    public void testOne() throws Exception {
+    public void testLabel() throws Exception {
         final File fileToProcess =
-                new File(getPath("SuppressionXpathRegressionIllegalToken1.java"));
+                new File(getPath("InputXpathIllegalTokenLabel.java"));
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(IllegalTokenCheck.class);
         final String[] expectedViolation = {
@@ -49,7 +49,7 @@ public class XpathRegressionIllegalTokenTest extends AbstractXpathTestSupport {
         };
         final List<String> expectedXpathQueries = Collections.singletonList(
                 "/COMPILATION_UNIT"
-                    + "/CLASS_DEF[./IDENT[@text='SuppressionXpathRegressionIllegalToken1']]"
+                    + "/CLASS_DEF[./IDENT[@text='InputXpathIllegalTokenLabel']]"
                     + "/OBJBLOCK/METHOD_DEF[./IDENT[@text='myTest']]"
                     + "/SLIST/LABELED_STAT[./IDENT[@text='outer']]"
         );
@@ -59,9 +59,9 @@ public class XpathRegressionIllegalTokenTest extends AbstractXpathTestSupport {
     }
 
     @Test
-    public void testTwo() throws Exception {
+    public void testNative() throws Exception {
         final File fileToProcess =
-                new File(getPath("SuppressionXpathRegressionIllegalToken2.java"));
+                new File(getPath("InputXpathIllegalTokenNative.java"));
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(IllegalTokenCheck.class);
 
@@ -73,7 +73,7 @@ public class XpathRegressionIllegalTokenTest extends AbstractXpathTestSupport {
         };
         final List<String> expectedXpathQueries = Collections.singletonList(
                 "/COMPILATION_UNIT"
-                        + "/CLASS_DEF[./IDENT[@text='SuppressionXpathRegressionIllegalToken2']]"
+                        + "/CLASS_DEF[./IDENT[@text='InputXpathIllegalTokenNative']]"
                         + "/OBJBLOCK/METHOD_DEF[./IDENT[@text='myTest']]"
                         + "/MODIFIERS/LITERAL_NATIVE"
         );

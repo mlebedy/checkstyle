@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -24,12 +24,16 @@ import static com.puppycrawl.tools.checkstyle.checks.imports.ImportOrderCheck.MS
 import static com.puppycrawl.tools.checkstyle.checks.imports.ImportOrderCheck.MSG_SEPARATED_IN_GROUP;
 import static com.puppycrawl.tools.checkstyle.checks.imports.ImportOrderCheck.MSG_SEPARATION;
 
+import java.io.File;
+import java.util.Optional;
+
 import org.antlr.v4.runtime.CommonToken;
 import org.junit.jupiter.api.Test;
 
 import com.puppycrawl.tools.checkstyle.AbstractModuleTestSupport;
 import com.puppycrawl.tools.checkstyle.DefaultConfiguration;
 import com.puppycrawl.tools.checkstyle.DetailAstImpl;
+import com.puppycrawl.tools.checkstyle.JavaParser;
 import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
@@ -41,6 +45,29 @@ public class ImportOrderCheckTest extends AbstractModuleTestSupport {
     @Override
     protected String getPackageLocation() {
         return "com/puppycrawl/tools/checkstyle/checks/imports/importorder";
+    }
+
+    @Test
+    public void testVeryPreciseGrouping() throws Exception {
+        final String[] expected = {};
+
+        verifyWithInlineConfigParser(
+                getNonCompilablePath("InputImportOrder6.java"), expected);
+    }
+
+    @Test
+    public void testGetTokens() {
+        final ImportOrderCheck checkObj = new ImportOrderCheck();
+        final int[] expected = {TokenTypes.IMPORT, TokenTypes.STATIC_IMPORT};
+        assertWithMessage("Default tokens differs from expected")
+            .that(checkObj.getDefaultTokens())
+            .isEqualTo(expected);
+        assertWithMessage("Acceptable tokens differs from expected")
+            .that(checkObj.getAcceptableTokens())
+            .isEqualTo(expected);
+        assertWithMessage("Required tokens differs from expected")
+            .that(checkObj.getRequiredTokens())
+            .isEqualTo(expected);
     }
 
     /* Additional test for jacoco, since valueOf()
@@ -303,6 +330,8 @@ public class ImportOrderCheckTest extends AbstractModuleTestSupport {
     @Test
     public void testHonorsTokenProperty() throws Exception {
         final String[] expected = {
+            "20:1: " + getCheckMessage(MSG_ORDERING, "java.awt.Button.ABORT"),
+            "21:1: " + getCheckMessage(MSG_ORDERING, "java.awt.Dialog"),
             "22:1: " + getCheckMessage(MSG_ORDERING, "java.awt.Button"),
         };
 
@@ -313,7 +342,7 @@ public class ImportOrderCheckTest extends AbstractModuleTestSupport {
     @Test
     public void testWildcard() throws Exception {
         final String[] expected = {
-            "25:1: " + getCheckMessage(MSG_ORDERING, "javax.crypto.Cipher"),
+            "21:1: " + getCheckMessage(MSG_ORDERING, "javax.crypto.Cipher"),
         };
 
         verifyWithInlineConfigParser(
@@ -324,7 +353,7 @@ public class ImportOrderCheckTest extends AbstractModuleTestSupport {
     public void testWildcardUnspecified() throws Exception {
         final String[] expected = {
             "23:1: " + getCheckMessage(MSG_SEPARATED_IN_GROUP,
-                "com.puppycrawl.tools.checkstyle.checks.imports.importorder.InputImportOrderBug"),
+                "javax.crypto.Cipher"),
         };
 
         verifyWithInlineConfigParser(
@@ -581,8 +610,8 @@ public class ImportOrderCheckTest extends AbstractModuleTestSupport {
         }
         catch (IllegalStateException ex) {
             assertWithMessage("invalid exception message")
-                    .that(ex.getMessage().endsWith(": null"))
-                    .isTrue();
+                    .that(ex.getMessage())
+                    .endsWith(": null");
         }
     }
 
@@ -755,4 +784,42 @@ public class ImportOrderCheckTest extends AbstractModuleTestSupport {
                 expected);
     }
 
+    @Test
+    public void testTrimOption() throws Exception {
+        final String[] expected = {
+            "25:1: " + getCheckMessage(MSG_ORDERING, "java.util.Set"),
+        };
+
+        verifyWithInlineConfigParser(
+                getPath("InputImportOrderTestTrimInOption.java"),
+                expected);
+    }
+
+    /**
+     * Finding the appropriate input for testing the "lastImportStatic"
+     * field is challenging. Removing it from the reset process might
+     * create an opportunity for the module to enter an incorrect state,
+     * leading to hard-to-detect and unstable violations that will affect our users.
+     *
+     * @throws Exception when code tested throws exception
+     */
+    @Test
+    public void testClearState() throws Exception {
+        final ImportOrderCheck check = new ImportOrderCheck();
+        final DetailAST root = JavaParser.parseFile(
+                new File(getPath("InputImportOrderBeginTree.java")),
+                JavaParser.Options.WITHOUT_COMMENTS);
+        final Optional<DetailAST> staticImport = TestUtil.findTokenInAstByPredicate(root,
+            ast -> ast.getType() == TokenTypes.STATIC_IMPORT);
+
+        assertWithMessage("Ast should contain STATIC_IMPORT")
+                .that(staticImport.isPresent())
+                .isTrue();
+        assertWithMessage("State is not cleared on beginTree")
+                .that(TestUtil.isStatefulFieldClearedDuringBeginTree(check,
+                        staticImport.orElseThrow(), "lastImportStatic",
+                        lastImportStatic -> !(boolean) lastImportStatic))
+                .isTrue();
+
+    }
 }

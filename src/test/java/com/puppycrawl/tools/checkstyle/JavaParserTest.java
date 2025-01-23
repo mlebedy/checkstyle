@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -20,6 +20,7 @@
 package com.puppycrawl.tools.checkstyle;
 
 import static com.google.common.truth.Truth.assertWithMessage;
+import static com.puppycrawl.tools.checkstyle.checks.javadoc.JavadocContentLocationCheck.MSG_JAVADOC_CONTENT_SECOND_LINE;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ import org.junit.jupiter.api.Test;
 import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
+import com.puppycrawl.tools.checkstyle.checks.javadoc.JavadocContentLocationCheck;
 import com.puppycrawl.tools.checkstyle.internal.utils.TestUtil;
 
 public class JavaParserTest extends AbstractModuleTestSupport {
@@ -68,7 +70,7 @@ public class JavaParserTest extends AbstractModuleTestSupport {
                 .that(blockComment.isPresent())
                 .isTrue();
 
-        final DetailAST comment = blockComment.get();
+        final DetailAST comment = blockComment.orElseThrow();
 
         assertWithMessage("Unexpected line number")
             .that(comment.getLineNo())
@@ -106,10 +108,10 @@ public class JavaParserTest extends AbstractModuleTestSupport {
         final Optional<DetailAST> singleLineComment = TestUtil.findTokenInAstByPredicate(root,
             ast -> ast.getType() == TokenTypes.SINGLE_LINE_COMMENT);
         assertWithMessage("Single line comment should be present")
-                .that(singleLineComment.isPresent())
-                .isTrue();
+            .that(singleLineComment.isPresent())
+            .isTrue();
 
-        final DetailAST comment = singleLineComment.get();
+        final DetailAST comment = singleLineComment.orElseThrow();
 
         assertWithMessage("Unexpected line number")
             .that(comment.getLineNo())
@@ -133,8 +135,8 @@ public class JavaParserTest extends AbstractModuleTestSupport {
             .that(commentContent.getColumnNo())
             .isEqualTo(2);
         assertWithMessage("Unexpected comment content")
-                .that(commentContent.getText().startsWith(" inline comment"))
-                .isTrue();
+                .that(commentContent.getText())
+                .startsWith(" inline comment");
     }
 
     @Test
@@ -149,7 +151,7 @@ public class JavaParserTest extends AbstractModuleTestSupport {
                 .that(singleLineComment.isPresent())
                 .isTrue();
 
-        final DetailAST comment = singleLineComment.get();
+        final DetailAST comment = singleLineComment.orElseThrow();
 
         assertWithMessage("Unexpected line number")
             .that(comment.getLineNo())
@@ -173,8 +175,8 @@ public class JavaParserTest extends AbstractModuleTestSupport {
             .that(commentContent.getColumnNo())
             .isEqualTo(6);
         assertWithMessage("Unexpected comment content")
-                .that(commentContent.getText().startsWith(" indented comment"))
-                .isTrue();
+                .that(commentContent.getText())
+                .startsWith(" indented comment");
     }
 
     @Test
@@ -242,7 +244,7 @@ public class JavaParserTest extends AbstractModuleTestSupport {
                 .that(textBlockContent.isPresent())
                 .isTrue();
 
-        final DetailAST content = textBlockContent.get();
+        final DetailAST content = textBlockContent.orElseThrow();
         final String expectedContents = "\n                 string";
 
         assertWithMessage("Unexpected line number")
@@ -274,11 +276,22 @@ public class JavaParserTest extends AbstractModuleTestSupport {
                 .isNotNull();
     }
 
+    @Test
+    public void testReturnValueOfAppendHiddenCommentNodes()
+            throws Exception {
+        final String[] expected = {
+            "9:1: " + getCheckMessage(JavadocContentLocationCheck.class,
+                    MSG_JAVADOC_CONTENT_SECOND_LINE),
+        };
+        verifyWithInlineConfigParser(
+                getPath("InputJavaParserHiddenComments4.java"), expected);
+    }
+
     private static final class CountComments {
         private final List<String> lineComments = new ArrayList<>();
         private final List<String> blockComments = new ArrayList<>();
 
-        /* package */ CountComments(DetailAST root) {
+        private CountComments(DetailAST root) {
             forEachChild(root);
         }
 

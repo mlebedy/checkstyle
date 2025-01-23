@@ -1,14 +1,14 @@
 /*
 PatternVariableName
-format = (default)^[a-z][a-zA-Z0-9]*$
+format = (default)^([a-z][a-zA-Z0-9]*|_)$
 
 
 */
 
-//non-compiled with javac: Compilable with Java14
+//non-compiled with javac: Compilable with Java17
 package com.puppycrawl.tools.checkstyle.checks.naming.patternvariablename;
 
-import java.util.ArrayList;
+import java.util.*;
 import java.util.Locale;
 
 public class InputPatternVariableNameEnhancedInstanceofTestDefault {
@@ -49,7 +49,7 @@ public class InputPatternVariableNameEnhancedInstanceofTestDefault {
         }
         b = ((VoidPredicate) () -> o1 instanceof String s).get();
 
-        ArrayList<Integer> arrayList = new ArrayList<Integer>();
+        List<Integer> arrayList = new ArrayList<Integer>();
         if (arrayList instanceof ArrayList<Integer> ai) {
             System.out.println("Blah");
         }

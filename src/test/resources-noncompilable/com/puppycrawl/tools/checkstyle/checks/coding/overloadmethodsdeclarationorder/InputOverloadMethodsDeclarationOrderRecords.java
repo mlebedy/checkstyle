@@ -4,7 +4,7 @@ OverloadMethodsDeclarationOrder
 
 */
 
-//non-compiled with javac: Compilable with Java14
+//non-compiled with javac: Compilable with Java17
 package com.puppycrawl.tools.checkstyle.checks.coding.overloadmethodsdeclarationorder;
 
 public class InputOverloadMethodsDeclarationOrderRecords {
@@ -18,7 +18,8 @@ public class InputOverloadMethodsDeclarationOrderRecords {
         public void notFoo() {
         }
 
-        public void foo(int i, String s) { // violation
+        // violation below 'All overloaded methods should be placed next to each other.'
+        public void foo(int i, String s) {
         }
 
         public void foo(String s, int i) {
@@ -38,7 +39,8 @@ public class InputOverloadMethodsDeclarationOrderRecords {
 
          }
 
-        public void foo() { // violation
+        // violation below 'All overloaded methods should be placed next to each other.'
+        public void foo() {
         }
 
         public MyRecord2{}
@@ -53,13 +55,14 @@ public class InputOverloadMethodsDeclarationOrderRecords {
         public void notFoo() {
         }
 
-
-        public void foo() { // violation
+        // violation below 'All overloaded methods should be placed next to each other.'
+        public void foo() {
         }
 
         public MyClass() {
         }
 
+        // violation below 'All overloaded methods should be placed next to each other.'
         public void foo(int i, String s) {
         }
 

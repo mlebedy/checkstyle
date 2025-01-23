@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -282,6 +282,28 @@ public class ClassFanOutComplexityCheckTest extends AbstractModuleTestSupport {
                 getPath("InputClassFanOutComplexityMultiCatchBitwiseOr.java"), expected);
     }
 
+    @Test
+    public void testThrows() throws Exception {
+        final String[] expected = {
+            "25:1: " + getCheckMessage(MSG_KEY, 2, 0),
+        };
+
+        verifyWithInlineConfigParser(
+                getPath("InputClassFanOutComplexityThrows.java"), expected);
+    }
+
+    @Test
+    public void testSealedClasses() throws Exception {
+        final String[] expected = {
+            "25:1: " + getCheckMessage(MSG_KEY, 2, 0),
+            "32:1: " + getCheckMessage(MSG_KEY, 1, 0),
+        };
+
+        verifyWithInlineConfigParser(
+                getNonCompilablePath("InputClassFanOutComplexitySealedClasses.java"),
+                expected);
+    }
+
     /**
      * We cannot reproduce situation when visitToken is called and leaveToken is not.
      * So, we have to use reflection to be sure that even in such situation
@@ -303,8 +325,8 @@ public class ClassFanOutComplexityCheckTest extends AbstractModuleTestSupport {
                 .that(importAst.isPresent())
                 .isTrue();
         assertWithMessage("State is not cleared on beginTree")
-                .that(TestUtil.isStatefulFieldClearedDuringBeginTree(check, importAst.get(),
-                    "importedClassPackages",
+                .that(TestUtil.isStatefulFieldClearedDuringBeginTree(check,
+                    importAst.orElseThrow(), "importedClassPackages",
                     importedClssPackage -> ((Map<String, String>) importedClssPackage).isEmpty()))
                 .isTrue();
     }
@@ -329,10 +351,50 @@ public class ClassFanOutComplexityCheckTest extends AbstractModuleTestSupport {
                 .that(classDef.isPresent())
                 .isTrue();
         assertWithMessage("State is not cleared on beginTree")
-                .that(TestUtil.isStatefulFieldClearedDuringBeginTree(check, classDef.get(),
+                .that(TestUtil.isStatefulFieldClearedDuringBeginTree(check, classDef.orElseThrow(),
                         "classesContexts",
                         classContexts -> ((Collection<?>) classContexts).size() == 1))
                 .isTrue();
+    }
+
+    /**
+     * We cannot reproduce situation when visitToken is called and leaveToken is not.
+     * So, we have to use reflection to be sure that even in such situation
+     * state of the field will be cleared.
+     *
+     * @throws Exception when code tested throws exception
+     */
+    @Test
+    public void testClearStatePackageName() throws Exception {
+        final ClassFanOutComplexityCheck check = new ClassFanOutComplexityCheck();
+        final DetailAST root = JavaParser.parseFile(
+                new File(getPath("InputClassFanOutComplexity.java")),
+                JavaParser.Options.WITHOUT_COMMENTS);
+        final Optional<DetailAST> packageDef = TestUtil.findTokenInAstByPredicate(root,
+            ast -> ast.getType() == TokenTypes.PACKAGE_DEF);
+
+        assertWithMessage("Ast should contain PACKAGE_DEF")
+                .that(packageDef.isPresent())
+                .isTrue();
+        assertWithMessage("State is not cleared on beginTree")
+                .that(TestUtil.isStatefulFieldClearedDuringBeginTree(check,
+                        packageDef.orElseThrow(), "packageName",
+                        packageName -> ((String) packageName).isEmpty()))
+                .isTrue();
+    }
+
+    /**
+     * Test [ClassName]::new expression. Such expression will be processed as a
+     * normal declaration of a new instance. We need to make sure this does not
+     *
+     * @throws Exception when code tested throws exception
+     */
+    @Test
+    public void testLambdaNew() throws Exception {
+        final String[] expected = {};
+        // no violation until #14787
+        verifyWithInlineConfigParser(
+                getPath("InputClassFanOutComplexityLambdaNew.java"), expected);
     }
 
 }

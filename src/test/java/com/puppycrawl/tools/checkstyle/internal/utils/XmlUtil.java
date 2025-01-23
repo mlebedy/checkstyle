@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -146,7 +146,7 @@ public final class XmlUtil {
     }
 
     /**
-     * <p>Sanitizes the given string for safe use in XML documents.</p>
+     * Sanitizes the given string for safe use in XML documents.
      * <ul>
      * <li>Removes all whitespaces at the beginning and at the end of the string;</li>
      * <li>Replaces repeated whitespaces in the middle of the string with a single space;</li>

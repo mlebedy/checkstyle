@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -50,7 +50,7 @@ public class LocalFinalVariableNameCheckTest
     public void testDefault()
             throws Exception {
 
-        final String pattern = "^[a-z][a-zA-Z0-9]*$";
+        final String pattern = "^([a-z][a-zA-Z0-9]*|_)$";
 
         final String[] expected = {
             "126:19: " + getCheckMessage(MSG_INVALID_PATTERN, "CDE", pattern),
@@ -117,6 +117,23 @@ public class LocalFinalVariableNameCheckTest
         final String[] expected = CommonUtil.EMPTY_STRING_ARRAY;
         verifyWithInlineConfigParser(
                 getPath("InputLocalFinalVariableNameTryResourcesJava9.java"), expected);
+    }
+
+    @Test
+    public void testUnnamedVariables() throws Exception {
+        final String pattern = "^([a-z][a-zA-Z0-9]*|_)$";
+
+        final String[] expected = {
+            "18:18: " + getCheckMessage(MSG_INVALID_PATTERN, "__", pattern),
+            "21:32: " + getCheckMessage(MSG_INVALID_PATTERN, "__", pattern),
+            "29:24: " + getCheckMessage(MSG_INVALID_PATTERN, "__", pattern),
+            "31:24: " + getCheckMessage(MSG_INVALID_PATTERN, "_BAD", pattern),
+            "37:19: " + getCheckMessage(MSG_INVALID_PATTERN, "__", pattern),
+            "38:19: " + getCheckMessage(MSG_INVALID_PATTERN, "_BAD", pattern),
+        };
+        verifyWithInlineConfigParser(
+                getNonCompilablePath("InputLocalFinalVariableNameUnnamedVariables.java"),
+                expected);
     }
 
 }

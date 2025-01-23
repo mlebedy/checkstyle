@@ -6,12 +6,12 @@ tokens = (default)VARIABLE_DEF
 
 */
 
-//non-compiled with javac: Compilable with Java14
+//non-compiled with javac: Compilable with Java17
 package com.puppycrawl.tools.checkstyle.checks.coding.finallocalvariable;
 
 public record InputFinalLocalVariableCheckRecords(boolean t, boolean f) {
     public InputFinalLocalVariableCheckRecords {
-        int a = 0; // ok
+        int a = 0;
         a = 1;
     }
 

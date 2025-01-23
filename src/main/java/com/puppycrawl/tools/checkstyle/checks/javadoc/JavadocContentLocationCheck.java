@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -29,11 +29,12 @@ import com.puppycrawl.tools.checkstyle.utils.JavadocUtil;
 import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
 
 /**
- * <p>
+ * <div>
  * Checks that the Javadoc content begins from the same position
  * for all Javadoc comments in the project. Any leading asterisks and spaces
  * are not counted as the beginning of the content and are therefore ignored.
- * </p>
+ * </div>
+ *
  * <p>
  * It is possible to enforce two different styles:
  * </p>
@@ -58,12 +59,15 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * </pre>
  * </li>
  * </ul>
+ *
  * <p>
  * This check does not validate the Javadoc summary itself nor its presence.
  * The check will not report any violations for missing or malformed javadoc summary.
  * To validate the Javadoc summary use
- * <a href="https://checkstyle.org/config_javadoc.html#SummaryJavadoc">SummaryJavadoc</a> check.
+ * <a href="https://checkstyle.org/checks/javadoc/summaryjavadoc.html#SummaryJavadoc">
+ * SummaryJavadoc</a> check.
  * </p>
+ *
  * <p>
  * The <a href="https://docs.oracle.com/en/java/javase/11/docs/specs/doc-comment-spec.html">
  * Documentation Comment Specification</a> permits leading asterisks on the first line.
@@ -80,6 +84,7 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  *   * Some text.
  *   *&#47;
  * </pre>
+ *
  * <p>
  * The documentation generated will be just "Some text." without any asterisks.
  * Since these asterisks will not appear in the generated documentation,
@@ -93,49 +98,11 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * Default value is {@code second_line}.
  * </li>
  * </ul>
- * <p>
- * To configure the default check to validate that the Javadoc content starts from the second line:
- * </p>
- * <pre>
- * &lt;module name="JavadocContentLocationCheck"/&gt;
- * </pre>
- * <p>
- * This setting produces a violation for each multi-line comment starting
- * on the same line as the initial asterisks:
- * </p>
- * <pre>
- * &#47;** This comment causes a violation because it starts from the first line
- *   * and spans several lines.
- *   *&#47;
- * &#47;**
- *   * This comment is OK because it starts from the second line.
- *   *&#47;
- * &#47;** This comment is OK because it is on the single-line. *&#47;
- * </pre>
- * <p>
- * To ensure that Javadoc content starts from the first line:
- * </p>
- * <pre>
- * &lt;module name="JavadocContentLocationCheck"&gt;
- *   &lt;property name="location" value="first_line"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * This setting produces a violation for each comment not
- * starting on the same line as the initial asterisks:
- * </p>
- * <pre>
- * &#47;** This comment is OK because it starts on the first line.
- *    * There may be additional text.
- *    *&#47;
- * &#47;**
- *   * This comment causes a violation because it starts on the second line.
- *   *&#47;
- * &#47;** This single-line comment also is OK. *&#47;
- * </pre>
+ *
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -195,6 +162,7 @@ public class JavadocContentLocationCheck extends AbstractCheck {
      *
      * @param value string to decode location from
      * @throws IllegalArgumentException if unable to decode
+     * @since 8.27
      */
     public void setLocation(String value) {
         location = JavadocContentLocationOption.valueOf(value.trim().toUpperCase(Locale.ENGLISH));
@@ -206,12 +174,12 @@ public class JavadocContentLocationCheck extends AbstractCheck {
             final String commentContent = JavadocUtil.getJavadocCommentContent(ast);
             final int indexOfFirstNonBlankLine = findIndexOfFirstNonBlankLine(commentContent);
             if (indexOfFirstNonBlankLine >= 0) {
-                if (location == JavadocContentLocationOption.FIRST_LINE) {
-                    if (indexOfFirstNonBlankLine != 0) {
-                        log(ast, MSG_JAVADOC_CONTENT_FIRST_LINE);
-                    }
+                if (location == JavadocContentLocationOption.FIRST_LINE
+                        && indexOfFirstNonBlankLine != 0) {
+                    log(ast, MSG_JAVADOC_CONTENT_FIRST_LINE);
                 }
-                else if (indexOfFirstNonBlankLine != 1) {
+                else if (location == JavadocContentLocationOption.SECOND_LINE
+                        && indexOfFirstNonBlankLine != 1) {
                     log(ast, MSG_JAVADOC_CONTENT_SECOND_LINE);
                 }
             }

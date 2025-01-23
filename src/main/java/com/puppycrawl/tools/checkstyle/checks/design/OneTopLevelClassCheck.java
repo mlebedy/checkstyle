@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -26,63 +26,19 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
 
 /**
- * <p>
+ * <div>
  * Checks that each top-level class, interface, enum
  * or annotation resides in a source file of its own.
  * Official description of a 'top-level' term:
  * <a href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-7.html#jls-7.6">
  * 7.6. Top Level Type Declarations</a>. If file doesn't contain
  * public class, interface, enum or annotation, top-level type is the first type in file.
- * </p>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;OneTopLevelClass&quot;/&gt;
- * </pre>
- * <p>
- * <b>ATTENTION:</b> This Check does not support customization of validated tokens,
- * so do not use the "tokens" property.
- * </p>
- * <p>
- * An example of code with violations:
- * </p>
- * <pre>
- * public class Foo { // OK, first top-level class
- *   // methods
- * }
+ * </div>
  *
- * class Foo2 { // violation, second top-level class
- *   // methods
- * }
- *
- * record Foo3 { // violation, third top-level "class"
- *     // methods
- * }
- * </pre>
- * <p>
- * An example of code without public top-level type:
- * </p>
- * <pre>
- * class Foo { // OK, first top-level class
- *   // methods
- * }
- *
- * class Foo2 { // violation, second top-level class
- *   // methods
- * }
- * </pre>
- * <p>
- * An example of code without violations:
- * </p>
- * <pre>
- * public class Foo { // OK, only one top-level class
- *   // methods
- * }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>

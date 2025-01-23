@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -41,7 +41,7 @@ import com.puppycrawl.tools.checkstyle.utils.ScopeUtil;
 import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
 
 /**
- * <p>
+ * <div>
  * Checks the Javadoc comments for type definitions. By default, does
  * not check for author or version tags. The scope to verify is specified using the {@code Scope}
  * class and defaults to {@code Scope.PRIVATE}. To verify another scope, set property
@@ -49,37 +49,22 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * tag or a version tag, set property authorFormat or versionFormat respectively to a
  * <a href="https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html">
  * pattern</a>.
- * </p>
+ * </div>
+ *
  * <p>
  * Does not perform checks for author and version tags for inner classes,
  * as they should be redundant because of outer class.
  * </p>
+ *
+ * <p>
+ * Does not perform checks for type definitions that do not have any Javadoc comments.
+ * </p>
+ *
  * <p>
  * Error messages about type parameters and record components for which no param tags are present
  * can be suppressed by defining property {@code allowMissingParamTags}.
  * </p>
  * <ul>
- * <li>
- * Property {@code scope} - Specify the visibility scope where Javadoc comments are checked.
- * Type is {@code com.puppycrawl.tools.checkstyle.api.Scope}.
- * Default value is {@code private}.
- * </li>
- * <li>
- * Property {@code excludeScope} - Specify the visibility scope where Javadoc
- * comments are not checked.
- * Type is {@code com.puppycrawl.tools.checkstyle.api.Scope}.
- * Default value is {@code null}.
- * </li>
- * <li>
- * Property {@code authorFormat} - Specify the pattern for {@code @author} tag.
- * Type is {@code java.util.regex.Pattern}.
- * Default value is {@code null}.
- * </li>
- * <li>
- * Property {@code versionFormat} - Specify the pattern for {@code @version} tag.
- * Type is {@code java.util.regex.Pattern}.
- * Default value is {@code null}.
- * </li>
  * <li>
  * Property {@code allowMissingParamTags} - Control whether to ignore violations
  * when a class has type parameters but does not have matching param tags in the Javadoc.
@@ -94,9 +79,30 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * </li>
  * <li>
  * Property {@code allowedAnnotations} - Specify annotations that allow
- * missed documentation. Only short names are allowed, e.g. {@code Generated}.
+ * skipping validation at all. Only short names are allowed, e.g. {@code Generated}.
  * Type is {@code java.lang.String[]}.
  * Default value is {@code Generated}.
+ * </li>
+ * <li>
+ * Property {@code authorFormat} - Specify the pattern for {@code @author} tag.
+ * Type is {@code java.util.regex.Pattern}.
+ * Default value is {@code null}.
+ * </li>
+ * <li>
+ * Property {@code excludeScope} - Specify the visibility scope where Javadoc
+ * comments are not checked.
+ * Type is {@code com.puppycrawl.tools.checkstyle.api.Scope}.
+ * Default value is {@code null}.
+ * </li>
+ * <li>
+ * Property {@code scope} - Specify the visibility scope where Javadoc comments are checked.
+ * Type is {@code com.puppycrawl.tools.checkstyle.api.Scope}.
+ * Default value is {@code private}.
+ * </li>
+ * <li>
+ * Property {@code versionFormat} - Specify the pattern for {@code @version} tag.
+ * Type is {@code java.util.regex.Pattern}.
+ * Default value is {@code null}.
  * </li>
  * <li>
  * Property {@code tokens} - tokens to check
@@ -115,67 +121,11 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * RECORD_DEF</a>.
  * </li>
  * </ul>
- * <p>
- * To configure the default check:
- * </p>
- * <pre>
- * &lt;module name="JavadocType"/&gt;
- * </pre>
- * <p>
- * To configure the check for {@code public} scope:
- * </p>
- * <pre>
- * &lt;module name="JavadocType"&gt;
- *   &lt;property name="scope" value="public"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * To configure the check for an {@code @author} tag:
- * </p>
- * <pre>
- * &lt;module name="JavadocType"&gt;
- *   &lt;property name="authorFormat" value="\S"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * To configure the check for a CVS revision version tag:
- * </p>
- * <pre>
- * &lt;module name="JavadocType"&gt;
- *   &lt;property name="versionFormat" value="\$Revision.*\$"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * To configure the check for {@code private} classes only:
- * </p>
- * <pre>
- * &lt;module name="JavadocType"&gt;
- *   &lt;property name="scope" value="private"/&gt;
- *   &lt;property name="excludeScope" value="package"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * Example that allows missing comments for classes annotated with
- * {@code @SpringBootApplication} and {@code @Configuration}:
- * </p>
- * <pre>
- * &#64;SpringBootApplication // no violations about missing comment on class
- * public class Application {}
  *
- * &#64;Configuration // no violations about missing comment on class
- * class DatabaseConfiguration {}
- * </pre>
- * <p>
- * Use following configuration:
- * </p>
- * <pre>
- * &lt;module name="JavadocType"&gt;
- *   &lt;property name="allowedAnnotations" value="SpringBootApplication,Configuration"/&gt;
- * &lt;/module&gt;
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -245,7 +195,7 @@ public class JavadocTypeCheck
 
     /** Pattern to match type name within angle brackets in javadoc param tag. */
     private static final Pattern TYPE_NAME_IN_JAVADOC_TAG =
-            Pattern.compile("\\s*<([^>]+)>.*");
+            Pattern.compile("^<([^>]+)");
 
     /** Pattern to split type name field in javadoc param tag. */
     private static final Pattern TYPE_NAME_IN_JAVADOC_TAG_SPLITTER =
@@ -268,7 +218,7 @@ public class JavadocTypeCheck
     private boolean allowUnknownTags;
 
     /**
-     * Specify annotations that allow missed documentation.
+     * Specify annotations that allow skipping validation at all.
      * Only short names are allowed, e.g. {@code Generated}.
      */
     private Set<String> allowedAnnotations = Set.of("Generated");
@@ -277,6 +227,7 @@ public class JavadocTypeCheck
      * Setter to specify the visibility scope where Javadoc comments are checked.
      *
      * @param scope a scope.
+     * @since 3.0
      */
     public void setScope(Scope scope) {
         this.scope = scope;
@@ -286,6 +237,7 @@ public class JavadocTypeCheck
      * Setter to specify the visibility scope where Javadoc comments are not checked.
      *
      * @param excludeScope a scope.
+     * @since 3.4
      */
     public void setExcludeScope(Scope excludeScope) {
         this.excludeScope = excludeScope;
@@ -295,6 +247,7 @@ public class JavadocTypeCheck
      * Setter to specify the pattern for {@code @author} tag.
      *
      * @param pattern a pattern.
+     * @since 3.0
      */
     public void setAuthorFormat(Pattern pattern) {
         authorFormat = pattern;
@@ -304,6 +257,7 @@ public class JavadocTypeCheck
      * Setter to specify the pattern for {@code @version} tag.
      *
      * @param pattern a pattern.
+     * @since 3.0
      */
     public void setVersionFormat(Pattern pattern) {
         versionFormat = pattern;
@@ -314,6 +268,7 @@ public class JavadocTypeCheck
      * does not have matching param tags in the Javadoc.
      *
      * @param flag a {@code Boolean} value
+     * @since 4.0
      */
     public void setAllowMissingParamTags(boolean flag) {
         allowMissingParamTags = flag;
@@ -323,16 +278,18 @@ public class JavadocTypeCheck
      * Setter to control whether to ignore violations when a Javadoc tag is not recognised.
      *
      * @param flag a {@code Boolean} value
+     * @since 5.1
      */
     public void setAllowUnknownTags(boolean flag) {
         allowUnknownTags = flag;
     }
 
     /**
-     * Setter to specify annotations that allow missed documentation.
+     * Setter to specify annotations that allow skipping validation at all.
      * Only short names are allowed, e.g. {@code Generated}.
      *
      * @param userAnnotations user's value.
+     * @since 8.15
      */
     public void setAllowedAnnotations(String... userAnnotations) {
         allowedAnnotations = Set.of(userAnnotations);
@@ -405,16 +362,11 @@ public class JavadocTypeCheck
      * @return whether we should check a given node.
      */
     private boolean shouldCheck(DetailAST ast) {
-        final Scope customScope = ScopeUtil.getScope(ast);
         final Scope surroundingScope = ScopeUtil.getSurroundingScope(ast);
 
-        return customScope.isIn(scope)
-            && (surroundingScope == null || surroundingScope.isIn(scope))
-            && (excludeScope == null
-                || !customScope.isIn(excludeScope)
-                || surroundingScope != null
-                && !surroundingScope.isIn(excludeScope))
-            && !AnnotationUtil.containsAnnotation(ast, allowedAnnotations);
+        return surroundingScope.isIn(scope)
+                && (excludeScope == null || !surroundingScope.isIn(excludeScope))
+                && !AnnotationUtil.containsAnnotation(ast, allowedAnnotations);
     }
 
     /**
@@ -427,10 +379,9 @@ public class JavadocTypeCheck
         final JavadocTags tags = JavadocUtil.getJavadocTags(textBlock,
             JavadocUtil.JavadocTagType.BLOCK);
         if (!allowUnknownTags) {
-            for (final InvalidJavadocTag tag : tags.getInvalidTags()) {
-                log(tag.getLine(), tag.getCol(), MSG_UNKNOWN_TAG,
-                    tag.getName());
-            }
+            tags.getInvalidTags().forEach(tag -> {
+                log(tag.getLine(), tag.getCol(), MSG_UNKNOWN_TAG, tag.getName());
+            });
         }
         return tags.getValidTags();
     }
@@ -529,11 +480,16 @@ public class JavadocTypeCheck
                         || recordComponentNames.contains(paramName);
 
                 if (!found) {
-                    final String actualParamName =
-                        TYPE_NAME_IN_JAVADOC_TAG_SPLITTER.split(tag.getFirstArg())[0];
-                    log(tag.getLineNo(), tag.getColumnNo(),
-                        MSG_UNUSED_TAG,
-                        JavadocTagInfo.PARAM.getText(), actualParamName);
+                    if (paramName.isEmpty()) {
+                        log(tag.getLineNo(), tag.getColumnNo(), MSG_UNUSED_TAG_GENERAL);
+                    }
+                    else {
+                        final String actualParamName =
+                            TYPE_NAME_IN_JAVADOC_TAG_SPLITTER.split(tag.getFirstArg())[0];
+                        log(tag.getLineNo(), tag.getColumnNo(),
+                            MSG_UNUSED_TAG,
+                            JavadocTagInfo.PARAM.getText(), actualParamName);
+                    }
                 }
             }
         }

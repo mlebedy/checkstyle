@@ -6,7 +6,7 @@ RedundantModifier
 
 package com.puppycrawl.tools.checkstyle.checks.modifier.redundantmodifier;
 
-//non-compiled with javac: Compilable with Java16
+//non-compiled with javac: Compilable with Java17
 public class InputRedundantModifierRecords {
 
     static record testRecord(int a) { // violation 'Redundant 'static' modifier'
@@ -49,8 +49,8 @@ final record testRecord(int a) { // violation 'Redundant 'final' modifier'
     }
 }
 
-record anotherRecord(int b) { // ok
+record anotherRecord(int b) {
 
-    record nestedRecord(int a, int p) { // ok
+    record nestedRecord(int a, int p) {
     }
 }

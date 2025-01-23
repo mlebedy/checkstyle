@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -28,10 +28,10 @@ import com.puppycrawl.tools.checkstyle.utils.CodePointUtil;
 import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 
 /**
- * <p>Abstract class for checking the padding of parentheses. That is whether a
+ * <div>Abstract class for checking the padding of parentheses. That is whether a
  * space is required after a left parenthesis and before a right parenthesis,
  * or such spaces are forbidden.
- * </p>
+ * </div>
  */
 @StatelessCheck
 public abstract class AbstractParenPadCheck
@@ -71,7 +71,7 @@ public abstract class AbstractParenPadCheck
     private PadOption option = PadOption.NOSPACE;
 
     /**
-     * Set the option to enforce.
+     * Specify policy on how to pad parentheses.
      *
      * @param optionStr string to decode option from
      * @throws IllegalArgumentException if unable to decode

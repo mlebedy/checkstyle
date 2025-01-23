@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -29,13 +29,14 @@ import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
 /**
- * <p>
+ * <div>
  * Checks that the order of modifiers conforms to the suggestions in the
  * <a href="https://docs.oracle.com/javase/specs/jls/se16/preview/specs/sealed-classes-jls.html">
  * Java Language specification, &#167; 8.1.1, 8.3.1, 8.4.3</a> and
  * <a href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-9.html">9.4</a>.
  * The correct order is:
- * </p>
+ * </div>
+ *
  * <ol>
  * <li> {@code public} </li>
  * <li> {@code protected} </li>
@@ -52,28 +53,27 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
  * <li> {@code native} </li>
  * <li> {@code strictfp} </li>
  * </ol>
+ *
  * <p>
  * In additional, modifiers are checked to ensure all annotations
  * are declared before all other modifiers.
  * </p>
+ *
  * <p>
  * Rationale: Code is easier to read if everybody follows
  * a standard.
  * </p>
+ *
  * <p>
  * ATTENTION: We skip
  * <a href="https://www.oracle.com/technical-resources/articles/java/ma14-architect-annotations.html">
  * type annotations</a> from validation.
  * </p>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name="ModifierOrder"/&gt;
- * </pre>
+ *
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>

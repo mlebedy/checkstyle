@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -146,4 +146,26 @@ public class HideUtilityClassConstructorCheckTest
             .isEqualTo(expected);
     }
 
+    @Test
+    public void testIgnoreAnnotatedBy() throws Exception {
+        final String[] expected = {
+            "30:1: " + getCheckMessage(MSG_KEY),
+        };
+        verifyWithInlineConfigParser(
+                getPath("InputHideUtilityClassConstructorIgnoreAnnotationBy.java"),
+                expected
+        );
+    }
+
+    @Test
+    public void testIgnoreAnnotatedByFullQualifier() throws Exception {
+        final String[] expected = {
+            "9:1: " + getCheckMessage(MSG_KEY),
+        };
+        verifyWithInlineConfigParser(
+                getPath("InputHideUtilityClassConstructor"
+                        + "IgnoreAnnotationByFullyQualifiedName.java"),
+                expected
+        );
+    }
 }

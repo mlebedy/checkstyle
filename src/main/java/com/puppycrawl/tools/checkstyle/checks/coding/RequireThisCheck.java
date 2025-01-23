@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -38,13 +38,15 @@ import com.puppycrawl.tools.checkstyle.utils.ScopeUtil;
 import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
 
 /**
- * <p>
+ * <div>
  * Checks that references to instance variables and methods of the present
  * object are explicitly of the form "this.varName" or "this.methodName(args)"
  * and that those references don't rely on the default behavior when "this." is absent.
- * </p>
+ * </div>
+ *
  * <p>Warning: the Check is very controversial if 'validateOnlyOverlapping' option is set to 'false'
  * and not that actual nowadays.</p>
+ *
  * <p>Rationale:</p>
  * <ol>
  *   <li>
@@ -57,6 +59,7 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  *     static and non-static methods).
  *   </li>
  * </ol>
+ *
  * <p>Limitations: Nothing is currently done about static variables
  * or catch-blocks.  Static methods invoked on a class name seem to be OK;
  * both the class name and the method name have a DOT parent.
@@ -81,159 +84,11 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * Default value is {@code true}.
  * </li>
  * </ul>
- * <p>
- * To configure the default check:
- * </p>
- * <pre>
- * &lt;module name=&quot;RequireThis&quot;/&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public class Test {
- *   private int a;
- *   private int b;
- *   private int c;
  *
- *   public Test(int a) {
- *     // overlapping by constructor argument
- *     this.a = a;       // OK, this keyword used
- *     b = 0;            // OK, no overlap
- *     foo(5);           // OK
- *   }
- *
- *   public void foo(int c) {
- *     // overlapping by method argument
- *     c = c;            // violation, reference to instance variable "c" requires "this"
- *   }
- * }
- * </pre>
- * <p>
- * To configure the check for fields only:
- * </p>
- * <pre>
- * &lt;module name=&quot;RequireThis&quot;&gt;
- *   &lt;property name=&quot;checkMethods&quot; value=&quot;false&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public class Test {
- *   private int a;
- *   private int b;
- *   private int c;
- *
- *   public Test(int a) {
- *     // overlapping by constructor argument
- *     this.a = a;       // OK, this keyword used
- *     b = 0;            // OK, no overlap
- *     foo(5);           // OK, no validation for methods
- *   }
- *
- *   public void foo(int c) {
- *     // overlapping by method argument
- *     c = c;            // violation, reference to instance variable "c" requires "this"
- *   }
- * }
- * </pre>
- * <p>
- * To configure the check for methods only:
- * </p>
- * <pre>
- * &lt;module name=&quot;RequireThis&quot;&gt;
- *   &lt;property name=&quot;checkFields&quot; value=&quot;false&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public class Test {
- *   private int a;
- *   private int b;
- *   private int c;
- *
- *   public Test(int a) {
- *     // overlapping by constructor argument
- *     this.a = a;       // OK, no validation for fields
- *     b = 0;            // OK, no validation for fields
- *     foo(5);           // OK, no overlap
- *   }
- *
- *   public void foo(int c) {
- *     // overlapping by method argument
- *     c = c;            // OK, no validation for fields
- *   }
- * }
- * </pre>
- * <p>
- * Note that method call foo(5) does not raise a violation
- * because methods cannot be overlapped in java.
- * </p>
- * <p>
- * To configure the check to validate for non-overlapping fields and methods:
- * </p>
- * <pre>
- * &lt;module name=&quot;RequireThis&quot;&gt;
- *   &lt;property name=&quot;validateOnlyOverlapping&quot; value=&quot;false&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public class Test {
- *   private int a;
- *   private int b;
- *   private int c;
- *
- *   public Test(int a) {
- *     // overlapping by constructor argument
- *     this.a = a;       // OK, no validation for fields
- *     b = 0;            // violation, reference to instance variable "b" requires "this"
- *     foo(5);           // violation, method call "foo(5)" requires "this"
- *   }
- *
- *   public void foo(int c) {
- *     // overlapping by method argument
- *     c = c;            // violation, reference to instance variable "c" requires "this"
- *   }
- * }
- * </pre>
- * <p>
- * Please, be aware of the following logic, which is implemented in the check:
- * </p>
- * <p>
- * 1) If you arrange 'this' in your code on your own, the check will not raise violation for
- * variables which use 'this' to reference a class field, for example:
- * </p>
- * <pre>
- * public class C {
- *   private int scale;
- *   private int x;
- *
- *   public void foo(int scale) {
- *     scale = this.scale;      // no violation
- *
- *     if (scale &gt; 0) {
- *       scale = -scale;        // no violation
- *     }
- *     x *= scale;
- *   }
- * }
- * </pre>
- * <p>
- * 2) If method parameter is returned from the method, the check will not raise violation for
- * returned variable/parameter, for example:
- * </p>
- * <pre>
- * public class D {
- *   private String prefix;
- *
- *   public String modifyPrefix(String prefix) {
- *     prefix = "^" + prefix + "$";  // no violation, because method parameter is returned
- *     return prefix;
- *   }
- * }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -321,6 +176,7 @@ public class RequireThisCheck extends AbstractCheck {
      * Setter to control whether to check references to fields.
      *
      * @param checkFields should we check fields usage or not
+     * @since 3.4
      */
     public void setCheckFields(boolean checkFields) {
         this.checkFields = checkFields;
@@ -330,6 +186,7 @@ public class RequireThisCheck extends AbstractCheck {
      * Setter to control whether to check references to methods.
      *
      * @param checkMethods should we check methods usage or not
+     * @since 3.4
      */
     public void setCheckMethods(boolean checkMethods) {
         this.checkMethods = checkMethods;
@@ -339,6 +196,7 @@ public class RequireThisCheck extends AbstractCheck {
      * Setter to control whether to check only overlapping by variables or arguments.
      *
      * @param validateOnlyOverlapping should we check only overlapping by variables or arguments
+     * @since 6.17
      */
     public void setValidateOnlyOverlapping(boolean validateOnlyOverlapping) {
         this.validateOnlyOverlapping = validateOnlyOverlapping;
@@ -534,7 +392,7 @@ public class RequireThisCheck extends AbstractCheck {
      */
     private static boolean isInCompactConstructor(DetailAST ast) {
         boolean isInCompactCtor = false;
-        DetailAST parent = ast.getParent();
+        DetailAST parent = ast;
         while (parent != null) {
             if (parent.getType() == TokenTypes.COMPACT_CTOR_DEF) {
                 isInCompactCtor = true;
@@ -609,7 +467,7 @@ public class RequireThisCheck extends AbstractCheck {
             case TokenTypes.LITERAL_NEW:
                 if (isAnonymousClassDef(ast)) {
                     frameStack.addFirst(new AnonymousClassFrame(frame,
-                            ast.getFirstChild().toString()));
+                            ast.toString()));
                 }
                 break;
             case TokenTypes.LITERAL_TRY:
@@ -689,7 +547,7 @@ public class RequireThisCheck extends AbstractCheck {
                 break;
             case TokenTypes.LITERAL_NEW:
                 if (isAnonymousClassDef(ast)) {
-                    frames.put(ast, frameStack.poll());
+                    frameStack.remove();
                 }
                 break;
             case TokenTypes.LITERAL_TRY:
@@ -886,28 +744,14 @@ public class RequireThisCheck extends AbstractCheck {
      * @param ident ident token.
      * @return true if field can be referenced from a static context.
      */
-    private boolean canBeReferencedFromStaticContext(DetailAST ident) {
-        AbstractFrame variableDeclarationFrame = findFrame(ident, false);
-        while (variableDeclarationFrame.getType() == FrameType.BLOCK_FRAME
-            || variableDeclarationFrame.getType() == FrameType.FOR_FRAME) {
-            variableDeclarationFrame = variableDeclarationFrame.getParent();
-        }
-
+    private static boolean canBeReferencedFromStaticContext(DetailAST ident) {
         boolean staticContext = false;
 
-        if (variableDeclarationFrame.getType() == FrameType.CLASS_FRAME) {
-            final DetailAST codeBlockDefinition = getCodeBlockDefinitionToken(ident);
-            if (codeBlockDefinition != null) {
-                final DetailAST modifiers = codeBlockDefinition.getFirstChild();
-                staticContext = codeBlockDefinition.getType() == TokenTypes.STATIC_INIT
-                    || modifiers.findFirstToken(TokenTypes.LITERAL_STATIC) != null;
-            }
-        }
-        else {
-            final DetailAST frameNameIdent = variableDeclarationFrame.getFrameNameIdent();
-            final DetailAST definitionToken = frameNameIdent.getParent();
-            staticContext = definitionToken.findFirstToken(TokenTypes.MODIFIERS)
-                .findFirstToken(TokenTypes.LITERAL_STATIC) != null;
+        final DetailAST codeBlockDefinition = getCodeBlockDefinitionToken(ident);
+        if (codeBlockDefinition != null) {
+            final DetailAST modifiers = codeBlockDefinition.getFirstChild();
+            staticContext = codeBlockDefinition.getType() == TokenTypes.STATIC_INIT
+                || modifiers.findFirstToken(TokenTypes.LITERAL_STATIC) != null;
         }
         return !staticContext;
     }
@@ -920,7 +764,7 @@ public class RequireThisCheck extends AbstractCheck {
      *         definition was not found.
      */
     private static DetailAST getCodeBlockDefinitionToken(DetailAST ident) {
-        DetailAST parent = ident.getParent();
+        DetailAST parent = ident;
         while (parent != null
                && parent.getType() != TokenTypes.METHOD_DEF
                && parent.getType() != TokenTypes.STATIC_INIT) {
@@ -1215,7 +1059,7 @@ public class RequireThisCheck extends AbstractCheck {
      */
     private static boolean isLambdaParameter(DetailAST ast) {
         DetailAST parent;
-        for (parent = ast.getParent(); parent != null; parent = parent.getParent()) {
+        for (parent = ast; parent != null; parent = parent.getParent()) {
             if (parent.getType() == TokenTypes.LAMBDA) {
                 break;
             }
@@ -1471,7 +1315,7 @@ public class RequireThisCheck extends AbstractCheck {
          * @param parent parent frame.
          * @param ident frame name ident.
          */
-        /* package */ ClassFrame(AbstractFrame parent, DetailAST ident) {
+        private ClassFrame(AbstractFrame parent, DetailAST ident) {
             super(parent, ident);
             instanceMembers = new HashSet<>();
             instanceMethods = new HashSet<>();
@@ -1562,11 +1406,16 @@ public class RequireThisCheck extends AbstractCheck {
         public boolean hasFinalField(final DetailAST instanceMember) {
             boolean result = false;
             for (DetailAST member : instanceMembers) {
-                final DetailAST mods = member.getParent().findFirstToken(TokenTypes.MODIFIERS);
-                final boolean finalMod = mods.findFirstToken(TokenTypes.FINAL) != null;
-                if (finalMod && isAstSimilar(member, instanceMember)) {
+                final DetailAST parent = member.getParent();
+                if (parent.getType() == TokenTypes.RECORD_COMPONENT_DEF) {
                     result = true;
-                    break;
+                }
+                else {
+                    final DetailAST mods = parent.findFirstToken(TokenTypes.MODIFIERS);
+                    final boolean finalMod = mods.findFirstToken(TokenTypes.FINAL) != null;
+                    if (finalMod && isAstSimilar(member, instanceMember)) {
+                        result = true;
+                    }
                 }
             }
             return result;
@@ -1588,7 +1437,7 @@ public class RequireThisCheck extends AbstractCheck {
         protected AbstractFrame getIfContains(DetailAST identToFind, boolean lookForMethod) {
             AbstractFrame frame = null;
 
-            if (lookForMethod && containsMethod(identToFind)
+            if (containsMethod(identToFind)
                 || containsFieldOrVariable(identToFind)) {
                 frame = this;
             }

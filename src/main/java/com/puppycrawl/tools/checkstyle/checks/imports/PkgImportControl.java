@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -29,13 +29,13 @@ import java.util.regex.Pattern;
  * be a sub-package, a class, or an allow/disallow rule.
  */
 class PkgImportControl extends AbstractImportControl {
-    /** The package separator: "." */
+    /** The package separator: ".". */
     private static final String DOT = ".";
 
     /** The regex for the package separator: "\\.". */
     private static final String DOT_REGEX = "\\.";
 
-    /** A pattern matching the package separator: "\." */
+    /** A pattern matching the package separator: "\.". */
     private static final Pattern DOT_REGEX_PATTERN = Pattern.compile(DOT_REGEX);
 
     /** The regex for the escaped package separator: "\\\\.". */

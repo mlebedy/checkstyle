@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -26,64 +26,22 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
 
 /**
- * <p>
+ * <div>
  * Checks if unnecessary semicolon is used in last resource declaration.
- * </p>
+ * </div>
  * <ul>
  * <li>
  * Property {@code allowWhenNoBraceAfterSemicolon} -
- * Allow unnecessary semicolon if closing paren is not on the same line.
+ * Allow unnecessary semicolon if closing parenthesis is not on the same line.
  * Type is {@code boolean}.
  * Default value is {@code true}.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;UnnecessarySemicolonInTryWithResources&quot;/&gt;
- * </pre>
- * <p>
- * Example of violations
- * </p>
- * <pre>
- * class A {
- *     void method() throws IOException {
- *         try(Reader r1 = new PipedReader();){} // violation
- *         try(Reader r4 = new PipedReader();Reader r5 = new PipedReader()
- *         ;){} // violation
- *         try(Reader r6 = new PipedReader();
- *             Reader r7
- *                    = new PipedReader();
- *         ){}
- *     }
- * }
- * </pre>
- * <p>
- * To configure the check to detect unnecessary semicolon
- * if closing paren is not on same line
- * </p>
- * <pre>
- * &lt;module name="UnnecessarySemicolonInTryWithResources"&gt;
- *   &lt;property name="allowWhenNoBraceAfterSemicolon" value="false"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * Example of exclusion
- * </p>
- * <pre>
- * class A {
- *     void method() throws IOException {
- *         try(Reader r1 = new PipedReader();){} // violation
- *         try(Reader r6 = new PipedReader();
- *             Reader r7 = new PipedReader(); // violation
- *         ){}
- *     }
- * }
- * </pre>
+ *
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -104,7 +62,7 @@ public final class UnnecessarySemicolonInTryWithResourcesCheck extends AbstractC
      */
     public static final String MSG_SEMI = "unnecessary.semicolon";
 
-    /** Allow unnecessary semicolon if closing paren is not on the same line. */
+    /** Allow unnecessary semicolon if closing parenthesis is not on the same line. */
     private boolean allowWhenNoBraceAfterSemicolon = true;
 
     @Override
@@ -125,9 +83,10 @@ public final class UnnecessarySemicolonInTryWithResourcesCheck extends AbstractC
     }
 
     /**
-     * Setter to allow unnecessary semicolon if closing paren is not on the same line.
+     * Setter to allow unnecessary semicolon if closing parenthesis is not on the same line.
      *
      * @param allowWhenNoBraceAfterSemicolon a value to set.
+     * @since 8.22
      */
     public void setAllowWhenNoBraceAfterSemicolon(boolean allowWhenNoBraceAfterSemicolon) {
         this.allowWhenNoBraceAfterSemicolon = allowWhenNoBraceAfterSemicolon;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -156,12 +156,12 @@ public class PackageObjectFactoryTest {
             assertWithMessage("Exception is expected").fail();
         }
         catch (CheckstyleException ex) {
-            final Violation exceptionMessage = new Violation(1,
-                    Definitions.CHECKSTYLE_BUNDLE, UNABLE_TO_INSTANTIATE_EXCEPTION_MESSAGE,
-                    new String[] {name, null}, null, factory.getClass(), null);
+            final LocalizedMessage exceptionMessage = new LocalizedMessage(
+                    Definitions.CHECKSTYLE_BUNDLE, factory.getClass(),
+                    UNABLE_TO_INSTANTIATE_EXCEPTION_MESSAGE, name, null);
             assertWithMessage("Invalid exception message")
                 .that(ex.getMessage())
-                .isEqualTo(exceptionMessage.getViolation());
+                .isEqualTo(exceptionMessage.getMessage());
         }
     }
 
@@ -177,12 +177,12 @@ public class PackageObjectFactoryTest {
                 final String attemptedNames = BASE_PACKAGE + PACKAGE_SEPARATOR + name
                     + STRING_SEPARATOR + name + CHECK_SUFFIX + STRING_SEPARATOR
                     + BASE_PACKAGE + PACKAGE_SEPARATOR + name + CHECK_SUFFIX;
-                final Violation exceptionMessage = new Violation(1,
-                    Definitions.CHECKSTYLE_BUNDLE, UNABLE_TO_INSTANTIATE_EXCEPTION_MESSAGE,
-                    new String[] {name, attemptedNames}, null, factory.getClass(), null);
+                final LocalizedMessage exceptionMessage = new LocalizedMessage(
+                    Definitions.CHECKSTYLE_BUNDLE, factory.getClass(),
+                    UNABLE_TO_INSTANTIATE_EXCEPTION_MESSAGE, name, attemptedNames);
                 assertWithMessage("Invalid exception message")
                     .that(ex.getMessage())
-                    .isEqualTo(exceptionMessage.getViolation());
+                    .isEqualTo(exceptionMessage.getMessage());
             }
         }
     }
@@ -250,12 +250,12 @@ public class PackageObjectFactoryTest {
         catch (CheckstyleException ex) {
             final String optionalNames = barPackage + PACKAGE_SEPARATOR + name
                     + STRING_SEPARATOR + fooPackage + PACKAGE_SEPARATOR + name;
-            final Violation exceptionMessage = new Violation(1,
-                    Definitions.CHECKSTYLE_BUNDLE, AMBIGUOUS_MODULE_NAME_EXCEPTION_MESSAGE,
-                    new String[] {name, optionalNames}, null, getClass(), null);
+            final LocalizedMessage exceptionMessage = new LocalizedMessage(
+                    Definitions.CHECKSTYLE_BUNDLE, getClass(),
+                    AMBIGUOUS_MODULE_NAME_EXCEPTION_MESSAGE, name, optionalNames);
             assertWithMessage("Invalid exception message")
                 .that(ex.getMessage())
-                .isEqualTo(exceptionMessage.getViolation());
+                .isEqualTo(exceptionMessage.getMessage());
         }
     }
 
@@ -278,12 +278,12 @@ public class PackageObjectFactoryTest {
                     + checkName + STRING_SEPARATOR
                     + package1 + PACKAGE_SEPARATOR + checkName + STRING_SEPARATOR
                     + package2 + PACKAGE_SEPARATOR + checkName;
-            final Violation exceptionMessage = new Violation(1,
-                    Definitions.CHECKSTYLE_BUNDLE, UNABLE_TO_INSTANTIATE_EXCEPTION_MESSAGE,
-                    new String[] {name, attemptedNames}, null, getClass(), null);
+            final LocalizedMessage exceptionMessage = new LocalizedMessage(
+                    Definitions.CHECKSTYLE_BUNDLE, getClass(),
+                    UNABLE_TO_INSTANTIATE_EXCEPTION_MESSAGE, name, attemptedNames);
             assertWithMessage("Invalid exception message")
                 .that(ex.getMessage())
-                .isEqualTo(exceptionMessage.getViolation());
+                .isEqualTo(exceptionMessage.getMessage());
         }
     }
 
@@ -441,7 +441,7 @@ public class PackageObjectFactoryTest {
      * to initialize private field {@code PackageObjectFactory.thirdPartyNameToFullModuleNames}.
      * Since the method and the field both are private, the {@link TestUtil} is required to ensure
      * that the field is changed. Also, the expected exception should be thrown from the static
-     * method {@link ModuleReflectionUtil#getCheckstyleModules}, so {@link Mockito#mockStatic}
+     * method {@link ModuleReflectionUtil#isCheckstyleModule}, so {@link Mockito#mockStatic}
      * is required to mock this exception.
      *
      * @throws Exception when the code tested throws an exception
@@ -493,6 +493,35 @@ public class PackageObjectFactoryTest {
             .isInstanceOf(MockClass.class);
     }
 
+    /**
+     * This test case is designed to verify the behavior of the PackageObjectFactory's
+     * createModule method when it is provided with a fully qualified class name
+     * (containing a package separator).
+     * It ensures that ModuleReflectionUtil.getCheckstyleModules is not executed in this case.
+     */
+    @Test
+    public void testCreateObjectWithNameContainingPackageSeparatorWithoutSearch() throws Exception {
+        final ClassLoader classLoader = ClassLoader.getSystemClassLoader();
+        final Set<String> packages = Collections.singleton(BASE_PACKAGE);
+        final PackageObjectFactory objectFactory =
+            new PackageObjectFactory(packages, classLoader, TRY_IN_ALL_REGISTERED_PACKAGES);
+
+        try (MockedStatic<ModuleReflectionUtil> utilities =
+                     mockStatic(ModuleReflectionUtil.class)) {
+            utilities.when(() -> ModuleReflectionUtil.getCheckstyleModules(packages, classLoader))
+                    .thenThrow(new IllegalStateException("creation of objects by fully qualified"
+                            + " class names should not result in search of modules in classpath"));
+
+            final String fullyQualifiedName = MockClass.class.getName();
+            assertWithMessage("class name is not in expected format")
+                    .that(fullyQualifiedName).contains(".");
+            final Object object = objectFactory.createModule(fullyQualifiedName);
+            assertWithMessage("Object should be an instance of MockClass")
+                    .that(object)
+                    .isInstanceOf(MockClass.class);
+        }
+    }
+
     @Test
     public void testCreateModuleWithTryInAllRegisteredPackages() {
         final ClassLoader classLoader = ClassLoader.getSystemClassLoader();
@@ -513,6 +542,35 @@ public class PackageObjectFactoryTest {
                     + "com.puppycrawl.tools.checkstyle.PackageObjectFactoryTest$MockClassCheck"
             );
 
+    }
+
+    @Test
+    public void testExceptionMessage() {
+        final String barPackage = BASE_PACKAGE + ".packageobjectfactory.bar";
+        final String fooPackage = BASE_PACKAGE + ".packageobjectfactory.foo";
+        final String zooPackage = BASE_PACKAGE + ".packageobjectfactory.zoo";
+        final String abcPackage = BASE_PACKAGE + ".packageobjectfactory.abc";
+        final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        final PackageObjectFactory objectFactory = new PackageObjectFactory(
+                new HashSet<>(Arrays.asList(abcPackage, barPackage,
+                        fooPackage, zooPackage)), classLoader);
+        final String name = "FooCheck";
+        try {
+            objectFactory.createModule(name);
+            assertWithMessage("Exception is expected").fail();
+        }
+        catch (CheckstyleException ex) {
+            final String optionalNames = abcPackage + PACKAGE_SEPARATOR + name
+                    + STRING_SEPARATOR + barPackage + PACKAGE_SEPARATOR + name
+                    + STRING_SEPARATOR + fooPackage + PACKAGE_SEPARATOR + name
+                    + STRING_SEPARATOR + zooPackage + PACKAGE_SEPARATOR + name;
+            final LocalizedMessage exceptionMessage = new LocalizedMessage(
+                    Definitions.CHECKSTYLE_BUNDLE, getClass(),
+                    AMBIGUOUS_MODULE_NAME_EXCEPTION_MESSAGE, name, optionalNames);
+            assertWithMessage("Invalid exception message")
+                .that(ex.getMessage())
+                .isEqualTo(exceptionMessage.getMessage());
+        }
     }
 
     private static final class FailConstructorFileSet extends AbstractFileSetCheck {

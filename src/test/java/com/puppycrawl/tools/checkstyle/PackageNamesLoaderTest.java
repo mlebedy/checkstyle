@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -20,6 +20,7 @@
 package com.puppycrawl.tools.checkstyle;
 
 import static com.google.common.truth.Truth.assertWithMessage;
+import static com.puppycrawl.tools.checkstyle.internal.utils.TestUtil.getExpectedThrowable;
 
 import java.io.File;
 import java.io.IOException;
@@ -228,6 +229,45 @@ public class PackageNamesLoaderTest extends AbstractPathTestSupport {
         }
     }
 
+    @Test
+    public void testUnmodifiableCollection() throws Exception {
+        final Set<String> actualPackageNames = PackageNamesLoader
+                .getPackageNames(new TestUrlsClassLoader(Collections.emptyEnumeration()));
+
+        final Exception ex = getExpectedThrowable(UnsupportedOperationException.class,
+                () -> actualPackageNames.add("com.puppycrawl.tools.checkstyle.checks.modifier"));
+
+        assertWithMessage("Exception class is not expected")
+                .that(ex.getClass())
+                .isEqualTo(UnsupportedOperationException.class);
+    }
+
+    @Test
+    public void testMapping() throws Exception {
+        final Enumeration<URL> enumeration = Collections.enumeration(Collections.singleton(
+                new File(getPath("InputPackageNamesLoader1.xml")).toURI().toURL()));
+
+        final Set<String> actualPackageNames = PackageNamesLoader
+                .getPackageNames(new TestUrlsClassLoader(enumeration));
+
+        assertWithMessage("Invalid package names length.")
+            .that(actualPackageNames)
+            .hasSize(3);
+    }
+
+    @Test
+    public void testMapping2() throws Exception {
+        final Enumeration<URL> enumeration = Collections.enumeration(Collections.singleton(
+                new File(getPath("InputPackageNamesLoader2.xml")).toURI().toURL()));
+
+        final Set<String> actualPackageNames = PackageNamesLoader
+                .getPackageNames(new TestUrlsClassLoader(enumeration));
+
+        assertWithMessage("Invalid package names length.")
+            .that(actualPackageNames)
+            .hasSize(3);
+    }
+
     /**
      * Mocked ClassLoader for testing URL loading.
      *
@@ -235,11 +275,11 @@ public class PackageNamesLoaderTest extends AbstractPathTestSupport {
      * @noinspectionreason CustomClassloader - needed to pass URLs to pretend these are loaded
      *      from the classpath though we can't add/change the files for testing
      */
-    private static class TestUrlsClassLoader extends ClassLoader {
+    private static final class TestUrlsClassLoader extends ClassLoader {
 
         private final Enumeration<URL> urls;
 
-        /* package */ TestUrlsClassLoader(Enumeration<URL> urls) {
+        private TestUrlsClassLoader(Enumeration<URL> urls) {
             this.urls = urls;
         }
 
@@ -256,7 +296,7 @@ public class PackageNamesLoaderTest extends AbstractPathTestSupport {
      * @noinspectionreason CustomClassloader - needed to throw an exception to
      *      test a catch statement
      */
-    private static class TestIoExceptionClassLoader extends ClassLoader {
+    private static final class TestIoExceptionClassLoader extends ClassLoader {
         @Override
         public Enumeration<URL> getResources(String name) throws IOException {
             throw new IOException("test");

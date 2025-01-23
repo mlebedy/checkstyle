@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -20,8 +20,10 @@
 package com.puppycrawl.tools.checkstyle.api;
 
 import static com.google.common.truth.Truth.assertWithMessage;
+import static com.puppycrawl.tools.checkstyle.internal.utils.TestUtil.getExpectedThrowable;
 
 import java.util.Objects;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
@@ -102,11 +104,41 @@ public class FilterSetTest {
                 .isFalse();
     }
 
-    private static class DummyFilter implements Filter {
+    /*
+      Due to low level configuration setup of FilterSet, conventional
+      input validation cannot be done here hence, pure JUnit testing has been
+      done for the time being
+    */
+    @Test
+    public void testUnmodifiableSet() {
+        final FilterSet filterSet = new FilterSet();
+        final Filter filter = new FilterSet();
+        filterSet.addFilter(filter);
+        final Set<Filter> subFilterSet = filterSet.getFilters();
+        final Exception ex = getExpectedThrowable(UnsupportedOperationException.class,
+            () -> subFilterSet.add(filter));
+        assertWithMessage("Exception message not expected")
+                .that(ex.getClass())
+                .isEqualTo(UnsupportedOperationException.class);
+    }
+
+    /*
+      Input based test does not call toString, but this method might
+      be useful for third party integrations
+    */
+    @Test
+    public void testEmptyToString() {
+        final FilterSet filterSet = new FilterSet();
+        assertWithMessage("toString() result shouldn't be an empty string")
+                .that(filterSet.toString())
+                .isNotEmpty();
+    }
+
+    private static final class DummyFilter implements Filter {
 
         private final boolean acceptValue;
 
-        /* package */ DummyFilter(boolean accept) {
+        private DummyFilter(boolean accept) {
             acceptValue = accept;
         }
 

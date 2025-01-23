@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -36,9 +36,10 @@ import com.puppycrawl.tools.checkstyle.api.AbstractFileSetCheck;
 import com.puppycrawl.tools.checkstyle.api.FileText;
 
 /**
- * <p>
+ * <div>
  * Detects duplicated keys in properties files.
- * </p>
+ * </div>
+ *
  * <p>
  * Rationale: Multiple property keys usually appear after merge or rebase of
  * several branches. While there are no problems in runtime, there can be a confusion
@@ -46,52 +47,16 @@ import com.puppycrawl.tools.checkstyle.api.FileText;
  * </p>
  * <ul>
  * <li>
- * Property {@code fileExtensions} - Specify file type extension of the files to check.
+ * Property {@code fileExtensions} - Specify the file extensions of the files to process.
  * Type is {@code java.lang.String[]}.
  * Default value is {@code .properties}.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;UniqueProperties&quot;/&gt;
- * </pre>
- * <p>
- * Example: in foo.properties file
- * </p>
- * <pre>
- * key.one=44
- * key.two=32 // OK
- * key.one=54 // violation
- * </pre>
- * <p>
- * To configure the check to scan custom file extensions:
- * </p>
- * <pre>
- * &lt;module name=&quot;UniqueProperties&quot;&gt;
- *  &lt;property name=&quot;fileExtensions&quot; value=&quot;customProperties&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * Example: in foo.customProperties file
- * </p>
- * <pre>
- * key.one=44
- * key.two=32 // OK
- * key.one=54 // violation
- * </pre>
- * <p>
- * Example: in foo.properties file
- * </p>
- * <pre>
- * key.one=44
- * key.two=32 // OK
- * key.one=54 // OK, file is not checked
- * </pre>
+ *
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.Checker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -201,7 +166,7 @@ public class UniquePropertiesCheck extends AbstractFileSetCheck {
      * @noinspectionreason ClassExtendsConcreteCollection - we require custom
      *      {@code put} method to find duplicate keys
      */
-    private static class UniqueProperties extends Properties {
+    private static final class UniqueProperties extends Properties {
 
         /** A unique serial version identifier. */
         private static final long serialVersionUID = 1L;

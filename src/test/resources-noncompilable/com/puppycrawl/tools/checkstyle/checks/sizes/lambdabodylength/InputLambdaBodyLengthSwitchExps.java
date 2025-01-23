@@ -5,7 +5,7 @@ max = (default)10
 
 */
 
-//non-compiled with javac: Compilable with Java14
+//non-compiled with javac: Compilable with Java17
 package com.puppycrawl.tools.checkstyle.checks.sizes.lambdabodylength;
 
 import java.util.stream.Stream;
@@ -14,7 +14,7 @@ public class InputLambdaBodyLengthSwitchExps {
 
     boolean method1(Nums k, String string) {
         switch (k) {
-        case ONE -> { // ok
+        case ONE -> {
             System.out.println(2);
             System.out.println(3);
             System.out.println(4);

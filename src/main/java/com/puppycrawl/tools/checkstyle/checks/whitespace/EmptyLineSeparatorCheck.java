@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -35,15 +35,17 @@ import com.puppycrawl.tools.checkstyle.utils.JavadocUtil;
 import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
 
 /**
- * <p>
+ * <div>
  * Checks for empty line separators before package, all import declarations,
  * fields, constructors, methods, nested classes,
  * static initializers and instance initializers.
- * </p>
+ * </div>
+ *
  * <p>
  * Checks for empty line separators before not only statements but
  * implementation and documentation comments and blocks as well.
  * </p>
+ *
  * <p>
  * ATTENTION: empty line separator is required between token siblings,
  * not after line where token is found.
@@ -51,16 +53,7 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * is required at its end (for example for CLASS_DEF it is after '}').
  * Also, trailing comments are skipped.
  * </p>
- * <p>
- * ATTENTION: violations from multiple empty lines cannot be suppressed via XPath:
- * <a href="https://github.com/checkstyle/checkstyle/issues/8179">#8179</a>.
- * </p>
  * <ul>
- * <li>
- * Property {@code allowNoEmptyLineBetweenFields} - Allow no empty line between fields.
- * Type is {@code boolean}.
- * Default value is {@code false}.
- * </li>
  * <li>
  * Property {@code allowMultipleEmptyLines} - Allow multiple empty lines between class members.
  * Type is {@code boolean}.
@@ -71,6 +64,11 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * empty lines inside class members.
  * Type is {@code boolean}.
  * Default value is {@code true}.
+ * </li>
+ * <li>
+ * Property {@code allowNoEmptyLineBetweenFields} - Allow no empty line between fields.
+ * Type is {@code boolean}.
+ * Default value is {@code false}.
  * </li>
  * <li>
  * Property {@code tokens} - tokens to check
@@ -89,7 +87,7 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * INTERFACE_DEF</a>,
  * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#ENUM_DEF">
  * ENUM_DEF</a>,
- * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#METHOD_DEF">
+ * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#STATIC_INIT">
  * STATIC_INIT</a>,
  * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#INSTANCE_INIT">
  * INSTANCE_INIT</a>,
@@ -105,207 +103,11 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * COMPACT_CTOR_DEF</a>.
  * </li>
  * </ul>
- * <p>
- * To configure the default check:
- * </p>
- * <pre>
- * &lt;module name=&quot;EmptyLineSeparator&quot;/&gt;
- * </pre>
- * <p>
- * Example of declarations without empty line separator:
- * </p>
  *
- * <pre>
- * ///////////////////////////////////////////////////
- * //HEADER
- * ///////////////////////////////////////////////////
- * package com.whitespace; // violation, 'package' should be separated from previous line.
- * import java.io.Serializable; // violation, 'import' should be separated from previous line.
- * class Foo { // violation, 'CLASS_DEF' should be separated from previous line.
- *   public static final int FOO_CONST = 1;
- *   public void foo() {} // violation, 'METHOD_DEF' should be separated from previous line.
- * }
- * </pre>
- *
- * <p>
- * Example of declarations with empty line separator
- * that is expected by the Check by default:
- * </p>
- *
- * <pre>
- * ///////////////////////////////////////////////////
- * //HEADER
- * ///////////////////////////////////////////////////
- *
- * package com.puppycrawl.tools.checkstyle.whitespace;
- *
- * import java.io.Serializable;
- *
- * class Foo {
- *   public static final int FOO_CONST = 1;
- *
- *   public void foo() {}
- * }
- * </pre>
- * <p>
- * To check empty line before
- * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#VARIABLE_DEF">
- * VARIABLE_DEF</a> and
- * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#METHOD_DEF">
- * METHOD_DEF</a>:
- * </p>
- *
- * <pre>
- * &lt;module name=&quot;EmptyLineSeparator&quot;&gt;
- *   &lt;property name=&quot;tokens&quot; value=&quot;VARIABLE_DEF, METHOD_DEF&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- *
- * <p>
- * To allow no empty line between fields:
- * </p>
- * <pre>
- * &lt;module name="EmptyLineSeparator"&gt;
- *   &lt;property name="allowNoEmptyLineBetweenFields" value="true"/&gt;
- * &lt;/module&gt;
- * </pre>
- *
- * <p>
- * Example:
- * </p>
- *
- * <pre>
- * class Foo {
- *   int field1; // ok
- *   double field2; // ok
- *   long field3, field4 = 10L, field5; // ok
- * }
- * </pre>
- * <p>
- * Example of declarations with multiple empty lines between class members (allowed by default):
- * </p>
- *
- * <pre>
- * ///////////////////////////////////////////////////
- * //HEADER
- * ///////////////////////////////////////////////////
- *
- *
- * package com.puppycrawl.tools.checkstyle.whitespace;
- *
- *
- *
- * import java.io.Serializable;
- *
- *
- * class Foo {
- *   public static final int FOO_CONST = 1;
- *
- *
- *
- *   public void foo() {} // OK
- * }
- * </pre>
- * <p>
- * To disallow multiple empty lines between class members:
- * </p>
- * <pre>
- * &lt;module name=&quot;EmptyLineSeparator&quot;&gt;
- *   &lt;property name=&quot;allowMultipleEmptyLines&quot; value=&quot;false&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <pre>
- * ///////////////////////////////////////////////////
- * //HEADER
- * ///////////////////////////////////////////////////
- *
- *
- * package com.checkstyle.whitespace; // violation, 'package' has more than 1 empty lines before.
- *
- *
- * import java.io.Serializable; // violation, 'import' has more than 1 empty lines before.
- *
- *
- * class Foo { // violation, 'CLASS_DEF' has more than 1 empty lines before.
- *   public static final int FOO_CONST = 1;
- *
- *
- *
- *   public void foo() {} // violation, 'METHOD_DEF' has more than 1 empty lines before.
- * }
- * </pre>
- *
- * <p>
- * To disallow multiple empty lines inside constructor, initialization block and method:
- * </p>
- * <pre>
- * &lt;module name="EmptyLineSeparator"&gt;
- *   &lt;property name="allowMultipleEmptyLinesInsideClassMembers" value="false"/&gt;
- * &lt;/module&gt;
- * </pre>
- *
- * <p>
- * The check is valid only for statements that have body:
- * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#CLASS_DEF">
- * CLASS_DEF</a>,
- * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#INTERFACE_DEF">
- * INTERFACE_DEF</a>,
- * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#ENUM_DEF">
- * ENUM_DEF</a>,
- * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#METHOD_DEF">
- * STATIC_INIT</a>,
- * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#INSTANCE_INIT">
- * INSTANCE_INIT</a>,
- * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#METHOD_DEF">
- * METHOD_DEF</a>,
- * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#CTOR_DEF">
- * CTOR_DEF</a>.
- * </p>
- * <p>
- * Example of declarations with multiple empty lines inside method:
- * </p>
- *
- * <pre>
- * ///////////////////////////////////////////////////
- * //HEADER
- * ///////////////////////////////////////////////////
- *
- * package com.puppycrawl.tools.checkstyle.whitespace;
- *
- * class Foo {
- *
- *   public void foo() {
- *
- *
- *     System.out.println(1); // violation, There is more than 1 empty line one after another
- *                            // in previous line.
- *   }
- * }
- * </pre>
- * <p>
- * To disallow multiple empty lines between class members:
- * </p>
- *
- * <pre>
- * &lt;module name="EmptyLineSeparator"&gt;
- *   &lt;property name="allowMultipleEmptyLines" value="false"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * package com.puppycrawl.tools.checkstyle.whitespace;
- *
- * class Test {
- *     private int k;
- *
- *
- *     private static void foo() {} // violation, 'METHOD_DEF' has more than 1 empty lines before.
- *
- * }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -370,6 +172,7 @@ public class EmptyLineSeparatorCheck extends AbstractCheck {
      *
      * @param allow
      *        User's value.
+     * @since 5.8
      */
     public final void setAllowNoEmptyLineBetweenFields(boolean allow) {
         allowNoEmptyLineBetweenFields = allow;
@@ -379,6 +182,7 @@ public class EmptyLineSeparatorCheck extends AbstractCheck {
      * Setter to allow multiple empty lines between class members.
      *
      * @param allow User's value.
+     * @since 6.3
      */
     public void setAllowMultipleEmptyLines(boolean allow) {
         allowMultipleEmptyLines = allow;
@@ -388,6 +192,7 @@ public class EmptyLineSeparatorCheck extends AbstractCheck {
      * Setter to allow multiple empty lines inside class members.
      *
      * @param allow User's value.
+     * @since 6.18
      */
     public void setAllowMultipleEmptyLinesInsideClassMembers(boolean allow) {
         allowMultipleEmptyLinesInsideClassMembers = allow;
@@ -489,9 +294,9 @@ public class EmptyLineSeparatorCheck extends AbstractCheck {
      */
     private void checkCommentInModifiers(DetailAST packageDef) {
         final Optional<DetailAST> comment = findCommentUnder(packageDef);
-        if (comment.isPresent()) {
-            log(comment.get(), MSG_SHOULD_BE_SEPARATED, comment.get().getText());
-        }
+        comment.ifPresent(commentValue -> {
+            log(commentValue, MSG_SHOULD_BE_SEPARATED, commentValue.getText());
+        });
     }
 
     /**
@@ -539,7 +344,7 @@ public class EmptyLineSeparatorCheck extends AbstractCheck {
                 // The first child is DOT in case of POSTFIX which have at least 2 children
                 // First child of DOT again puts us back to normal AST tree which will
                 // recurse down below from here
-                final DetailAST firstChildAfterPostFix = postFixNode.get();
+                final DetailAST firstChildAfterPostFix = postFixNode.orElseThrow();
                 result = getLastElementBeforeEmptyLines(firstChildAfterPostFix, line);
             }
         }
@@ -611,16 +416,14 @@ public class EmptyLineSeparatorCheck extends AbstractCheck {
      * @param emptyLines list of empty lines.
      * @return list of empty lines to log.
      */
-    private static List<Integer> getEmptyLinesToLog(List<Integer> emptyLines) {
+    private static List<Integer> getEmptyLinesToLog(Iterable<Integer> emptyLines) {
         final List<Integer> emptyLinesToLog = new ArrayList<>();
-        if (emptyLines.size() >= 2) {
-            int previousEmptyLineNo = emptyLines.get(0);
-            for (int emptyLineNo : emptyLines) {
-                if (previousEmptyLineNo + 1 == emptyLineNo) {
-                    emptyLinesToLog.add(previousEmptyLineNo);
-                }
-                previousEmptyLineNo = emptyLineNo;
+        int previousEmptyLineNo = -1;
+        for (int emptyLineNo : emptyLines) {
+            if (previousEmptyLineNo + 1 == emptyLineNo) {
+                emptyLinesToLog.add(previousEmptyLineNo);
             }
+            previousEmptyLineNo = emptyLineNo;
         }
         return emptyLinesToLog;
     }
@@ -669,7 +472,7 @@ public class EmptyLineSeparatorCheck extends AbstractCheck {
      * @return true, if there is an element.
      */
     private static boolean isLineEmptyAfterPackage(DetailAST ast) {
-        DetailAST nextElement = ast.getNextSibling();
+        DetailAST nextElement = ast;
         final int lastChildLineNo = ast.getLastChild().getLineNo();
         while (nextElement.getLineNo() < lastChildLineNo + 1
                 && nextElement.getNextSibling() != null) {
@@ -685,7 +488,7 @@ public class EmptyLineSeparatorCheck extends AbstractCheck {
      * @return Violation ast.
      */
     private static DetailAST getViolationAstForPackage(DetailAST ast) {
-        DetailAST nextElement = ast.getNextSibling();
+        DetailAST nextElement = ast;
         final int lastChildLineNo = ast.getLastChild().getLineNo();
         while (nextElement.getLineNo() < lastChildLineNo + 1) {
             nextElement = nextElement.getNextSibling();

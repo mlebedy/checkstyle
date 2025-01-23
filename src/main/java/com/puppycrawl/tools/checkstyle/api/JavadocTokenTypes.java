@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -43,11 +43,11 @@ public final class JavadocTokenTypes {
      * <pre>{@code @return true if file exists}</pre>
      * <b>Tree:</b>
      * <pre>{@code
-     *   |--JAVADOC_TAG[4x3] : [@return true if file exists]
-     *       |--RETURN_LITERAL[4x3] : [@return]
-     *       |--WS[4x10] : [ ]
-     *       |--DESCRIPTION[4x11] : [true if file exists]
-     *           |--TEXT[4x11] : [true if file exists]
+     * JAVADOC_TAG -> JAVADOC_TAG
+     *  |--RETURN_LITERAL -> @return
+     *  |--WS ->
+     *  `--DESCRIPTION -> DESCRIPTION
+     *      |--TEXT -> true if file exists
      * }</pre>
      *
      * @see
@@ -63,14 +63,14 @@ public final class JavadocTokenTypes {
      * <p>Such Javadoc tag can have one argument - {@link #DESCRIPTION}</p>
      *
      * <p><b>Example:</b></p>
-     * <pre>{@code @deprecated it is deprecated method}</pre>
+     * <pre>{@code @deprecated It is deprecated method}</pre>
      * <b>Tree:</b>
      * <pre>{@code
-     *   |--JAVADOC_TAG[3x0] : [@deprecated it is deprecated method]
-     *   |--DEPRECATED_LITERAL[3x0] : [@deprecated]
-     *   |--WS[3x11] : [ ]
-     *   |--DESCRIPTION[3x12] : [it is deprecated method]
-     *       |--TEXT[3x12] : [it is deprecated method]
+     * JAVADOC_TAG -> JAVADOC_TAG
+     *  |--DEPRECATED_LITERAL -> @deprecated
+     *  |--WS ->
+     *  `--DESCRIPTION -> DESCRIPTION
+     *      |--TEXT -> It is deprecated method
      * }</pre>
      *
      * @see
@@ -89,11 +89,11 @@ public final class JavadocTokenTypes {
      * <pre>{@code @since 3.4 RELEASE}</pre>
      * <b>Tree:</b>
      * <pre>{@code
-     *   |--JAVADOC_TAG[3x0] : [@since 3.4 RELEASE]
-     *       |--SINCE_LITERAL[3x0] : [@since]
-     *       |--WS[3x6] : [ ]
-     *       |--DESCRIPTION[3x7] : [3.4 RELEASE]
-     *           |--TEXT[3x7] : [3.4 RELEASE]
+     * JAVADOC_TAG -> JAVADOC_TAG
+     *  |--SINCE_LITERAL -> @since
+     *  |--WS ->
+     *  `--DESCRIPTION -> DESCRIPTION
+     *      |--TEXT -> 3.4 RELEASE
      * }</pre>
      *
      * @see
@@ -109,14 +109,14 @@ public final class JavadocTokenTypes {
      * <p>Such Javadoc tag can have one argument - {@link #DESCRIPTION}</p>
      *
      * <p><b>Example:</b></p>
-     * <pre>{@code @serialData two values of Integer type}</pre>
+     * <pre>{@code @serialData Two values of Integer type}</pre>
      * <b>Tree:</b>
      * <pre>{@code
-     *   |--JAVADOC_TAG[3x0] : [@serialData two values of Integer type ]
-     *       |--SERIAL_DATA_LITERAL[3x0] : [@serialData]
-     *       |--WS[3x11] : [ ]
-     *       |--DESCRIPTION[3x12] : [two values of Integer type ]
-     *           |--TEXT[3x12] : [two values of Integer type ]
+     * JAVADOC_TAG -> JAVADOC_TAG
+     *  |--SERIAL_DATA_LITERAL -> @serialData
+     *  |--WS ->
+     *  `--DESCRIPTION -> DESCRIPTION
+     *      |--TEXT -> Two values of Integer type
      * }
      * </pre>
      *
@@ -141,15 +141,15 @@ public final class JavadocTokenTypes {
      * <pre>{@code @serialField counter Integer objects counter}</pre>
      * <b>Tree:</b>
      * <pre>{@code
-     *   |--JAVADOC_TAG[3x0] : [@serialField counter Integer objects counter]
-     *       |--SERIAL_FIELD_LITERAL[3x0] : [@serialField]
-     *       |--WS[3x12] : [ ]
-     *       |--FIELD_NAME[3x13] : [counter]
-     *       |--WS[3x20] : [ ]
-     *       |--FIELD_TYPE[3x21] : [Integer]
-     *       |--WS[3x28] : [ ]
-     *       |--DESCRIPTION[3x29] : [objects counter]
-     *           |--TEXT[3x29] : [objects counter]
+     * JAVADOC_TAG -> JAVADOC_TAG
+     *  |--SERIAL_FIELD_LITERAL -> @serialField
+     *  |--WS ->
+     *  |--FIELD_NAME -> counter
+     *  |--WS ->
+     *  |--FIELD_TYPE -> Integer
+     *  |--WS ->
+     *  `--DESCRIPTION -> DESCRIPTION
+     *      |--TEXT -> objects counter
      * }</pre>
      *
      * @see
@@ -169,16 +169,16 @@ public final class JavadocTokenTypes {
      * </ol>
      *
      * <p><b>Example:</b></p>
-     * <pre>{@code @param T The bar.}</pre>
+     * <pre>{@code @param value The parameter of method.}</pre>
      * <b>Tree:</b>
      * <pre>{@code
-     *   |--JAVADOC_TAG[4x3] : [@param T The bar.]
-     *       |--PARAM_LITERAL[4x3] : [@param]
-     *       |--WS[4x9] : [ ]
-     *       |--PARAMETER_NAME[4x10] : [T]
-     *       |--WS[4x11] : [ ]
-     *       |--DESCRIPTION[4x12] : [The bar.]
-     *           |--TEXT[4x12] : [The bar.]
+     * JAVADOC_TAG -> JAVADOC_TAG
+     *  |--PARAM_LITERAL -> @param
+     *  |--WS ->
+     *  |--PARAMETER_NAME -> value
+     *  |--WS ->
+     *  `--DESCRIPTION -> DESCRIPTION
+     *      |--TEXT -> The parameter of method.
      * }</pre>
      *
      * @see
@@ -197,21 +197,17 @@ public final class JavadocTokenTypes {
      * <pre>{@code @see org.apache.utils.Lists.Comparator#compare(Object)}</pre>
      * <b>Tree:</b>
      * <pre>{@code
-     *   |--JAVADOC_TAG[3x0] : [@see org.apache.utils.Lists.Comparator#compare(Object)]
-     *       |--SEE_LITERAL[3x0] : [@see]
-     *       |--WS[3x4] : [ ]
-     *       |--REFERENCE[3x5] : [org.apache.utils.Lists.Comparator#compare(Object)]
-     *           |--PACKAGE_CLASS[3x5] : [org.apache.utils]
-     *           |--DOT[3x21] : [.]
-     *           |--CLASS[3x22] : [Lists]
-     *           |--DOT[3x27] : [.]
-     *           |--CLASS[3x28] : [Comparator]
-     *           |--HASH[3x38] : [#]
-     *           |--MEMBER[3x39] : [compare]
-     *           |--PARAMETERS[3x46] : [(Object)]
-     *               |--LEFT_BRACE[3x46] : [(]
-     *               |--ARGUMENT[3x47] : [Object]
-     *               |--RIGHT_BRACE[3x53] : [)]
+     *   JAVADOC_TAG -> JAVADOC_TAG
+     *    |--SEE_LITERAL -> @see
+     *    |--WS ->
+     *    |--REFERENCE -> REFERENCE
+     *        |--PACKAGE_CLASS -> org.apache.utils.Lists.Comparator
+     *        |--HASH -> #
+     *        |--MEMBER -> compare
+     *        `--PARAMETERS -> PARAMETERS
+     *            |--LEFT_BRACE -> (
+     *            |--ARGUMENT -> Object
+     *            `--RIGHT_BRACE -> )
      * }</pre>
      *
      * @see
@@ -231,21 +227,21 @@ public final class JavadocTokenTypes {
      * <pre>{@code @serial include}</pre>
      * <b>Tree:</b>
      * <pre>{@code
-     *   |--JAVADOC_TAG[3x0] : [@serial include]
-     *       |--SERIAL_LITERAL[3x0] : [@serial]
-     *       |--WS[3x7] : [ ]
-     *       |--LITERAL_INCLUDE[3x8] : [include]
+     *   |--JAVADOC_TAG -> JAVADOC_TAG
+     *       |--SERIAL_LITERAL -> @serial
+     *       |--WS
+     *       |--LITERAL_INCLUDE -> include
      * }</pre>
      *
      * <p><b>Example:</b></p>
      * <pre>{@code @serial serialized company name}</pre>
      * <b>Tree:</b>
      * <pre>{@code
-     *   |--JAVADOC_TAG[3x0] : [@serial serialized company name]
-     *       |--SERIAL_LITERAL[3x0] : [@serial]
-     *       |--WS[3x7] : [ ]
-     *       |--DESCRIPTION[3x8] : [serialized company name]
-     *           |--TEXT[3x8] : [serialized company name]
+     *   |--JAVADOC_TAG-> JAVADOC_TAG
+     *       |--SERIAL_LITERAL -> @serial
+     *       |--WS
+     *       |--DESCRIPTION -> DESCRIPTION
+     *           |--TEXT -> serialized company name
      * }</pre>
      *
      * @see
@@ -264,11 +260,11 @@ public final class JavadocTokenTypes {
      * <pre>{@code @version 1.3}</pre>
      * <b>Tree:</b>
      * <pre>{@code
-     *   |--JAVADOC_TAG[3x0] : [@version 1.3]
-     *       |--VERSION_LITERAL[3x0] : [@version]
-     *       |--WS[3x8] : [ ]
-     *       |--DESCRIPTION[3x9] : [1.3]
-     *           |--TEXT[3x9] : [1.3]
+     *   JAVADOC_TAG -> JAVADOC_TAG
+     *    |--VERSION_LITERAL -> @version
+     *    |--WS ->
+     *    `--DESCRIPTION -> DESCRIPTION
+     *        |--TEXT -> 1.3
      * }</pre>
      *
      * @see
@@ -287,13 +283,13 @@ public final class JavadocTokenTypes {
      * <pre>{@code @exception SQLException if query is not correct}</pre>
      * <b>Tree:</b>
      * <pre>{@code
-     *   |--JAVADOC_TAG[3x0] : [@exception SQLException if query is not correct]
-     *       |--EXCEPTION_LITERAL[3x0] : [@exception]
-     *       |--WS[3x10] : [ ]
-     *       |--CLASS_NAME[3x11] : [SQLException]
-     *       |--WS[3x23] : [ ]
-     *       |--DESCRIPTION[3x24] : [if query is not correct]
-     *           |--TEXT[3x24] : [if query is not correct]
+     *   JAVADOC_TAG -> JAVADOC_TAG
+     *    |--EXCEPTION_LITERAL -> @exception
+     *    |--WS ->
+     *    |--CLASS_NAME -> SQLException
+     *    |--WS ->
+     *    `--DESCRIPTION -> DESCRIPTION
+     *        `--TEXT -> if query is not correct
      * }</pre>
      *
      * @see
@@ -312,13 +308,13 @@ public final class JavadocTokenTypes {
      * <pre>{@code @throws SQLException if query is not correct}</pre>
      * <b>Tree:</b>
      * <pre>{@code
-     *   |--JAVADOC_TAG[3x0] : [@throws SQLException if query is not correct]
-     *       |--THROWS_LITERAL[3x0] : [@throws]
-     *       |--WS[3x7] : [ ]
-     *       |--CLASS_NAME[3x8] : [SQLException]
-     *       |--WS[3x20] : [ ]
-     *       |--DESCRIPTION[3x21] : [if query is not correct]
-     *           |--TEXT[3x21] : [if query is not correct]
+     *   JAVADOC_TAG -&gt; JAVADOC_TAG
+     *    |--THROWS_LITERAL -&gt; @throws
+     *    |--WS -&gt;
+     *    |--CLASS_NAME -&gt; SQLException
+     *    |--WS -&gt;
+     *    `--DESCRIPTION -&gt; DESCRIPTION
+     *        `--TEXT -&gt; if query is not correct
      * }</pre>
      *
      * @see
@@ -337,11 +333,12 @@ public final class JavadocTokenTypes {
      * <pre>{@code @author Baratali Izmailov}</pre>
      * <b>Tree:</b>
      * <pre>{@code
-     *   |--JAVADOC_TAG[3x0] : [@author Baratali Izmailov]
-     *       |--AUTHOR_LITERAL[3x0] : [@author]
-     *       |--WS[3x7] : [ ]
-     *       |--DESCRIPTION[3x8] : [Baratali Izmailov]
-     *           |--TEXT[3x8] : [Baratali Izmailov]
+     *   JAVADOC_TAG -> JAVADOC_TAG
+     *      |--AUTHOR_LITERAL -> @author
+     *      |--WS ->
+     *      `--DESCRIPTION -> DESCRIPTION
+     *          |--TEXT -> Baratali Izmailov
+     *          |--NEWLINE -> \r\n
      * }</pre>
      *
      * @see
@@ -360,11 +357,11 @@ public final class JavadocTokenTypes {
      * <pre>{@code @myJavadocTag some magic}</pre>
      * <b>Tree:</b>
      * <pre>{@code
-     *   |--JAVADOC_TAG[3x0] : [@myJavadocTag some magic]
-     *       |--CUSTOM_NAME[3x0] : [@myJavadocTag]
-     *       |--WS[3x13] : [ ]
-     *       |--DESCRIPTION[3x14] : [some magic]
-     *           |--TEXT[3x14] : [some magic]
+     *   JAVADOC_TAG --> JAVADOC_TAG
+     *       |--CUSTOM_NAME --> @myJavadocTag
+     *       |--WS -->
+     *       `--DESCRIPTION --> DESCRIPTION
+     *           |--TEXT --> some magic
      * }</pre>
      */
     public static final int CUSTOM_NAME = JavadocParser.CUSTOM_NAME;
@@ -376,12 +373,12 @@ public final class JavadocTokenTypes {
      * <pre><code>{&#64;code Comparable&lt;E&gt;}</code></pre>
      * <b>Tree:</b>
      * <pre>
-     * <code> |--JAVADOC_INLINE_TAG[3x0] : [{&#64;code Comparable&lt;E&gt;}]
-     *         |--JAVADOC_INLINE_TAG_START[3x0] : [{]
-     *         |--CODE_LITERAL[3x1] : [@code]
-     *         |--WS[3x6] : [ ]
-     *         |--TEXT[3x7] : [Comparable&lt;E&gt;]
-     *         |--JAVADOC_INLINE_TAG_END[3x21] : [}]
+     * <code> JAVADOC_INLINE_TAG --&gt; JAVADOC_INLINE_TAG
+     *         |--JAVADOC_INLINE_TAG_START --&gt; {
+     *         |--CODE_LITERAL --&gt; @code
+     *         |--WS --&gt;
+     *         |--TEXT --&gt; Comparable&lt;E&gt;
+     *         `--JAVADOC_INLINE_TAG_END --&gt; }
      * </code>
      * </pre>
      *
@@ -398,12 +395,13 @@ public final class JavadocTokenTypes {
      * <pre><code>{&#64;code Comparable&lt;E&gt;}</code></pre>
      * <b>Tree:</b>
      * <pre>
-     * <code> |--JAVADOC_INLINE_TAG[3x0] : [{&#64;code Comparable&lt;E&gt;}]
-     *         |--JAVADOC_INLINE_TAG_START[3x0] : [{]
-     *         |--CODE_LITERAL[3x1] : [@code]
-     *         |--WS[3x6] : [ ]
-     *         |--TEXT[3x7] : [Comparable&lt;E&gt;]
-     *         |--JAVADOC_INLINE_TAG_END[3x21] : [}]
+     * <code>JAVADOC_INLINE_TAG --&gt; JAVADOC_INLINE_TAG
+     *        |--JAVADOC_INLINE_TAG_START --&gt; {
+     *        |--CODE_LITERAL --&gt; @code
+     *        |--WS --&gt;
+     *        |--TEXT --&gt; Comparable&lt;E&gt;
+     *        `--JAVADOC_INLINE_TAG_END --&gt; }
+     *
      * </code>
      * </pre>
      *
@@ -427,12 +425,11 @@ public final class JavadocTokenTypes {
      * <pre><code>{&#64;code Comparable&lt;E&gt;}</code></pre>
      * <b>Tree:</b>
      * <pre>
-     * <code> |--JAVADOC_INLINE_TAG[3x0] : [{&#64;code Comparable&lt;E&gt;}]
-     *         |--JAVADOC_INLINE_TAG_START[3x0] : [{]
-     *         |--CODE_LITERAL[3x1] : [@code]
-     *         |--WS[3x6] : [ ]
-     *         |--TEXT[3x7] : [Comparable&lt;E&gt;]
-     *         |--JAVADOC_INLINE_TAG_END[3x21] : [}]
+     * <code>JAVADOC_TAG -&gt; JAVADOC_TAG
+     *        |--CUSTOM_NAME -&gt; @code
+     *        |--WS -&gt;
+     *        `--DESCRIPTION -&gt; DESCRIPTION
+     *            |--TEXT -&gt; Comparable&lt;E&gt;
      * </code>
      * </pre>
      *
@@ -492,10 +489,15 @@ public final class JavadocTokenTypes {
 
     /**
      * '@link' literal in {&#64;link} Javadoc inline tag.
+     *
      * <p>Such Javadoc inline tag can have one argument - {@link #REFERENCE}</p>
+     *
      * <p><b>Example:</b></p>
+     *
      * <pre><code>{&#64;link org.apache.utils.Lists.Comparator#compare(Object)}</code></pre>
+     *
      * <p><b>Tree:</b></p>
+     *
      * <pre>
      * <code> |--JAVADOC_INLINE_TAG[1x0] :
      *               [{&#64;link org.apache.utils.Lists.Comparator#compare(Object)}]
@@ -540,13 +542,12 @@ public final class JavadocTokenTypes {
      * <p><b>Example:</b></p>
      * <pre><code>{&#64;inheritDoc}</code></pre>
      * <b>Tree:</b>
-     * <pre>
-     * <code>  |--JAVADOC_INLINE_TAG[1x0] : [{&#64;inheritDoc}]
-     *            |--JAVADOC_INLINE_TAG_START[1x0] : [{]
-     *            |--INHERIT_DOC_LITERAL[1x1] : [@inheritDoc]
-     *            |--JAVADOC_INLINE_TAG_END[1x12] : [}]
-     * </code>
-     * </pre>
+     * <pre>{@code
+     *   JAVADOC_INLINE_TAG -> JAVADOC_INLINE_TAG
+     *    |--JAVADOC_INLINE_TAG_START -> {
+     *    |--INHERIT_DOC_LITERAL -> @inheritDoc
+     *    |--JAVADOC_INLINE_TAG_END -> }
+     * }</pre>
      *
      * @see
      * <a href="https://docs.oracle.com/javase/8/docs/technotes/tools/unix/javadoc.html#CHDGJCHC">
@@ -567,29 +568,27 @@ public final class JavadocTokenTypes {
      * <pre><code>{&#64;linkplain org.apache.utils.Lists.Comparator#compare(Object) compare}</code>
      * </pre>
      * <b>Tree:</b>
-     * <pre>
-     * <code> |--JAVADOC_INLINE_TAG[1x0] :
-     *               [{&#64;linkplain org.apache.utils.Lists.Comparator#compare(Object) compare}]
-     *        |--JAVADOC_INLINE_TAG_START[1x0] : [{]
-     *        |--LINKPLAIN_LITERAL[1x1] : [@linkplain]
-     *        |--WS[1x11] : [ ]
-     *        |--REFERENCE[1x12] : [org.apache.utils.Lists.Comparator#compare(Object)]
-     *            |--PACKAGE_CLASS[1x12] : [org.apache.utils]
-     *            |--DOT[1x28] : [.]
-     *            |--CLASS[1x29] : [Lists]
-     *            |--DOT[1x34] : [.]
-     *            |--CLASS[1x35] : [Comparator]
-     *            |--HASH[1x45] : [#]
-     *            |--MEMBER[1x46] : [compare]
-     *            |--PARAMETERS[1x53] : [(Object)]
-     *                |--LEFT_BRACE[1x53] : [(]
-     *                |--ARGUMENT[1x54] : [Object]
-     *                |--RIGHT_BRACE[1x60] : [)]
-     *        |--DESCRIPTION[1x61] : [ compare]
-     *            |--TEXT[1x61] : [ compare]
-     *        |--JAVADOC_INLINE_TAG_END[1x69] : [}]
-     * </code>
-     * </pre>
+     * <pre>{@code
+     *   JAVADOC_INLINE_TAG -> JAVADOC_INLINE_TAG
+     *    |--JAVADOC_INLINE_TAG_START -> {
+     *    |--LINKPLAIN_LITERAL -> @linkplain
+     *    |--WS ->
+     *    |--REFERENCE -> org.apache.utils.Lists.Comparator#compare(Object)
+     *        |--PACKAGE_CLASS -> org.apache.utils
+     *        |--DOT -> .
+     *        |--CLASS -> Lists
+     *        |--DOT -> .
+     *        |--CLASS -> Comparator
+     *        |--HASH -> #
+     *        |--MEMBER -> compare
+     *        |--PARAMETERS -> (Object)
+     *            |--LEFT_BRACE -> (
+     *            |--ARGUMENT -> Object
+     *            |--RIGHT_BRACE -> )
+     *     |--DESCRIPTION -> compare
+     *         |--TEXT -> compare
+     *     |--JAVADOC_INLINE_TAG_END -> }
+     * }</pre>
      *
      * @see
      * <a href="https://docs.oracle.com/javase/8/docs/technotes/tools/unix/javadoc.html#CHDGBICD">
@@ -615,12 +614,13 @@ public final class JavadocTokenTypes {
      * <pre><code>{&#64;literal #compare(Object)}</code></pre>
      * <b>Tree:</b>
      * <pre>
-     * <code> |--JAVADOC_INLINE_TAG[1x0] : [{&#64;literal #compare(Object)}]
-     *        |--JAVADOC_INLINE_TAG_START[1x0] : [{]
-     *        |--LITERAL_LITERAL[1x1] : [@literal]
-     *        |--WS[1x9] : [ ]
-     *        |--TEXT[1x10] : [#compare(Object)]
-     *        |--JAVADOC_INLINE_TAG_END[1x27] : [}]
+     * <code>
+     *     |--JAVADOC_INLINE_TAG -&gt; JAVADOC_INLINE_TAG
+     *        |--JAVADOC_INLINE_TAG_START -&gt; {
+     *        |--LITERAL_LITERAL -&gt; @literal
+     *        |--WS -&gt;
+     *        |--TEXT -&gt; #compare(Object)
+     *        `--JAVADOC_INLINE_TAG_END -&gt; }
      * </code>
      * </pre>
      *
@@ -648,15 +648,15 @@ public final class JavadocTokenTypes {
      * <pre><code>{&#64;value Integer#MAX_VALUE}</code></pre>
      * <b>Tree:</b>
      * <pre>
-     * <code> |--JAVADOC_INLINE_TAG[1x0] : [&#64;value Integer#MAX_VALUE}]
-     *        |--JAVADOC_INLINE_TAG_START[1x0] : [{]
-     *        |--VALUE_LITERAL[1x1] : [@value]
-     *        |--WS[1x7] : [ ]
-     *        |--REFERENCE[1x8] : [Integer#MAX_VALUE]
-     *            |--CLASS[1x8] : [Integer]
-     *            |--HASH[1x15] : [#]
-     *            |--MEMBER[1x16] : [MAX_VALUE]
-     *        |--JAVADOC_INLINE_TAG_END[1x25] : [}]
+     * <code> JAVADOC_INLINE_TAG --&gt; JAVADOC_INLINE_TAG
+     *         |--JAVADOC_INLINE_TAG_START --&gt; {
+     *         |--VALUE_LITERAL --&gt; @value
+     *         |--WS --&gt;
+     *         |--REFERENCE --&gt; REFERENCE
+     *         |   |--PACKAGE_CLASS --&gt; Integer
+     *         |   |--HASH --&gt; #
+     *         |   `--MEMBER --&gt; MAX_VALUE
+     *         `--JAVADOC_INLINE_TAG_END --&gt; }
      * </code>
      * </pre>
      *
@@ -688,21 +688,20 @@ public final class JavadocTokenTypes {
      * <pre>{@code @see org.apache.utils.Lists.Comparator#compare(Object)}</pre>
      * <b>Tree:</b>
      * <pre>
-     * {@code |--JAVADOC_TAG[3x0] : [@see org.apache.utils.Lists.Comparator#compare(Object)]
-     *        |--SEE_LITERAL[3x0] : [@see]
-     *        |--WS[3x4] : [ ]
-     *        |--REFERENCE[3x5] : [org.apache.utils.Lists.Comparator#compare(Object)]
-     *            |--PACKAGE_CLASS[3x5] : [org.apache.utils]
-     *            |--DOT[3x21] : [.]
-     *            |--CLASS[3x22] : [Lists]
-     *            |--DOT[3x27] : [.]
-     *            |--CLASS[3x28] : [Comparator]
-     *            |--HASH[3x38] : [#]
-     *            |--MEMBER[3x39] : [compare]
-     *            |--PARAMETERS[3x46] : [(Object)]
-     *                |--LEFT_BRACE[3x46] : [(]
-     *                |--ARGUMENT[3x47] : [Object]
-     *                |--RIGHT_BRACE[3x53] : [)]
+     * {@code
+     * JAVADOC_TAG -&gt JAVADOC_TAG
+     *  |--SEE_LITERAL -&gt @see
+     *  |--WS -&gt
+     *  |--REFERENCE -&gt REFERENCE
+     *  |   |--PACKAGE_CLASS -&gt org.apache.utils.Lists.Comparator
+     *  |   |--HASH -&gt #
+     *  |   |--MEMBER -&gt compare
+     *  |   `--PARAMETERS -&gt PARAMETERS
+     *  |       |--LEFT_BRACE -&gt (
+     *  |       |--ARGUMENT -&gt Object
+     *  |       `--RIGHT_BRACE -&gt )
+     *  |--NEWLINE -&gt \r\n
+     *  `--WS -&gt
      * }
      * </pre>
      */
@@ -716,21 +715,18 @@ public final class JavadocTokenTypes {
      * <pre>{@code @see org.apache.utils.Lists.Comparator#compare(Object)}</pre>
      * <b>Tree:</b>
      * <pre>
-     * {@code |--JAVADOC_TAG[3x0] : [@see org.apache.utils.Lists.Comparator#compare(Object)]
-     *        |--SEE_LITERAL[3x0] : [@see]
-     *        |--WS[3x4] : [ ]
-     *        |--REFERENCE[3x5] : [org.apache.utils.Lists.Comparator#compare(Object)]
-     *            |--PACKAGE_CLASS[3x5] : [org.apache.utils]
-     *            |--DOT[3x21] : [.]
-     *            |--CLASS[3x22] : [Lists]
-     *            |--DOT[3x27] : [.]
-     *            |--CLASS[3x28] : [Comparator]
-     *            |--HASH[3x38] : [#]
-     *            |--MEMBER[3x39] : [compare]
-     *            |--PARAMETERS[3x46] : [(Object)]
-     *                |--LEFT_BRACE[3x46] : [(]
-     *                |--ARGUMENT[3x47] : [Object]
-     *                |--RIGHT_BRACE[3x53] : [)]
+     * {@code
+     * JAVADOC_TAG -&gt JAVADOC_TAG
+     *  |--SEE_LITERAL -&gt @see
+     *  |--WS -&gt
+     *  |--REFERENCE -&gt REFERENCE
+     *      |--PACKAGE_CLASS -&gt org.apache.utils.Lists.Comparator
+     *      |--HASH -&gt #
+     *      |--MEMBER -&gt compare
+     *      `--PARAMETERS -&gt PARAMETERS
+     *          |--LEFT_BRACE -&gt (
+     *          |--ARGUMENT -&gt Object
+     *          `--RIGHT_BRACE -&gt )
      * }
      * </pre>
      */
@@ -744,21 +740,18 @@ public final class JavadocTokenTypes {
      * <pre>{@code @see org.apache.utils.Lists.Comparator#compare(Object)}</pre>
      * <b>Tree:</b>
      * <pre>
-     * {@code |--JAVADOC_TAG[3x0] : [@see org.apache.utils.Lists.Comparator#compare(Object)]
-     *        |--SEE_LITERAL[3x0] : [@see]
-     *        |--WS[3x4] : [ ]
-     *        |--REFERENCE[3x5] : [org.apache.utils.Lists.Comparator#compare(Object)]
-     *            |--PACKAGE_CLASS[3x5] : [org.apache.utils]
-     *            |--DOT[3x21] : [.]
-     *            |--CLASS[3x22] : [Lists]
-     *            |--DOT[3x27] : [.]
-     *            |--CLASS[3x28] : [Comparator]
-     *            |--HASH[3x38] : [#]
-     *            |--MEMBER[3x39] : [compare]
-     *            |--PARAMETERS[3x46] : [(Object)]
-     *                |--LEFT_BRACE[3x46] : [(]
-     *                |--ARGUMENT[3x47] : [Object]
-     *                |--RIGHT_BRACE[3x53] : [)]
+     * {@code
+     * JAVADOC_TAG -&gt JAVADOC_TAG
+     *  |--SEE_LITERAL -&gt @see
+     *  |--WS -&gt
+     *  |--REFERENCE -&gt REFERENCE
+     *      |--PACKAGE_CLASS -&gt org.apache.utils.Lists.Comparator
+     *      |--HASH -&gt #
+     *      |--MEMBER -&gt compare
+     *      `--PARAMETERS -&gt PARAMETERS
+     *          |--LEFT_BRACE -&gt (
+     *          |--ARGUMENT -&gt Object
+     *          `--RIGHT_BRACE -&gt )
      * }
      * </pre>
      */
@@ -771,19 +764,19 @@ public final class JavadocTokenTypes {
      * <pre>{@code @see #method(Processor, String)}</pre>
      * <b>Tree:</b>
      * <pre>
-     * {@code |--JAVADOC_TAG[1x0] : [@see #method(Processor, String)]
-     *        |--SEE_LITERAL[1x0] : [@see]
-     *        |--WS[1x4] : [ ]
-     *        |--REFERENCE[1x5] : [#method(Processor, String)]
-     *            |--HASH[1x5] : [#]
-     *            |--MEMBER[1x6] : [method]
-     *            |--PARAMETERS[1x12] : [(Processor, String)]
-     *                |--LEFT_BRACE[1x12] : [(]
-     *                |--ARGUMENT[1x13] : [Processor]
-     *                |--COMMA[1x22] : [,]
-     *                |--WS[1x23] : [ ]
-     *                |--ARGUMENT[1x24] : [String]
-     *                |--RIGHT_BRACE[1x30] : [)]
+     * {@code JAVADOC_TAG -&gt JAVADOC_TAG
+     *         |--SEE_LITERAL -&gt @see
+     *         |--WS -&gt
+     *         |--REFERENCE -&gt REFERENCE
+     *         |   |--HASH -&gt #
+     *         |   |--MEMBER -&gt method
+     *         |   `--PARAMETERS -&gt PARAMETERS
+     *         |       |--LEFT_BRACE -&gt (
+     *         |       |--ARGUMENT -&gt Processor
+     *         |       |--COMMA -&gt ,
+     *         |       |--WS -&gt
+     *         |       |--ARGUMENT -&gt String
+     *         |       `--RIGHT_BRACE -&gt )
      * }
      * </pre>
      */
@@ -796,19 +789,19 @@ public final class JavadocTokenTypes {
      * <pre>{@code @see #method(Processor, String)}</pre>
      * <b>Tree:</b>
      * <pre>
-     * {@code |--JAVADOC_TAG[1x0] : [@see #method(Processor, String)]
-     *        |--SEE_LITERAL[1x0] : [@see]
-     *        |--WS[1x4] : [ ]
-     *        |--REFERENCE[1x5] : [#method(Processor, String)]
-     *            |--HASH[1x5] : [#]
-     *            |--MEMBER[1x6] : [method]
-     *            |--PARAMETERS[1x12] : [(Processor, String)]
-     *                |--LEFT_BRACE[1x12] : [(]
-     *                |--ARGUMENT[1x13] : [Processor]
-     *                |--COMMA[1x22] : [,]
-     *                |--WS[1x23] : [ ]
-     *                |--ARGUMENT[1x24] : [String]
-     *                |--RIGHT_BRACE[1x30] : [)]
+     * {@code JAVADOC_TAG -&gt JAVADOC_TAG
+     *         |--SEE_LITERAL -&gt @see
+     *         |--WS -&gt
+     *         |--REFERENCE -&gt REFERENCE
+     *         |   |--HASH -&gt #
+     *         |   |--MEMBER -&gt method
+     *         |   `--PARAMETERS -&gt PARAMETERS
+     *         |       |--LEFT_BRACE -&gt (
+     *         |       |--ARGUMENT -&gt Processor
+     *         |       |--COMMA -&gt ,
+     *         |       |--WS -&gt
+     *         |       |--ARGUMENT -&gt String
+     *         |       `--RIGHT_BRACE -&gt )
      * }
      * </pre>
      */
@@ -821,19 +814,20 @@ public final class JavadocTokenTypes {
      * <pre>{@code @see #method(Processor, String)}</pre>
      * <b>Tree:</b>
      * <pre>
-     * {@code |--JAVADOC_TAG[1x0] : [@see #method(Processor, String)]
-     *        |--SEE_LITERAL[1x0] : [@see]
-     *        |--WS[1x4] : [ ]
-     *        |--REFERENCE[1x5] : [#method(Processor, String)]
-     *            |--HASH[1x5] : [#]
-     *            |--MEMBER[1x6] : [method]
-     *            |--PARAMETERS[1x12] : [(Processor, String)]
-     *                |--LEFT_BRACE[1x12] : [(]
-     *                |--ARGUMENT[1x13] : [Processor]
-     *                |--COMMA[1x22] : [,]
-     *                |--WS[1x23] : [ ]
-     *                |--ARGUMENT[1x24] : [String]
-     *                |--RIGHT_BRACE[1x30] : [)]
+     * {@code JAVADOC_TAG -&gt JAVADOC_TAG
+     *         |--SEE_LITERAL -&gt @see
+     *         |--WS -&gt
+     *         |--REFERENCE -&gt REFERENCE
+     *         |   |--HASH -&gt #
+     *         |   |--MEMBER -&gt method
+     *         |   `--PARAMETERS -&gt PARAMETERS
+     *         |       |--LEFT_BRACE -&gt (
+     *         |       |--ARGUMENT -&gt Processor
+     *         |       |--COMMA -&gt ,
+     *         |       |--WS -&gt
+     *         |       |--ARGUMENT -&gt String
+     *         |       `--RIGHT_BRACE -&gt )
+     *         `--NEWLINE -&gt \n
      * }
      * </pre>
      */
@@ -846,19 +840,22 @@ public final class JavadocTokenTypes {
      * <pre>{@code @see #method(Processor, String)}</pre>
      * <b>Tree:</b>
      * <pre>
-     * {@code |--JAVADOC_TAG[1x0] : [@see #method(Processor, String)]
-     *        |--SEE_LITERAL[1x0] : [@see]
-     *        |--WS[1x4] : [ ]
-     *        |--REFERENCE[1x5] : [#method(Processor, String)]
-     *            |--HASH[1x5] : [#]
-     *            |--MEMBER[1x6] : [method]
-     *            |--PARAMETERS[1x12] : [(Processor, String)]
-     *                |--LEFT_BRACE[1x12] : [(]
-     *                |--ARGUMENT[1x13] : [Processor]
-     *                |--COMMA[1x22] : [,]
-     *                |--WS[1x23] : [ ]
-     *                |--ARGUMENT[1x24] : [String]
-     *                |--RIGHT_BRACE[1x30] : [)]
+     * {@code
+     * JAVADOC_TAG -&gt JAVADOC_TAG
+     *  |--SEE_LITERAL -&gt @see
+     *  |--WS -&gt
+     *  |--REFERENCE -&gt REFERENCE
+     *  |   |--HASH -&gt #
+     *  |   |--MEMBER -&gt method
+     *  |   `--PARAMETERS -&gt PARAMETERS
+     *  |       |--LEFT_BRACE -&gt (
+     *  |       |--ARGUMENT -&gt Processor
+     *  |       |--COMMA -&gt ,
+     *  |       |--WS -&gt
+     *  |       |--ARGUMENT -&gt String
+     *  |       `--RIGHT_BRACE -&gt )
+     *  |--NEWLINE -&gt \r\n
+     *  `--WS -&gt
      * }
      * </pre>
      *
@@ -876,10 +873,13 @@ public final class JavadocTokenTypes {
      * <pre>{@code @see "Spring Framework"}</pre>
      * <b>Tree:</b>
      * <pre>
-     * {@code |--JAVADOC_TAG[1x0] : [@see "Spring Framework"]
-     *        |--SEE_LITERAL[1x0] : [@see]
-     *        |--WS[1x4] : [ ]
-     *        |--STRING[1x5] : ["Spring Framework"]
+     * {@code
+     * JAVADOC_TAG -&gt JAVADOC_TAG
+     *  |--SEE_LITERAL -&gt @see
+     *  |--WS -&gt
+     *  |--STRING -&gt "Spring Framework"
+     *  |--NEWLINE -&gt \r\n
+     *  `--WS -&gt
      * }
      * </pre>
      *
@@ -895,13 +895,16 @@ public final class JavadocTokenTypes {
      * <pre>{@code @throws IOException connection problems}</pre>
      * <b>Tree:</b>
      * <pre>
-     * {@code |--JAVADOC_TAG[1x0] : [@throws IOException connection problems]
-     *        |--THROWS_LITERAL[1x0] : [@throws]
-     *        |--WS[1x7] : [ ]
-     *        |--CLASS_NAME[1x8] : [IOException]
-     *        |--WS[1x19] : [ ]
-     *        |--DESCRIPTION[1x20] : [connection problems]
-     *            |--TEXT[1x20] : [connection problems]
+     * {@code
+     * JAVADOC_TAG -&gt JAVADOC_TAG
+     *  |--THROWS_LITERAL -&gt @throws
+     *  |--WS -&gt
+     *  |--CLASS_NAME -&gt IOException
+     *  |--WS -&gt
+     *  `--DESCRIPTION -&gt DESCRIPTION
+     *      |--TEXT -&gt connection problems
+     *      |--NEWLINE -&gt \r\n
+     *      `--TEXT -&gt
      * }
      * </pre>
      *
@@ -917,13 +920,15 @@ public final class JavadocTokenTypes {
      * <pre>{@code @param T The bar.}</pre>
      * <b>Tree:</b>
      * <pre>
-     * {@code |--JAVADOC_TAG[4x3] : [@param T The bar.]
-     *        |--PARAM_LITERAL[4x3] : [@param]
-     *        |--WS[4x9] : [ ]
-     *        |--PARAMETER_NAME[4x10] : [T]
-     *        |--WS[4x11] : [ ]
-     *        |--DESCRIPTION[4x12] : [The bar.]
-     *            |--TEXT[4x12] : [The bar.]
+     * {@code JAVADOC_TAG -&gt JAVADOC_TAG
+     *         |--PARAM_LITERAL -&gt @param
+     *         |--WS -&gt
+     *         |--PARAMETER_NAME -&gt T
+     *         |--WS -&gt
+     *         `--DESCRIPTION -&gt DESCRIPTION
+     *             |--TEXT -&gt The bar.
+     *             |--NEWLINE -&gt \r\n
+     *             `--TEXT -&gt
      * }
      * </pre>
      *
@@ -942,10 +947,13 @@ public final class JavadocTokenTypes {
      * <pre>{@code @serial exclude}</pre>
      * <b>Tree:</b>
      * <pre>
-     * {@code |--JAVADOC_TAG[1x0] : [@serial exclude]
-     *        |--SERIAL_LITERAL[1x0] : [@serial]
-     *        |--WS[1x7] : [ ]
-     *        |--LITERAL_EXCLUDE[1x8] : [exclude]
+     * {@code
+     * JAVADOC_TAG -&gt JAVADOC_TAG
+     *  |--SERIAL_LITERAL -&gt @serial
+     *  |--WS -&gt
+     *  |--LITERAL_EXCLUDE -&gt exclude
+     *  |--NEWLINE -&gt \n
+     *  `--WS -&gt
      * }
      * </pre>
      *
@@ -964,10 +972,13 @@ public final class JavadocTokenTypes {
      * <pre>{@code @serial include}</pre>
      * <b>Tree:</b>
      * <pre>
-     * {@code |--JAVADOC_TAG[1x0] : [@serial include]
-     *        |--SERIAL_LITERAL[1x0] : [@serial]
-     *        |--WS[1x7] : [ ]
-     *        |--LITERAL_INCLUDE[1x8] : [include]
+     * {@code
+     * JAVADOC_TAG -&gt JAVADOC_TAG
+     *  |--SERIAL_LITERAL -&gt @serial
+     *  |--WS -&gt
+     *  |--LITERAL_INCLUDE -&gt include
+     *  |--NEWLINE -&gt \r\n
+     *  `--WS -&gt
      * }
      * </pre>
      *
@@ -985,17 +996,19 @@ public final class JavadocTokenTypes {
      * <pre>{@code @serialField counter Integer objects counter}</pre>
      * <b>Tree:</b>
      * <pre>
-     * {@code |--JAVADOC_TAG[3x0] : [@serialField counter Integer objects counter]
-     *        |--SERIAL_FIELD_LITERAL[3x0] : [@serialField]
-     *        |--WS[3x12] : [ ]
-     *        |--FIELD_NAME[3x13] : [counter]
-     *        |--WS[3x20] : [ ]
-     *        |--FIELD_TYPE[3x21] : [Integer]
-     *        |--WS[3x28] : [ ]
-     *        |--DESCRIPTION[3x29] : [objects counter]
-     *            |--TEXT[3x29] : [objects counter]
-     * }
-     * </pre>
+     * {@code
+     *   JAVADOC_TAG -&gt; JAVADOC_TAG
+     *    |--SERIAL_FIELD_LITERAL -&gt; @serialField
+     *    |--WS -&gt;
+     *    |--FIELD_NAME -&gt; counter
+     *    |--WS -&gt;
+     *    |--FIELD_TYPE -&gt; Integer
+     *    |--WS -&gt;
+     *    `--DESCRIPTION -&gt; DESCRIPTION
+     *        |--TEXT -&gt; objects counter
+     *        |--NEWLINE -&gt; \r\n
+     *        `--TEXT -&gt;
+     * }</pre>
      *
      * @see
      * <a href="https://docs.oracle.com/javase/8/docs/technotes/tools/unix/javadoc.html#CHDHDECF">
@@ -1011,15 +1024,16 @@ public final class JavadocTokenTypes {
      * <pre>{@code @serialField counter Integer objects counter}</pre>
      * <b>Tree:</b>
      * <pre>
-     * {@code |--JAVADOC_TAG[3x0] : [@serialField counter Integer objects counter]
-     *        |--SERIAL_FIELD_LITERAL[3x0] : [@serialField]
-     *        |--WS[3x12] : [ ]
-     *        |--FIELD_NAME[3x13] : [counter]
-     *        |--WS[3x20] : [ ]
-     *        |--FIELD_TYPE[3x21] : [Integer]
-     *        |--WS[3x28] : [ ]
-     *        |--DESCRIPTION[3x29] : [objects counter]
-     *            |--TEXT[3x29] : [objects counter]
+     * {@code JAVADOC_TAG -&gt JAVADOC_TAG
+     *         |--SERIAL_FIELD_LITERAL -&gt @serialField
+     *         |--WS -&gt
+     *         |--FIELD_NAME -&gt counter
+     *         |--WS -&gt
+     *         |--FIELD_TYPE -&gt Integer
+     *         |--WS -&gt
+     *         `--DESCRIPTION -&gt DESCRIPTION
+     *             |--TEXT -&gt objects counter
+     *             `--NEWLINE -&gt \n
      * }
      * </pre>
      *
@@ -1143,7 +1157,31 @@ public final class JavadocTokenTypes {
     /** Basefont tag name. */
     public static final int BASEFONT_HTML_TAG_NAME = JavadocParser.BASEFONT_HTML_TAG_NAME;
 
-    /** Br tag name. */
+    /**
+     * Br tag name.
+     *
+     * <p><b>Example:</b></p>
+     * <pre>{@code text before break &lt br &gt text after break}</pre>
+     * <b>Tree:</b>
+     * <pre>
+     * {@code
+     *   JAVADOC -&gt; JAVADOC
+     *        |--NEWLINE -&gt; \r\n
+     *        |--LEADING_ASTERISK -&gt;  *
+     *        |--TEXT -&gt;  text before break
+     *        |--HTML_ELEMENT -&gt; HTML_ELEMENT
+     *        |   `--SINGLETON_ELEMENT -&gt; SINGLETON_ELEMENT
+     *        |       `--BR_TAG -&gt; BR_TAG
+     *        |           |--START -&gt; -&lt;
+     *        |           |--BR_HTML_TAG_NAME -&gt; br
+     *        |           `--END -&gt; &gt;
+     *        |--TEXT -&gt;  text after break
+     *        |--NEWLINE -&gt; \r\n
+     *        |--TEXT -&gt;
+     * }
+     * </pre>
+     */
+
     public static final int BR_HTML_TAG_NAME = JavadocParser.BR_HTML_TAG_NAME;
 
     /** Col tag name. */
@@ -1364,19 +1402,20 @@ public final class JavadocTokenTypes {
      * <pre>{@code @see #method(Processor, String)}</pre>
      * <b>Tree:</b>
      * <pre>
-     * {@code |--JAVADOC_TAG[1x0] : [@see #method(Processor, String)]
-     *        |--SEE_LITERAL[1x0] : [@see]
-     *        |--WS[1x4] : [ ]
-     *        |--REFERENCE[1x5] : [#method(Processor, String)]
-     *            |--HASH[1x5] : [#]
-     *            |--MEMBER[1x6] : [method]
-     *            |--PARAMETERS[1x12] : [(Processor, String)]
-     *                |--LEFT_BRACE[1x12] : [(]
-     *                |--ARGUMENT[1x13] : [Processor]
-     *                |--COMMA[1x22] : [,]
-     *                |--WS[1x23] : [ ]
-     *                |--ARGUMENT[1x24] : [String]
-     *                |--RIGHT_BRACE[1x30] : [)]
+     * {@code
+     *      JAVADOC_TAG -> JAVADOC_TAG
+     *          |--SEE_LITERAL -> @see
+     *          |--WS ->
+     *          |--REFERENCE -> REFERENCE
+     *              |--HASH -> #
+     *              |--MEMBER -> method
+     *              `--PARAMETERS -> PARAMETERS
+     *                  |--LEFT_BRACE -> (
+     *                  |--ARGUMENT -> Processor
+     *                  |--COMMA -> ,
+     *                  |--WS ->
+     *                  |--ARGUMENT -> String
+     *                  `--RIGHT_BRACE -> )
      * }
      * </pre>
      */
@@ -1397,26 +1436,27 @@ public final class JavadocTokenTypes {
      * <pre>{@code @throws IOException if <b>connection</b> problems occur}</pre>
      * <b>Tree:</b>
      * <pre>
-     * {@code |--JAVADOC_TAG[1x0] : [@throws IOException if <b>connection</b> problems occur]
-     *        |--THROWS_LITERAL[1x0] : [@throws]
-     *        |--WS[1x7] : [ ]
-     *        |--CLASS_NAME[1x8] : [IOException]
-     *        |--WS[1x19] : [ ]
-     *        |--DESCRIPTION[1x20] : [if <b>connection</b> problems occur]
-     *            |--TEXT[1x20] : [if ]
-     *            |--HTML_ELEMENT[1x23] : [<b>connection</b>]
-     *                |--HTML_TAG[1x23] : [<b>connection</b>]
-     *                    |--HTML_ELEMENT_START[1x23] : [<b>]
-     *                        |--START[1x23] : [<]
-     *                        |--HTML_TAG_NAME[1x24] : [b]
-     *                        |--END[1x25] : [>]
-     *                    |--TEXT[1x26] : [connection]
-     *                    |--HTML_ELEMENT_END[1x36] : [</b>]
-     *                        |--START[1x36] : [<]
-     *                        |--SLASH[1x37] : [/]
-     *                        |--HTML_TAG_NAME[1x38] : [b]
-     *                        |--END[1x39] : [>]
-     *            |--TEXT[1x40] : [ problems occur]
+     * {@code
+     *   JAVADOC_TAG -&gt; JAVADOC_TAG
+     *        |--THROWS_LITERAL -&gt; @throws
+     *        |--WS -&gt;
+     *        |--CLASS_NAME -&gt; IOException
+     *        |--WS -&gt;
+     *        `--DESCRIPTION -&gt; DESCRIPTION
+     *            |--TEXT -&gt; if
+     *            |--HTML_ELEMENT -&gt; HTML_ELEMENT
+     *            |    `--HTML_TAG -&gt; HTML_TAG
+     *            |        |--HTML_ELEMENT_START -&gt; HTML_ELEMENT_START
+     *            |        |    |--START -&gt; &lt;
+     *            |        |    |--HTML_TAG_NAME -&gt; b
+     *            |        |    `--END -&gt; &gt;
+     *            |        |--TEXT -&gt; connection
+     *            |        `--HTML_ELEMENT_END -&gt; HTML_ELEMENT_END
+     *            |            |--START -&gt; -&lt;
+     *            |            |--SLASH -&gt; /
+     *            |            |--HTML_TAG_NAME -&gt; b
+     *            |            `--END -&gt; -&gt;
+     *            |--TEXT -&gt;  problems occur
      * }
      * </pre>
      */
@@ -1470,7 +1510,34 @@ public final class JavadocTokenTypes {
     /** End list item tag. */
     public static final int LI_TAG_END = JavadocParser.RULE_liTagEnd + RULE_TYPES_OFFSET;
 
-    /** Table row html tag: {@code <tr></tr>}. */
+    /**
+     * Table row html tag.
+     *
+     * <p><b>Example:</b></p>
+     * <pre>{@code <tr></tr>}</pre>
+     * <b>Tree:</b>
+     * <pre>
+     * {@code
+     *   JAVADOC -> JAVADOC
+     *        |--NEWLINE -&gt \r\n
+     *        |--LEADING_ASTERISK -&gt  *
+     *        |--TEXT -&gt
+     *        |--HTML_ELEMENT -&gt HTML_ELEMENT
+     *        |   `--TR -&gt TR
+     *        |       |--TR_TAG_START -&gt TR_TAG_START
+     *        |       |   |--START -&gt &lt
+     *        |       |   |--TR_HTML_TAG_NAME -&gt tr
+     *        |       |   `--END -&gt &gt
+     *        |       `--TR_TAG_END -&gt TR_TAG_END
+     *        |           |--START -&gt &lt
+     *        |           |--SLASH -&gt /
+     *        |           |--TR_HTML_TAG_NAME -&gt tr
+     *        |           `--END -&gt &gt
+     *        |--NEWLINE -&gt \r\n
+     *        |--TEXT -&gt
+     * }
+     * </pre>
+     */
     public static final int TR = JavadocParser.RULE_tr + RULE_TYPES_OFFSET;
     /** Start table row tag. */
     public static final int TR_TAG_START = JavadocParser.RULE_trTagStart + RULE_TYPES_OFFSET;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -27,6 +27,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -97,7 +98,7 @@ public final class TokenUtil {
         return Arrays.stream(cls.getDeclaredFields())
             .filter(fld -> Modifier.isPublic(fld.getModifiers()) && fld.getType() == Integer.TYPE)
             .collect(Collectors.toUnmodifiableMap(
-                Field::getName, fld -> getIntFromField(fld, fld.getName()))
+                Field::getName, fld -> getIntFromField(fld, null))
             );
     }
 
@@ -109,7 +110,7 @@ public final class TokenUtil {
      */
     public static Map<Integer, String> invertMap(Map<String, Integer> map) {
         return map.entrySet().stream()
-            .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
+            .collect(Collectors.toUnmodifiableMap(Map.Entry::getValue, Map.Entry::getKey));
     }
 
     /**
@@ -291,6 +292,18 @@ public final class TokenUtil {
             }
         }
         return matching;
+    }
+
+    /**
+     * Determines if the token type belongs to the given types.
+     *
+     * @param type the Token Type to check
+     * @param types the acceptable types
+     *
+     * @return true if type matches one of the given types.
+     */
+    public static boolean isOfType(int type, Set<Integer> types) {
+        return types.contains(type);
     }
 
     /**

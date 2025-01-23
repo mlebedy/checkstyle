@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -38,9 +38,9 @@ public class XpathRegressionPackageDeclarationTest extends AbstractXpathTestSupp
     }
 
     @Test
-    public void test1() throws Exception {
+    public void testWrongPackage() throws Exception {
         final File fileToProcess =
-                new File(getNonCompilablePath("SuppressionXpathRegression1.java"));
+                new File(getNonCompilablePath("InputXpathWrongPackage.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(PackageDeclarationCheck.class);
@@ -59,9 +59,9 @@ public class XpathRegressionPackageDeclarationTest extends AbstractXpathTestSupp
     }
 
     @Test
-    public void test2() throws Exception {
+    public void testMissingPackage() throws Exception {
         final File fileToProcess =
-                new File(getNonCompilablePath("SuppressionXpathRegression2.java"));
+                new File(getNonCompilablePath("InputXpathMissingPackage.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(PackageDeclarationCheck.class);
@@ -73,11 +73,11 @@ public class XpathRegressionPackageDeclarationTest extends AbstractXpathTestSupp
 
         final List<String> expectedXpathQueries = Arrays.asList(
                 "/COMPILATION_UNIT",
-                "/COMPILATION_UNIT/CLASS_DEF[./IDENT[@text='SuppressionXpathRegression2']]",
+                "/COMPILATION_UNIT/CLASS_DEF[./IDENT[@text='InputXpathMissingPackage']]",
                 "/COMPILATION_UNIT/CLASS_DEF"
-                        + "[./IDENT[@text='SuppressionXpathRegression2']]/MODIFIERS",
+                        + "[./IDENT[@text='InputXpathMissingPackage']]/MODIFIERS",
                 "/COMPILATION_UNIT/CLASS_DEF"
-                        + "[./IDENT[@text='SuppressionXpathRegression2']]/MODIFIERS/LITERAL_PUBLIC"
+                        + "[./IDENT[@text='InputXpathMissingPackage']]/MODIFIERS/LITERAL_PUBLIC"
         );
 
         runVerifications(moduleConfig, fileToProcess, expectedViolation,

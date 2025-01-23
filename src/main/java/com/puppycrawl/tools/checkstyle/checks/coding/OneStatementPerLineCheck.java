@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -28,17 +28,20 @@ import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
 /**
- * <p>
+ * <div>
  * Checks that there is only one statement per line.
- * </p>
+ * </div>
+ *
  * <p>
  * Rationale: It's very difficult to read multiple statements on one line.
  * </p>
+ *
  * <p>
  * In the Java programming language, statements are the fundamental unit of
  * execution. All statements except blocks are terminated by a semicolon.
  * Blocks are denoted by open and close curly braces.
  * </p>
+ *
  * <p>
  * OneStatementPerLineCheck checks the following types of statements:
  * variable declaration statements, empty statements, import statements,
@@ -53,63 +56,11 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
  * Default value is {@code false}.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;OneStatementPerLine&quot;/&gt;
- * </pre>
- * <p>
- * The following examples will be flagged as a violation:
- * </p>
- * <pre>
- * //Each line causes violation:
- * int var1; int var2;
- * var1 = 1; var2 = 2;
- * int var1 = 1; int var2 = 2;
- * var1++; var2++;
- * Object obj1 = new Object(); Object obj2 = new Object();
- * import java.io.EOFException; import java.io.BufferedReader;
- * ;; //two empty statements on the same line.
  *
- * //Multi-line statements:
- * int var1 = 1
- * ; var2 = 2; //violation here
- * int o = 1, p = 2,
- * r = 5; int t; //violation here
- * </pre>
- * <p>
- * An example of how to configure the check to treat resources
- * in a try statement as statements to require them on their own line:
- * </p>
- * <pre>
- * &lt;module name=&quot;OneStatementPerLine&quot;&gt;
- *   &lt;property name=&quot;treatTryResourcesAsStatement&quot; value=&quot;true&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * Note: resource declarations can contain variable definitions
- * and variable references (from java9).
- * When property "treatTryResourcesAsStatement" is enabled,
- * this check is only applied to variable definitions.
- * If there are one or more variable references
- * and one variable definition on the same line in resources declaration,
- * there is no violation.
- * The following examples will illustrate difference:
- * </p>
- * <pre>
- * OutputStream s1 = new PipedOutputStream();
- * OutputStream s2 = new PipedOutputStream();
- * // only one statement(variable definition) with two variable references
- * try (s1; s2; OutputStream s3 = new PipedOutputStream();) // OK
- * {}
- * // two statements with variable definitions
- * try (Reader r = new PipedReader(); s2; Reader s3 = new PipedReader() // violation
- * ) {}
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -138,12 +89,12 @@ public class OneStatementPerLineCheck extends AbstractCheck {
     /**
      * Hold the line-number where the last statement ended.
      */
-    private int lastStatementEnd = -1;
+    private int lastStatementEnd;
 
     /**
      * Hold the line-number where the last 'for-loop' statement ended.
      */
-    private int forStatementEnd = -1;
+    private int forStatementEnd;
 
     /**
      * The for-header usually has 3 statements on one line, but THIS IS OK.
@@ -158,12 +109,12 @@ public class OneStatementPerLineCheck extends AbstractCheck {
     /**
      * Hold the line-number where the last lambda statement ended.
      */
-    private int lambdaStatementEnd = -1;
+    private int lambdaStatementEnd;
 
     /**
      * Hold the line-number where the last resource variable statement ended.
      */
-    private int lastVariableResourceStatementEnd = -1;
+    private int lastVariableResourceStatementEnd;
 
     /**
      * Enable resources processing.
@@ -174,6 +125,7 @@ public class OneStatementPerLineCheck extends AbstractCheck {
      * Setter to enable resources processing.
      *
      * @param treatTryResourcesAsStatement user's value of treatTryResourcesAsStatement.
+     * @since 8.23
      */
     public void setTreatTryResourcesAsStatement(boolean treatTryResourcesAsStatement) {
         this.treatTryResourcesAsStatement = treatTryResourcesAsStatement;
@@ -201,11 +153,8 @@ public class OneStatementPerLineCheck extends AbstractCheck {
 
     @Override
     public void beginTree(DetailAST rootAST) {
-        inForHeader = false;
-        lastStatementEnd = -1;
-        forStatementEnd = -1;
-        isInLambda = false;
-        lastVariableResourceStatementEnd = -1;
+        lastStatementEnd = 0;
+        lastVariableResourceStatementEnd = 0;
     }
 
     @Override
@@ -232,8 +181,8 @@ public class OneStatementPerLineCheck extends AbstractCheck {
         switch (ast.getType()) {
             case TokenTypes.SEMI:
                 lastStatementEnd = ast.getLineNo();
-                forStatementEnd = -1;
-                lambdaStatementEnd = -1;
+                forStatementEnd = 0;
+                lambdaStatementEnd = 0;
                 break;
             case TokenTypes.FOR_ITERATOR:
                 inForHeader = false;

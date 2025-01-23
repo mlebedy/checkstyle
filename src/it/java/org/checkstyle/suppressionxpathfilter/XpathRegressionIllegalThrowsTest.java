@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -38,9 +38,9 @@ public class XpathRegressionIllegalThrowsTest extends AbstractXpathTestSupport {
     }
 
     @Test
-    public void testOne() throws Exception {
+    public void testRuntimeException() throws Exception {
         final File fileToProcess =
-                new File(getPath("SuppressionXpathRegressionIllegalThrowsOne.java"));
+                new File(getPath("InputXpathIllegalThrowsRuntimeException.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(IllegalThrowsCheck.class);
@@ -52,7 +52,7 @@ public class XpathRegressionIllegalThrowsTest extends AbstractXpathTestSupport {
 
         final List<String> expectedXpathQueries = Collections.singletonList(
             "/COMPILATION_UNIT/CLASS_DEF"
-                + "[./IDENT[@text='SuppressionXpathRegressionIllegalThrowsOne']]/OBJBLOCK"
+                + "[./IDENT[@text='InputXpathIllegalThrowsRuntimeException']]/OBJBLOCK"
                 + "/METHOD_DEF[./IDENT[@text='sayHello']]/LITERAL_THROWS"
                 + "/IDENT[@text='RuntimeException']"
         );
@@ -62,9 +62,9 @@ public class XpathRegressionIllegalThrowsTest extends AbstractXpathTestSupport {
     }
 
     @Test
-    public void testTwo() throws Exception {
+    public void testError() throws Exception {
         final File fileToProcess =
-                new File(getPath("SuppressionXpathRegressionIllegalThrowsTwo.java"));
+                new File(getPath("InputXpathIllegalThrowsError.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(IllegalThrowsCheck.class);
@@ -76,7 +76,7 @@ public class XpathRegressionIllegalThrowsTest extends AbstractXpathTestSupport {
 
         final List<String> expectedXpathQueries = Collections.singletonList(
             "/COMPILATION_UNIT/CLASS_DEF"
-                + "[./IDENT[@text='SuppressionXpathRegressionIllegalThrowsTwo']]/OBJBLOCK"
+                + "[./IDENT[@text='InputXpathIllegalThrowsError']]/OBJBLOCK"
                 + "/METHOD_DEF[./IDENT[@text='methodTwo']]/LITERAL_THROWS"
                 + "/DOT[./IDENT[@text='Error']]"
         );

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -40,7 +40,7 @@ public class XpathRegressionAnonInnerLengthTest extends AbstractXpathTestSupport
     @Test
     public void testDefault() throws Exception {
         final File fileToProcess =
-            new File(getPath("SuppressionXpathRegressionAnonInnerLengthDefault.java"));
+            new File(getPath("InputXpathAnonInnerLengthDefault.java"));
 
         final DefaultConfiguration moduleConfig =
             createModuleConfig(AnonInnerLengthCheck.class);
@@ -52,12 +52,12 @@ public class XpathRegressionAnonInnerLengthTest extends AbstractXpathTestSupport
 
         final List<String> expectedXpathQueries = Arrays.asList(
             "/COMPILATION_UNIT/CLASS_DEF"
-                + "[./IDENT[@text='SuppressionXpathRegressionAnonInnerLengthDefault']]"
+                + "[./IDENT[@text='InputXpathAnonInnerLengthDefault']]"
                 + "/OBJBLOCK/METHOD_DEF[./IDENT[@text='test']]"
                 + "/SLIST/VARIABLE_DEF[./IDENT[@text='runnable']]"
                 + "/ASSIGN/EXPR",
             "/COMPILATION_UNIT/CLASS_DEF"
-                + "[./IDENT[@text='SuppressionXpathRegressionAnonInnerLengthDefault']]"
+                + "[./IDENT[@text='InputXpathAnonInnerLengthDefault']]"
                 + "/OBJBLOCK/METHOD_DEF[./IDENT[@text='test']]"
                 + "/SLIST/VARIABLE_DEF[./IDENT[@text='runnable']]"
                 + "/ASSIGN/EXPR/LITERAL_NEW[./IDENT[@text='Runnable']]"
@@ -71,7 +71,7 @@ public class XpathRegressionAnonInnerLengthTest extends AbstractXpathTestSupport
     public void testMaxLength() throws Exception {
         final int maxLen = 5;
         final File fileToProcess =
-                new File(getPath("SuppressionXpathRegressionAnonInnerLength.java"));
+                new File(getPath("InputXpathAnonInnerLength.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(AnonInnerLengthCheck.class);
@@ -84,11 +84,11 @@ public class XpathRegressionAnonInnerLengthTest extends AbstractXpathTestSupport
 
         final List<String> expectedXpathQueries = Arrays.asList(
                 "/COMPILATION_UNIT/CLASS_DEF"
-                        + "[./IDENT[@text='SuppressionXpathRegressionAnonInnerLength']]"
+                        + "[./IDENT[@text='InputXpathAnonInnerLength']]"
                         + "/OBJBLOCK/METHOD_DEF[./IDENT[@text='compare']]/SLIST"
                         + "/VARIABLE_DEF[./IDENT[@text='comp']]/ASSIGN/EXPR",
                 "/COMPILATION_UNIT/CLASS_DEF"
-                        + "[./IDENT[@text='SuppressionXpathRegressionAnonInnerLength']]"
+                        + "[./IDENT[@text='InputXpathAnonInnerLength']]"
                         + "/OBJBLOCK/METHOD_DEF[./IDENT[@text='compare']]/SLIST"
                         + "/VARIABLE_DEF[./IDENT[@text='comp']]/ASSIGN/EXPR"
                         + "/LITERAL_NEW[./IDENT[@text='Comparator']]"

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -31,25 +31,29 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
 
 /**
- * <p>
+ * <div>
  * Checks the NPATH complexity against a specified limit.
- * </p>
+ * </div>
+ *
  * <p>
  * The NPATH metric computes the number of possible execution paths through a
  * function(method). It takes into account the nesting of conditional statements
  * and multipart boolean expressions (A &amp;&amp; B, C || D, E ? F :G and
  * their combinations).
  * </p>
+ *
  * <p>
  * The NPATH metric was designed base on Cyclomatic complexity to avoid problem
  * of Cyclomatic complexity metric like nesting level within a function(method).
  * </p>
+ *
  * <p>
  * Metric was described at <a href="http://dl.acm.org/citation.cfm?id=42379">
  * "NPATH: a measure of execution pathcomplexity and its applications"</a>.
  * If you need detailed description of algorithm, please read that article,
  * it is well written and have number of examples and details.
  * </p>
+ *
  * <p>
  * Here is some quotes:
  * </p>
@@ -91,6 +95,7 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * <td>NP(for-range) + NP(expr1)+ NP(expr2) + NP(expr3) + 1</td></tr>
  * <tr><td>switch ([expr]) { case : [case-range] default: [default-range] }</td>
  * <td>S(i=1:i=n)NP(case-range[i]) + NP(default-range) + NP(expr)</td></tr>
+ * <tr><td>when[expr]</td><td>NP(expr) + 1</td></tr>
  * <tr><td>[expr1] ? [expr2] : [expr3]</td><td>NP(expr1) + NP(expr2) + NP(expr3) + 2</td></tr>
  * <tr><td>goto label</td><td>1</td></tr><tr><td>break</td><td>1</td></tr>
  * <tr><td>Expressions</td>
@@ -100,6 +105,7 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * <tr><td>Empty block {}</td><td>1</td></tr><tr><td>Function call</td><td>1</td>
  * </tr><tr><td>Function(Method) declaration or Block</td><td>P(i=1:i=N)NP(Statement[i])</td></tr>
  * </table>
+ *
  * <p>
  * <b>Rationale:</b> Nejmeh says that his group had an informal NPATH limit of
  * 200 on individual routines; functions(methods) that exceeded this value were
@@ -115,112 +121,11 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * Default value is {@code 200}.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name="NPathComplexity"/&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <pre>
- * public abstract class Test {
  *
- * final int a = 0;
- * int b = 0;
- *
- * public void foo() { // OK, NPath complexity is less than default threshold
- *   // function consists of one if-else block with an NPath Complexity of 3
- *   if (a &gt; 10) {
- *     if (a &gt; b) { // nested if-else decision tree adds 2 to the complexity count
- *       buzz();
- *     } else {
- *       fizz();
- *     }
- *   } else { // last possible outcome of the main if-else block, adds 1 to complexity
- *     buzz();
- *   }
- * }
- *
- * public void boo() { // violation, NPath complexity is 217 (max allowed is 200)
- *   // looping through 3 switch statements produces 6^3 + 1 (217) possible outcomes
- *   for(int i = 0; i &lt; b; i++) { // for statement adds 1 to final complexity
- *     switch(i) { // each independent switch statement multiplies complexity by 6
- *       case a:
- *         // ternary with &amp;&amp; adds 3 to switch's complexity
- *         print(f(i) &amp;&amp; g(i) ? fizz() : buzz());
- *       default:
- *         // ternary with || adds 3 to switch's complexity
- *         print(f(i) || g(i) ? fizz() : buzz());
- *     }
- *     switch(i - 1) { // multiplies complexity by 6
- *       case a:
- *         print(f(i) &amp;&amp; g(i) ? fizz() : buzz());
- *       default:
- *         print(f(i) || g(i) ? fizz() : buzz());
- *     }
- *     switch(i + 1) { // multiplies complexity by 6
- *       case a:
- *         print(f(i) &amp;&amp; g(i) ? fizz() : buzz());
- *       default:
- *         print(f(i) || g(i) ? fizz() : buzz());
- *     }
- *   }
- * }
- *
- * public abstract boolean f(int x);
- * public abstract boolean g(int x);
- * public abstract String fizz();
- * public abstract String buzz();
- * public abstract void print(String str);
- * }
- * </pre>
- * <p>
- * To configure the check with a threshold of 100:
- * </p>
- * <pre>
- * &lt;module name="NPathComplexity"&gt;
- *   &lt;property name="max" value="100"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <pre>
- * public abstract class Test1 {
- * public void foo() { // violation, NPath complexity is 128 (max allowed is 100)
- *   int a,b,t,m,n;
- *   a=b=t=m=n = 0;
- *
- *   // Complexity is achieved by choosing from 2 options 7 times (2^7 = 128 possible outcomes)
- *   if (a &gt; b) { // non-nested if-else decision tree multiplies complexity by 2
- *     bar();
- *   } else {
- *     baz();
- *   }
- *
- *   print(t &gt; 1 ? bar() : baz()); // 5 ternary statements multiply complexity by 2^5
- *   print(t &gt; 2 ? bar() : baz());
- *   print(t &gt; 3 ? bar() : baz());
- *   print(t &gt; 4 ? bar() : baz());
- *   print(t &gt; 5 ? bar() : baz());
- *
- *   if (m &gt; n) { // multiplies complexity by 2
- *     baz();
- *   } else {
- *     bar();
- *   }
- * }
- *
- * public abstract String bar();
- * public abstract String baz();
- * public abstract void print(String str);
- * }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -241,6 +146,14 @@ public final class NPathComplexityCheck extends AbstractCheck {
      * file.
      */
     public static final String MSG_KEY = "npathComplexity";
+
+    /** Tokens that are considered as case labels. */
+    private static final int[] CASE_LABEL_TOKENS = {
+        TokenTypes.EXPR,
+        TokenTypes.PATTERN_DEF,
+        TokenTypes.PATTERN_VARIABLE_DEF,
+        TokenTypes.RECORD_PATTERN_DEF,
+    };
 
     /** Default allowed complexity. */
     private static final int DEFAULT_MAX = 200;
@@ -266,7 +179,7 @@ public final class NPathComplexityCheck extends AbstractCheck {
     private final TokenEnd processingTokenEnd = new TokenEnd();
 
     /** NP value for current range. */
-    private BigInteger currentRangeValue = INITIAL_VALUE;
+    private BigInteger currentRangeValue;
 
     /** Specify the maximum threshold allowed. */
     private int max = DEFAULT_MAX;
@@ -278,6 +191,7 @@ public final class NPathComplexityCheck extends AbstractCheck {
      * Setter to specify the maximum threshold allowed.
      *
      * @param max the maximum threshold
+     * @since 3.4
      */
     public void setMax(int max) {
         this.max = max;
@@ -314,6 +228,7 @@ public final class NPathComplexityCheck extends AbstractCheck {
             TokenTypes.LITERAL_DEFAULT,
             TokenTypes.COMPACT_CTOR_DEF,
             TokenTypes.SWITCH_RULE,
+            TokenTypes.LITERAL_WHEN,
         };
     }
 
@@ -342,6 +257,9 @@ public final class NPathComplexityCheck extends AbstractCheck {
                 break;
             case TokenTypes.LITERAL_RETURN:
                 visitUnitaryOperator(ast, 0);
+                break;
+            case TokenTypes.LITERAL_WHEN:
+                visitWhenExpression(ast, 1);
                 break;
             case TokenTypes.CASE_GROUP:
                 final int caseNumber = countCaseTokens(ast);
@@ -385,6 +303,7 @@ public final class NPathComplexityCheck extends AbstractCheck {
             case TokenTypes.LITERAL_FOR:
             case TokenTypes.LITERAL_IF:
             case TokenTypes.LITERAL_SWITCH:
+            case TokenTypes.LITERAL_WHEN:
                 leaveConditional();
                 break;
             case TokenTypes.LITERAL_TRY:
@@ -428,12 +347,25 @@ public final class NPathComplexityCheck extends AbstractCheck {
     private void visitConditional(DetailAST ast, int basicBranchingFactor) {
         int expressionValue = basicBranchingFactor;
         DetailAST bracketed;
-        for (bracketed = ast.findFirstToken(TokenTypes.LPAREN).getNextSibling();
+        for (bracketed = ast.findFirstToken(TokenTypes.LPAREN);
                 bracketed.getType() != TokenTypes.RPAREN;
                 bracketed = bracketed.getNextSibling()) {
             expressionValue += countConditionalOperators(bracketed);
         }
         processingTokenEnd.setToken(bracketed);
+        pushValue(expressionValue);
+    }
+
+    /**
+     * Visits when expression token. There is no guarantee that when expression will be
+     * bracketed, so we don't use visitConditional method.
+     *
+     * @param ast visited token.
+     * @param basicBranchingFactor default number of branches added.
+     */
+    private void visitWhenExpression(DetailAST ast, int basicBranchingFactor) {
+        final int expressionValue = basicBranchingFactor + countConditionalOperators(ast);
+        processingTokenEnd.setToken(getLastToken(ast));
         pushValue(expressionValue);
     }
 
@@ -610,17 +542,21 @@ public final class NPathComplexityCheck extends AbstractCheck {
     }
 
     /**
-     * Counts number of case constants (EXPR) tokens in a switch labeled rule.
+     * Counts number of case constants tokens in a switch labeled rule.
      *
      * @param ast switch rule token.
-     * @return number of case constant (EXPR) tokens.
+     * @return number of case constant tokens.
      */
     private static int countCaseConstants(DetailAST ast) {
         final AtomicInteger counter = new AtomicInteger();
         final DetailAST literalCase = ast.getFirstChild();
 
-        TokenUtil.forEachChild(literalCase,
-            TokenTypes.EXPR, node -> counter.getAndIncrement());
+        for (DetailAST node = literalCase.getFirstChild(); node != null;
+                    node = node.getNextSibling()) {
+            if (TokenUtil.isOfType(node, CASE_LABEL_TOKENS)) {
+                counter.getAndIncrement();
+            }
+        }
 
         return counter.get();
     }
@@ -629,7 +565,7 @@ public final class NPathComplexityCheck extends AbstractCheck {
      * Coordinates of token end. Used to prevent inline ternary
      * operator from being processed twice.
      */
-    private static class TokenEnd {
+    private static final class TokenEnd {
 
         /** End line of token. */
         private int endLineNo;
@@ -674,7 +610,7 @@ public final class NPathComplexityCheck extends AbstractCheck {
     /**
      * Class that store range value and expression value.
      */
-    private static class Values {
+    private static final class Values {
 
         /** NP value for range. */
         private final BigInteger rangeValue;
@@ -688,7 +624,7 @@ public final class NPathComplexityCheck extends AbstractCheck {
          * @param valueOfRange NP value for range
          * @param valueOfExpression NP value for expression
          */
-        /* package */ Values(BigInteger valueOfRange, BigInteger valueOfExpression) {
+        private Values(BigInteger valueOfRange, BigInteger valueOfExpression) {
             rangeValue = valueOfRange;
             expressionValue = valueOfExpression;
         }

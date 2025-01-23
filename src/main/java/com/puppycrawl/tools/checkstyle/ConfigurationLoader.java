@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,6 @@
 package com.puppycrawl.tools.checkstyle;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,6 +67,14 @@ public final class ConfigurationLoader {
 
     }
 
+    /** The new public ID for version 1_3 of the configuration dtd. */
+    public static final String DTD_PUBLIC_CS_ID_1_3 =
+        "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN";
+
+    /** The resource for version 1_3 of the configuration dtd. */
+    public static final String DTD_CONFIGURATION_NAME_1_3 =
+        "com/puppycrawl/tools/checkstyle/configuration_1_3.dtd";
+
     /** Format of message for sax parse exception. */
     private static final String SAX_PARSE_EXCEPTION_FORMAT = "%s - %s:%s:%s";
 
@@ -111,14 +118,6 @@ public final class ConfigurationLoader {
     private static final String DTD_PUBLIC_ID_1_3 =
         "-//Puppy Crawl//DTD Check Configuration 1.3//EN";
 
-    /** The new public ID for version 1_3 of the configuration dtd. */
-    private static final String DTD_PUBLIC_CS_ID_1_3 =
-        "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN";
-
-    /** The resource for version 1_3 of the configuration dtd. */
-    private static final String DTD_CONFIGURATION_NAME_1_3 =
-        "com/puppycrawl/tools/checkstyle/configuration_1_3.dtd";
-
     /** Prefix for the exception when unable to parse resource. */
     private static final String UNABLE_TO_PARSE_EXCEPTION_PREFIX = "unable to parse"
             + " configuration stream";
@@ -133,17 +132,12 @@ public final class ConfigurationLoader {
 
     /** Property resolver. **/
     private final PropertyResolver overridePropsResolver;
-    /** The loaded configurations. **/
-    private final Deque<DefaultConfiguration> configStack = new ArrayDeque<>();
 
     /** Flags if modules with the severity 'ignore' should be omitted. */
     private final boolean omitIgnoredModules;
 
     /** The thread mode configuration. */
     private final ThreadModeSettings threadModeSettings;
-
-    /** The Configuration that is being built. */
-    private Configuration configuration;
 
     /**
      * Creates a new {@code ConfigurationLoader} instance.
@@ -192,12 +186,14 @@ public final class ConfigurationLoader {
      * the caller to close the stream.
      *
      * @param source the source that contains the configuration data
+     * @return the check configurations
      * @throws IOException if an error occurs
      * @throws SAXException if an error occurs
      */
-    private void parseInputSource(InputSource source)
+    private Configuration parseInputSource(InputSource source)
             throws IOException, SAXException {
         saxHandler.parseInputSource(source);
+        return saxHandler.configuration;
     }
 
     /**
@@ -263,10 +259,7 @@ public final class ConfigurationLoader {
                                                   IgnoredModulesOptions ignoredModulesOptions,
                                                   ThreadModeSettings threadModeSettings)
             throws CheckstyleException {
-        // figure out if this is a File or a URL
-        final URI uri = CommonUtil.getUriByFilename(config);
-        final InputSource source = new InputSource(uri.toString());
-        return loadConfiguration(source, overridePropsResolver,
+        return loadConfiguration(CommonUtil.sourceFromFilename(config), overridePropsResolver,
                 ignoredModulesOptions, threadModeSettings);
     }
 
@@ -315,8 +308,7 @@ public final class ConfigurationLoader {
             final ConfigurationLoader loader =
                     new ConfigurationLoader(overridePropsResolver,
                             omitIgnoreModules, threadModeSettings);
-            loader.parseInputSource(configSource);
-            return loader.configuration;
+            return loader.parseInputSource(configSource);
         }
         catch (final SAXParseException ex) {
             final String message = String.format(Locale.ROOT, SAX_PARSE_EXCEPTION_FORMAT,
@@ -482,13 +474,19 @@ public final class ConfigurationLoader {
         /** Name of the key attribute. */
         private static final String KEY = "key";
 
+        /** The loaded configurations. **/
+        private final Deque<DefaultConfiguration> configStack = new ArrayDeque<>();
+
+        /** The Configuration that is being built. */
+        private Configuration configuration;
+
         /**
          * Creates a new InternalLoader.
          *
          * @throws SAXException if an error occurs
          * @throws ParserConfigurationException if an error occurs
          */
-        /* package */ InternalLoader()
+        private InternalLoader()
                 throws SAXException, ParserConfigurationException {
             super(createIdToResourceNameMap());
         }
@@ -506,12 +504,12 @@ public final class ConfigurationLoader {
                 final DefaultConfiguration conf =
                     new DefaultConfiguration(name, threadModeSettings);
 
-                if (configuration == null) {
+                if (configStack.isEmpty()) {
+                    // save top config
                     configuration = conf;
                 }
-
-                // add configuration to it's parent
-                if (!configStack.isEmpty()) {
+                else {
+                    // add configuration to it's parent
                     final DefaultConfiguration top =
                         configStack.peek();
                     top.addChild(conf);

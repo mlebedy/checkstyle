@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -20,12 +20,13 @@
 package com.puppycrawl.tools.checkstyle.xpath;
 
 import static com.google.common.truth.Truth.assertWithMessage;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static com.puppycrawl.tools.checkstyle.internal.utils.TestUtil.getExpectedThrowable;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import net.sf.saxon.om.AxisInfo;
+import net.sf.saxon.om.NamespaceUri;
 import net.sf.saxon.tree.iter.AxisIterator;
 
 public class AttributeNodeTest {
@@ -35,6 +36,20 @@ public class AttributeNodeTest {
     @BeforeEach
     public void init() {
         attributeNode = new AttributeNode("name", "value");
+    }
+
+    @Test
+    public void testGetNamespaceUri() {
+        assertWithMessage("Attribute node should have default namespace URI")
+            .that(attributeNode.getNamespaceUri())
+            .isEqualTo(NamespaceUri.NULL);
+    }
+
+    @Test
+    public void testGetUri() {
+        assertWithMessage("Attribute node should have blank URI")
+            .that(attributeNode.getURI())
+            .isEqualTo("");
     }
 
     @Test
@@ -53,7 +68,7 @@ public class AttributeNodeTest {
     @Test
     public void testGetDepth() {
         final UnsupportedOperationException exception =
-            assertThrows(UnsupportedOperationException.class, attributeNode::getDepth);
+            getExpectedThrowable(UnsupportedOperationException.class, attributeNode::getDepth);
         assertWithMessage("Invalid exception message")
             .that(exception)
             .hasMessageThat()
@@ -83,7 +98,7 @@ public class AttributeNodeTest {
     @Test
     public void testGetChildren() {
         final UnsupportedOperationException exception =
-            assertThrows(UnsupportedOperationException.class, attributeNode::getChildren);
+            getExpectedThrowable(UnsupportedOperationException.class, attributeNode::getChildren);
         assertWithMessage("Invalid exception message")
             .that(exception)
             .hasMessageThat()

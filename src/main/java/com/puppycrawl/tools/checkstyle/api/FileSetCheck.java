@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -57,12 +57,14 @@ public interface FileSetCheck
      * Request to process a file. The implementation should use the supplied
      * contents and not read the contents again. This reduces the amount of
      * file I/O.
+     *
      * <p>
      * The file set to process might contain files that are not
      * interesting to the FileSetCheck. Such files should be ignored,
      * no audit event should be fired for them. For example a FileSetCheck
      * that checks java files should ignore HTML or properties files.
      * </p>
+     *
      * <p>
      * The method should return the set of violations to be logged.
      * </p>

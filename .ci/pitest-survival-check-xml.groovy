@@ -6,14 +6,17 @@ import groovy.util.slurpersupport.GPathResult
 import groovy.util.slurpersupport.NodeChildren
 import groovy.xml.XmlUtil
 
-@Field final static String SEPARATOR = System.getProperty("file.separator")
+@Field static final String USAGE_STRING = "Usage groovy .${File.separator}.ci${File.separator}" +
+        "pitest-survival-check-xml.groovy [profile]\n" +
+        "To see the full list of supported profiles run\ngroovy .${File.separator}" +
+        ".ci${File.separator} pitest-survival-check-xml.groovy --list\n"
 
-final int exitCode
-if (args.length == 2) {
-    exitCode = parseArgumentAndExecute(args[0], args[1])
+int exitCode = 1
+if (args.length == 1) {
+    exitCode = parseArgumentAndExecute(args[0])
 }
 else {
-    exitCode = parseArgumentAndExecute(args[0], null)
+    throw new IllegalArgumentException(USAGE_STRING)
 }
 System.exit(exitCode)
 
@@ -23,22 +26,11 @@ System.exit(exitCode)
  * @param argument command line argument
  * @return {@code 0} if command executes successfully, {@code 1} otherwise
  */
-private int parseArgumentAndExecute(String argument, String flag) {
+private int parseArgumentAndExecute(String argument) {
     final Set<String> profiles = getPitestProfiles()
-    final String usageString = """
-        Usage groovy ./.ci/pitest-survival-check-xml.groovy [profile] [-g | --generate-suppression]
-        To see the full list of supported profiles run
-        'groovy ./.ci/pitest-survival-check-xml.groovy --list'
-        """.stripIndent()
-
     final int exitCode
     if (profiles.contains(argument)) {
-        if (flag != null && flag != "-g" && flag != "--generate-suppression") {
-            final String exceptionMessage = "\nUnexpected flag: ${flag}" + usageString
-            throw new IllegalArgumentException(exceptionMessage)
-        }
-        exitCode = checkPitestReport(argument, flag)
-
+        exitCode = checkPitestReport(argument)
     }
     else if (argument == "--list") {
         println "Supported profiles:"
@@ -46,7 +38,7 @@ private int parseArgumentAndExecute(String argument, String flag) {
         exitCode = 0
     }
     else {
-        final String exceptionMessage = "\nUnexpected argument: ${argument}" + usageString
+        final String exceptionMessage = "\nUnexpected argument: '${argument}' " + USAGE_STRING
         throw new IllegalArgumentException(exceptionMessage)
     }
     return exitCode
@@ -58,7 +50,7 @@ private int parseArgumentAndExecute(String argument, String flag) {
  * @return A set of all available pitest profiles
  */
 private static Set<String> getPitestProfiles() {
-    final GPathResult mainNode = new XmlSlurper().parse(".${SEPARATOR}pom.xml")
+    final GPathResult mainNode = new XmlSlurper().parse(".${File.separator}pom.xml")
     final NodeChildren ids = mainNode.profiles.profile.id as NodeChildren
     final Set<String> profiles = new HashSet<>()
     ids.each { node ->
@@ -76,16 +68,16 @@ private static Set<String> getPitestProfiles() {
  * them.
  *
  * @param profile the pitest profile to execute
- * @param flag command line argument flag to determine output format
  * @return {@code 0} if pitest report is as expected, {@code 1} otherwise
  */
-private static int checkPitestReport(String profile, String flag) {
+private static int checkPitestReport(String profile) {
     final XmlParser xmlParser = new XmlParser()
     File mutationReportFile = null
-    final String suppressedMutationFileUri =
-            ".${SEPARATOR}.ci${SEPARATOR}pitest-suppressions${SEPARATOR}${profile}-suppressions.xml"
+    final String suppressedMutationFileUri = ".${File.separator}config${File.separator}" +
+            "pitest-suppressions${File.separator}${profile}-suppressions.xml"
 
-    final File pitReports = new File(".${SEPARATOR}target${SEPARATOR}pit-reports")
+    final File pitReports =
+            new File(".${File.separator}target${File.separator}pit-reports")
 
     if (!pitReports.exists()) {
         throw new IllegalStateException(
@@ -101,12 +93,34 @@ private static int checkPitestReport(String profile, String flag) {
     final Set<Mutation> survivingMutations = getSurvivingMutations(mutationReportNode)
 
     final File suppressionFile = new File(suppressedMutationFileUri)
-    Set<Mutation> suppressedMutations = Collections.emptySet()
+    Set<Mutation> suppressedMutations = new TreeSet<>()
     if (suppressionFile.exists()) {
         final Node suppressedMutationNode = xmlParser.parse(suppressedMutationFileUri)
         suppressedMutations = getSuppressedMutations(suppressedMutationNode)
     }
-    return compareMutations(survivingMutations, suppressedMutations, flag)
+
+    if (survivingMutations.isEmpty()) {
+        if (suppressionFile.exists()) {
+            suppressionFile.delete()
+        }
+    }
+    else {
+        final StringBuilder suppressionFileContent = new StringBuilder(1024)
+        suppressionFileContent.append(
+                '<?xml version="1.0" encoding="UTF-8"?>\n<suppressedMutations>')
+
+        survivingMutations.each {
+            suppressionFileContent.append(it.toXmlString())
+        }
+        suppressionFileContent.append('</suppressedMutations>\n')
+
+        if (!suppressionFile.exists()) {
+            suppressionFile.createNewFile()
+        }
+        suppressionFile.write(suppressionFileContent.toString())
+    }
+
+    return printComparisonToConsole(survivingMutations, suppressedMutations)
 }
 
 /**
@@ -119,7 +133,7 @@ private static int checkPitestReport(String profile, String flag) {
 private static Set<Mutation> getSurvivingMutations(Node mainNode) {
 
     final List<Node> children = mainNode.children()
-    final Set<Mutation> survivingMutations = new HashSet<>()
+    final Set<Mutation> survivingMutations = new TreeSet<>()
 
     children.each { node ->
         final Node mutationNode = node as Node
@@ -142,7 +156,7 @@ private static Set<Mutation> getSurvivingMutations(Node mainNode) {
  */
 private static Set<Mutation> getSuppressedMutations(Node mainNode) {
     final List<Node> children = mainNode.children()
-    final Set<Mutation> suppressedMutations = new HashSet<>()
+    final Set<Mutation> suppressedMutations = new TreeSet<>()
 
     children.each { node ->
         final Node mutationNode = node as Node
@@ -201,11 +215,12 @@ private static Mutation getMutation(Node mutationNode) {
     }
     if (lineContent == null) {
         final String mutationFileName = mutationClassPackage + sourceFile
-        final String startingPath = ".${SEPARATOR}src${SEPARATOR}main${SEPARATOR}java${SEPARATOR}"
+        final String startingPath =
+                ".${File.separator}src${File.separator}main${File.separator}java${File.separator}"
         final String javaExtension = ".java"
         final String mutationFilePath = startingPath + mutationFileName
                 .substring(0, mutationFileName.length() - javaExtension.length())
-                .replaceAll("\\.", SEPARATOR) + javaExtension
+                .replace(".", File.separator) + javaExtension
 
         final File file = new File(mutationFilePath)
         lineContent = XmlUtil.escapeXml(file.readLines().get(lineNumber - 1).trim())
@@ -237,12 +252,10 @@ private static Mutation getMutation(Node mutationNode) {
  *
  * @param survivingMutations A set of surviving mutations
  * @param suppressedMutations A set of suppressed mutations
- * @param flag command line argument flag to determine output format
  * @return {@code 0} if comparison passes successfully
  */
-private static int compareMutations(Set<Mutation> survivingMutations,
-                                    Set<Mutation> suppressedMutations,
-                                    String flag) {
+private static int printComparisonToConsole(Set<Mutation> survivingMutations,
+                                            Set<Mutation> suppressedMutations) {
     final Set<Mutation> survivingUnsuppressedMutations =
             setDifference(survivingMutations, suppressedMutations)
     final Set<Mutation> extraSuppressions =
@@ -251,16 +264,18 @@ private static int compareMutations(Set<Mutation> survivingMutations,
     final int exitCode
     if (survivingMutations == suppressedMutations) {
         exitCode = 0
+        println 'No new surviving mutation(s) found.'
     }
     else if (survivingUnsuppressedMutations.isEmpty()
-            && !hasOnlyStableMutations(extraSuppressions)) {
+            && hasOnlyUnstableMutations(extraSuppressions)) {
         exitCode = 0
+        println 'No new surviving mutation(s) found.'
     }
     else {
         if (!survivingUnsuppressedMutations.isEmpty()) {
             println "New surviving mutation(s) found:"
             survivingUnsuppressedMutations.each {
-                printMutation(flag, it)
+                println it
             }
         }
         if (!extraSuppressions.isEmpty()
@@ -268,7 +283,7 @@ private static int compareMutations(Set<Mutation> survivingMutations,
             println "\nUnnecessary suppressed mutation(s) found and should be removed:"
             extraSuppressions.each {
                 if (!it.isUnstable()) {
-                    printMutation(flag, it)
+                    println it
                 }
             }
         }
@@ -278,28 +293,13 @@ private static int compareMutations(Set<Mutation> survivingMutations,
 }
 
 /**
- * Whether a set has only stable mutations.
+ * Whether a set has only unstable mutations.
  *
  * @param mutations A set of mutations
- * @return {@code true} if a set has only stable mutations
+ * @return {@code true} if a set has only unstable mutations
  */
-private static boolean hasOnlyStableMutations(Set<Mutation> mutations) {
-    return mutations.every { !it.isUnstable() }
-}
-
-/**
- * Prints the mutation according to the nature of the flag.
- *
- * @param flag command line argument flag to determine output format
- * @param mutation mutation to print
- */
-private static void printMutation(String flag, Mutation mutation) {
-    if (flag != null) {
-        println mutation.toXmlString()
-    }
-    else {
-        println mutation
-    }
+private static boolean hasOnlyUnstableMutations(Set<Mutation> mutations) {
+    return mutations.every { it.isUnstable() }
 }
 
 /**

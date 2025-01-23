@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -70,7 +70,7 @@ public class LambdaParameterNameCheckTest extends AbstractModuleTestSupport {
             "18:66: " + getCheckMessage(MSG_INVALID_PATTERN, "st", pattern),
             "21:65: " + getCheckMessage(MSG_INVALID_PATTERN, "s1", pattern),
             "22:65: " + getCheckMessage(MSG_INVALID_PATTERN, "s2", pattern),
-            "25:21: " + getCheckMessage(MSG_INVALID_PATTERN, "s", pattern),
+            "26:21: " + getCheckMessage(MSG_INVALID_PATTERN, "s", pattern),
         };
         verifyWithInlineConfigParser(
                 getPath("InputLambdaParameterName.java"), expected);
@@ -79,7 +79,7 @@ public class LambdaParameterNameCheckTest extends AbstractModuleTestSupport {
     @Test
     public void testLambdaParameterNameSwitchExpression() throws Exception {
 
-        final String pattern = "^[a-z][a-zA-Z0-9]*$";
+        final String pattern = "^([a-z][a-zA-Z0-9]*|_)$";
 
         final String[] expected = {
             "19:35: " + getCheckMessage(MSG_INVALID_PATTERN, "Word", pattern),
@@ -91,6 +91,22 @@ public class LambdaParameterNameCheckTest extends AbstractModuleTestSupport {
 
         verifyWithInlineConfigParser(
                 getNonCompilablePath("InputLambdaParameterNameSwitchExpression.java"),
+            expected);
+    }
+
+    @Test
+    public void testLambdaParameterNameUnnamed() throws Exception {
+
+        final String pattern = "^([a-z][a-zA-Z0-9]*|_)$";
+
+        final String[] expected = {
+            "30:36: " + getCheckMessage(MSG_INVALID_PATTERN, "__", pattern),
+            "34:36: " + getCheckMessage(MSG_INVALID_PATTERN, "_BAD", pattern),
+            "37:36: " + getCheckMessage(MSG_INVALID_PATTERN, "BAD_", pattern),
+        };
+
+        verifyWithInlineConfigParser(
+                getNonCompilablePath("InputLambdaParameterNameUnnamed.java"),
             expected);
     }
 

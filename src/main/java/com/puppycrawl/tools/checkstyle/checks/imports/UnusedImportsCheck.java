@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -40,11 +40,11 @@ import com.puppycrawl.tools.checkstyle.utils.JavadocUtil;
 import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
 
 /**
- * <p>
- * Checks for unused import statements. Checkstyle uses a simple but very
- * reliable algorithm to report on unused import statements. An import statement
+ * <div>
+ * Checks for unused import statements. An import statement
  * is considered unused if:
- * </p>
+ * </div>
+ *
  * <ul>
  * <li>
  * It is not referenced in the file. The algorithm does not support wild-card
@@ -52,15 +52,15 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * checks for imports that handle wild-card imports.
  * </li>
  * <li>
- * It is a duplicate of another import. This is when a class is imported more
- * than once.
- * </li>
- * <li>
  * The class imported is from the {@code java.lang} package. For example
  * importing {@code java.lang.String}.
  * </li>
  * <li>
  * The class imported is from the same package.
+ * </li>
+ * <li>
+ * A static method is imported when used as method reference. In that case,
+ * only the type needs to be imported and that's enough to resolve the method.
  * </li>
  * <li>
  * <b>Optionally:</b> it is referenced in Javadoc comments. This check is on by
@@ -71,21 +71,20 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * dependency would be to write the Javadoc comment as {@code {&#64;link java.util.List}}.
  * </li>
  * </ul>
+ *
  * <p>
- * The main limitation of this check is handling the case where an imported type
- * has the same name as a declaration, such as a member variable.
+ * The main limitation of this check is handling the cases where:
  * </p>
- * <p>
- * For example, in the following case the import {@code java.awt.Component}
- * will not be flagged as unused:
- * </p>
- * <pre>
- * import java.awt.Component;
- * class FooBar {
- *   private Object Component; // a bad practice in my opinion
- *   ...
- * }
- * </pre>
+ * <ul>
+ * <li>
+ * An imported type has the same name as a declaration, such as a member variable.
+ * </li>
+ * <li>
+ * There are two or more static imports with the same method name
+ * (javac can distinguish imports with same name but different parameters, but checkstyle can not
+ * due to <a href="https://checkstyle.org/writingchecks.html#Limitations">limitation.</a>)
+ * </li>
+ * </ul>
  * <ul>
  * <li>
  * Property {@code processJavadoc} - Control whether to process Javadoc comments.
@@ -93,15 +92,11 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * Default value is {@code true}.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name="UnusedImports"/&gt;
- * </pre>
+ *
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -157,6 +152,7 @@ public class UnusedImportsCheck extends AbstractCheck {
      * Setter to control whether to process Javadoc comments.
      *
      * @param value Flag for processing Javadoc comments.
+     * @since 5.4
      */
     public void setProcessJavadoc(boolean value) {
         processJavadoc = value;
@@ -268,19 +264,33 @@ public class UnusedImportsCheck extends AbstractCheck {
         final DetailAST parent = ast.getParent();
         final int parentType = parent.getType();
 
-        final boolean isPossibleDotClassOrInMethod = parentType == TokenTypes.DOT
-                || parentType == TokenTypes.METHOD_DEF;
-
-        final boolean isQualifiedIdent = parentType == TokenTypes.DOT
-                && !TokenUtil.isOfType(ast.getPreviousSibling(), TokenTypes.DOT)
-                && ast.getNextSibling() != null;
+        final boolean isClassOrMethod = parentType == TokenTypes.DOT
+                || parentType == TokenTypes.METHOD_DEF || parentType == TokenTypes.METHOD_REF;
 
         if (TokenUtil.isTypeDeclaration(parentType)) {
             currentFrame.addDeclaredType(ast.getText());
         }
-        else if (!isPossibleDotClassOrInMethod || isQualifiedIdent) {
+        else if (!isClassOrMethod || isQualifiedIdentifier(ast)) {
             currentFrame.addReferencedType(ast.getText());
         }
+    }
+
+    /**
+     * Checks whether ast is a fully qualified identifier.
+     *
+     * @param ast to check
+     * @return true if given ast is a fully qualified identifier
+     */
+    private static boolean isQualifiedIdentifier(DetailAST ast) {
+        final DetailAST parent = ast.getParent();
+        final int parentType = parent.getType();
+
+        final boolean isQualifiedIdent = parentType == TokenTypes.DOT
+                && !TokenUtil.isOfType(ast.getPreviousSibling(), TokenTypes.DOT)
+                && ast.getNextSibling() != null;
+        final boolean isQualifiedIdentFromMethodRef = parentType == TokenTypes.METHOD_REF
+                && ast.getNextSibling() != null;
+        return isQualifiedIdent || isQualifiedIdentFromMethodRef;
     }
 
     /**
@@ -368,7 +378,7 @@ public class UnusedImportsCheck extends AbstractCheck {
      */
     private static Set<String> processJavadocTag(JavadocTag tag) {
         final Set<String> references = new HashSet<>();
-        final String identifier = tag.getFirstArg().trim();
+        final String identifier = tag.getFirstArg();
         for (Pattern pattern : new Pattern[]
         {FIRST_CLASS_NAME, ARGUMENT_NAME}) {
             references.addAll(matchPattern(identifier, pattern));

@@ -4,13 +4,13 @@ FinalClass
 
 */
 
-//non-compiled with javac: Compilable with Java14
+//non-compiled with javac: Compilable with Java17
 package com.puppycrawl.tools.checkstyle.checks.design.finalclass;
 
 public record InputFinalClassNestedInRecord(int a) {
 
     record b() {
-        class c { // violation
+        class c { // violation 'Class c should be declared as final'
             private c() {
             }
         }
@@ -20,7 +20,7 @@ public record InputFinalClassNestedInRecord(int a) {
         c obj = new c() {
         };
 
-        class c { // ok
+        class c {
             private c() {
             }
         }
@@ -28,7 +28,7 @@ public record InputFinalClassNestedInRecord(int a) {
 
     record s() {
         record f() {
-            class j { // violation
+            class j { // violation 'Class j should be declared as final'
                 private j() {
                 }
             }
@@ -40,10 +40,12 @@ public record InputFinalClassNestedInRecord(int a) {
             final static f.j obj = new f.j() {
             };
 
-            static class j { // ok
+            static class j {
                 private j() {
                 }
             }
         }
+    }
+    private class Nothing { // violation 'Class Nothing should be declared as final'
     }
 }

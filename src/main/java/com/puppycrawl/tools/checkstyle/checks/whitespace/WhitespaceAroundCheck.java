@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -26,10 +26,10 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 
 /**
- * <p>
+ * <div>
  * Checks that a token is surrounded by whitespace. Empty constructor,
  * method, class, enum, interface, loop bodies (blocks), lambdas of the form
- * </p>
+ * </div>
  * <pre>
  * public MyClass() {}      // empty constructor
  * public void func() {}    // empty method
@@ -43,11 +43,14 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * Runnable noop = () -&gt; {}; // empty lambda
  * public @interface Beta {} // empty annotation type
  * </pre>
+ *
  * <p>
  * may optionally be exempted from the policy using the {@code allowEmptyMethods},
  * {@code allowEmptyConstructors}, {@code allowEmptyTypes}, {@code allowEmptyLoops},
- * {@code allowEmptyLambdas} and {@code allowEmptyCatches} properties.
+ * {@code allowEmptyLambdas}, {@code allowEmptyCatches}
+ * and {@code allowEmptySwitchBlockStatements} properties.
  * </p>
+ *
  * <p>
  * This check does not flag as violation double brace initialization like:
  * </p>
@@ -56,6 +59,7 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  *     setProperty("key", "value");
  * }};
  * </pre>
+ *
  * <p>
  * Parameter allowEmptyCatches allows to suppress violations when token list
  * contains SLIST to check if beginning of block is surrounded by whitespace
@@ -66,29 +70,25 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  *     k = 5 / i;
  * } catch (ArithmeticException ex) {}
  * </pre>
+ *
  * <p>
  * With this property turned off, this raises violation because the beginning
  * of the catch block (left curly bracket) is not separated from the end
  * of the catch block (right curly bracket).
  * </p>
+ *
+ * <p>
+ * Note: <a href="https://openjdk.org/jeps/361">
+ * Switch expressions</a> are ignored by this check.
+ * </p>
  * <ul>
  * <li>
+ * Property {@code allowEmptyCatches} - Allow empty catch bodies.
+ * Type is {@code boolean}.
+ * Default value is {@code false}.
+ * </li>
+ * <li>
  * Property {@code allowEmptyConstructors} - Allow empty constructor bodies.
- * Type is {@code boolean}.
- * Default value is {@code false}.
- * </li>
- * <li>
- * Property {@code allowEmptyMethods} - Allow empty method bodies.
- * Type is {@code boolean}.
- * Default value is {@code false}.
- * </li>
- * <li>
- * Property {@code allowEmptyTypes} - Allow empty class, interface and enum bodies.
- * Type is {@code boolean}.
- * Default value is {@code false}.
- * </li>
- * <li>
- * Property {@code allowEmptyLoops} - Allow empty loop bodies.
  * Type is {@code boolean}.
  * Default value is {@code false}.
  * </li>
@@ -98,7 +98,23 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * Default value is {@code false}.
  * </li>
  * <li>
- * Property {@code allowEmptyCatches} - Allow empty catch bodies.
+ * Property {@code allowEmptyLoops} - Allow empty loop bodies.
+ * Type is {@code boolean}.
+ * Default value is {@code false}.
+ * </li>
+ * <li>
+ * Property {@code allowEmptyMethods} - Allow empty method bodies.
+ * Type is {@code boolean}.
+ * Default value is {@code false}.
+ * </li>
+ * <li>
+ * Property {@code allowEmptySwitchBlockStatements} - Allow empty switch blocks
+ * and block statements.
+ * Type is {@code boolean}.
+ * Default value is {@code false}.
+ * </li>
+ * <li>
+ * Property {@code allowEmptyTypes} - Allow empty class, interface and enum bodies.
  * Type is {@code boolean}.
  * Default value is {@code false}.
  * </li>
@@ -215,237 +231,16 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#LITERAL_ASSERT">
  * LITERAL_ASSERT</a>,
  * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#TYPE_EXTENSION_AND">
- * TYPE_EXTENSION_AND</a>.
+ * TYPE_EXTENSION_AND</a>,
+ * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#LITERAL_WHEN">
+ * LITERAL_WHEN</a>.
  * </li>
  * </ul>
- * <p>To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;WhitespaceAround&quot;/&gt;
- * </pre>
- * <p>Example:
- * </p>
- * <pre>
- * class Test {
- *     public Test(){} // 2 violations, '{' is not followed and preceded by whitespace.
- *     public static void main(String[] args) {
- *         if (foo) { // ok
- *             // body
- *         }
- *         else{ // violation
- *             // body
- *         }
  *
- *         for (int i = 1; i &gt; 1; i++) {} // violation, '{' is not followed by whitespace.
- *
- *         Runnable noop = () -&gt;{}; // 2 violations,
- *                                     // '{' is not followed and preceded by whitespace.
- *         try {
- *             // body
- *         } catch (Exception e){} // 2 violations,
- *                                 // '{' is not followed and preceded by whitespace.
- *
- *         char[] vowels = {'a', 'e', 'i', 'o', 'u'};
- *         for (char item: vowels) { // ok, because ignoreEnhancedForColon is true by default
- *             // body
- *         }
- *     }
- * }
- * </pre>
- * <p>To configure the check for whitespace only around
- * assignment operators:
- * </p>
- * <pre>
- * &lt;module name=&quot;WhitespaceAround&quot;&gt;
- *   &lt;property name=&quot;tokens&quot;
- *     value=&quot;ASSIGN,DIV_ASSIGN,PLUS_ASSIGN,MINUS_ASSIGN,STAR_ASSIGN,
- *            MOD_ASSIGN,SR_ASSIGN,BSR_ASSIGN,SL_ASSIGN,BXOR_ASSIGN,
- *            BOR_ASSIGN,BAND_ASSIGN&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:
- * </p>
- * <pre>
- * class Test {
- *     public static void main(String[] args) {
- *         int b=10; // violation
- *         int c = 10; // ok
- *         b+=10; // violation
- *         b += 10; // ok
- *         c*=10; // violation
- *         c *= 10; // ok
- *         c-=5; // violation
- *         c -= 5; // ok
- *         c/=2; // violation
- *         c /= 2; // ok
- *         c%=1; // violation
- *         c %= 1; // ok
- *         c&gt;&gt;=1; // violation
- *         c &gt;&gt;= 1; // ok
- *         c&gt;&gt;&gt;=1; // violation
- *         c &gt;&gt;&gt;= 1; // ok
- *     }
- *     public void myFunction() {
- *         c^=1; // violation
- *         c ^= 1; // ok
- *         c|=1; // violation
- *         c |= 1; // ok
- *         c&amp;=1; // violation
- *         c &amp;= 1; // ok
- *         c&lt;&lt;=1; // violation
- *         c &lt;&lt;= 1; // ok
- *     }
- * }
- * </pre>
- * <p>To configure the check for whitespace only around curly braces:
- * </p>
- * <pre>
- * &lt;module name=&quot;WhitespaceAround&quot;&gt;
- *   &lt;property name=&quot;tokens&quot; value=&quot;LCURLY,RCURLY&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:
- * </p>
- * <pre>
- * class Test {
- *     public void myFunction() {} // violation
- *     public void myFunction() { } // ok
- * }
- * </pre>
- * <p>
- * To configure the check to allow empty method bodies:
- * </p>
- * <pre>
- * &lt;module name=&quot;WhitespaceAround&quot;&gt;
- *   &lt;property name=&quot;allowEmptyMethods&quot; value=&quot;true&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:
- * </p>
- * <pre>
- * class Test {
- *     public void muFunction() {} // ok
- *     int a=4; // 2 violations, '=' is not followed and preceded by whitespace.
- * }
- * </pre>
- * <p>
- * To configure the check to allow empty constructor bodies:
- * </p>
- * <pre>
- * &lt;module name=&quot;WhitespaceAround&quot;&gt;
- *   &lt;property name=&quot;allowEmptyConstructors&quot; value=&quot;true&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:
- * </p>
- * <pre>
- * class Test {
- *     public Test() {} // ok
- *     public void muFunction() {} // violation, '{' is not followed by whitespace.
- * }
- * </pre>
- * <p>
- * To configure the check to allow empty type bodies:
- * </p>
- * <pre>
- * &lt;module name=&quot;WhitespaceAround&quot;&gt;
- *   &lt;property name=&quot;allowEmptyTypes&quot; value=&quot;true&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:
- * </p>
- * <pre>
- * class Test {} // ok
- * interface testInterface{} // ok
- * class anotherTest {
- *     int a=4; // 2 violations, '=' is not followed and preceded by whitespace.
- * }
- * </pre>
- * <p>
- * To configure the check to allow empty loop bodies:
- * </p>
- * <pre>
- * &lt;module name=&quot;WhitespaceAround&quot;&gt;
- *   &lt;property name=&quot;allowEmptyLoops&quot; value=&quot;true&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:
- * </p>
- * <pre>
- * class Test {
- *     public static void main(String[] args) {
- *         for (int i = 100;i &gt; 10; i--){} // ok
- *         do {} while (i = 1); // ok
- *         int a=4; // 2 violations, '=' is not followed and preceded by whitespace.
- *     }
- * }
- * </pre>
- * <p>
- * To configure the check to allow empty lambda bodies:
- * </p>
- * <pre>
- * &lt;module name=&quot;WhitespaceAround&quot;&gt;
- *   &lt;property name=&quot;allowEmptyLambdas&quot; value=&quot;true&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:
- * </p>
- * <pre>
- * class Test {
- *     public static void main(String[] args) {
- *         Runnable noop = () -&gt; {}; // ok
- *         int a=4; // 2 violations, '=' is not followed and preceded by whitespace.
- *     }
- * }
- * </pre>
- * <p>
- * To configure the check to allow empty catch bodies:
- * </p>
- * <pre>
- * &lt;module name=&quot;WhitespaceAround&quot;&gt;
- *   &lt;property name=&quot;allowEmptyCatches&quot; value=&quot;true&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:
- * </p>
- * <pre>
- * class Test {
- *     public static void main(String[] args) {
- *         int a=4; // 2 violations, '=' is not followed and preceded by whitespace.
- *         try {
- *             // body
- *         } catch (Exception e){} // ok
- *     }
- * }
- * </pre>
- * <p>
- * Also, this check can be configured to ignore the colon in an enhanced for
- * loop. The colon in an enhanced for loop is ignored by default.
- * </p>
- * <p>
- * To configure the check to ignore the colon:
- * </p>
- * <pre>
- * &lt;module name=&quot;WhitespaceAround&quot;&gt;
- *   &lt;property name=&quot;ignoreEnhancedForColon&quot; value=&quot;false&quot; /&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:
- * </p>
- * <pre>
- * class Test {
- *     public static void main(String[] args) {
- *         int a=4; // 2 violations , '=' is not followed and preceded by whitespace.
- *         char[] vowels = {'a', 'e', 'i', 'o', 'u'};
- *         for (char item: vowels) { // violation, ':' is not preceded by whitespace.
- *             // body
- *         }
- *     }
- * }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -487,6 +282,8 @@ public class WhitespaceAroundCheck extends AbstractCheck {
     private boolean allowEmptyLambdas;
     /** Allow empty catch bodies. */
     private boolean allowEmptyCatches;
+    /** Allow empty switch blocks and block statements. */
+    private boolean allowEmptySwitchBlockStatements;
     /**
      * Ignore whitespace around colon in
      * <a href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-14.html#jls-14.14.2">
@@ -548,6 +345,7 @@ public class WhitespaceAroundCheck extends AbstractCheck {
             TokenTypes.STAR_ASSIGN,
             TokenTypes.LITERAL_ASSERT,
             TokenTypes.TYPE_EXTENSION_AND,
+            TokenTypes.LITERAL_WHEN,
         };
     }
 
@@ -610,6 +408,7 @@ public class WhitespaceAroundCheck extends AbstractCheck {
             TokenTypes.GENERIC_START,
             TokenTypes.GENERIC_END,
             TokenTypes.ELLIPSIS,
+            TokenTypes.LITERAL_WHEN,
         };
     }
 
@@ -622,6 +421,7 @@ public class WhitespaceAroundCheck extends AbstractCheck {
      * Setter to allow empty method bodies.
      *
      * @param allow {@code true} to allow empty method bodies.
+     * @since 4.0
      */
     public void setAllowEmptyMethods(boolean allow) {
         allowEmptyMethods = allow;
@@ -631,6 +431,7 @@ public class WhitespaceAroundCheck extends AbstractCheck {
      * Setter to allow empty constructor bodies.
      *
      * @param allow {@code true} to allow empty constructor bodies.
+     * @since 4.0
      */
     public void setAllowEmptyConstructors(boolean allow) {
         allowEmptyConstructors = allow;
@@ -642,6 +443,7 @@ public class WhitespaceAroundCheck extends AbstractCheck {
      * enhanced for</a> loop.
      *
      * @param ignore {@code true} to ignore enhanced for colon.
+     * @since 5.5
      */
     public void setIgnoreEnhancedForColon(boolean ignore) {
         ignoreEnhancedForColon = ignore;
@@ -651,6 +453,7 @@ public class WhitespaceAroundCheck extends AbstractCheck {
      * Setter to allow empty class, interface and enum bodies.
      *
      * @param allow {@code true} to allow empty type bodies.
+     * @since 5.8
      */
     public void setAllowEmptyTypes(boolean allow) {
         allowEmptyTypes = allow;
@@ -660,6 +463,7 @@ public class WhitespaceAroundCheck extends AbstractCheck {
      * Setter to allow empty loop bodies.
      *
      * @param allow {@code true} to allow empty loops bodies.
+     * @since 5.8
      */
     public void setAllowEmptyLoops(boolean allow) {
         allowEmptyLoops = allow;
@@ -669,6 +473,7 @@ public class WhitespaceAroundCheck extends AbstractCheck {
      * Setter to allow empty lambda bodies.
      *
      * @param allow {@code true} to allow empty lambda expressions.
+     * @since 6.14
      */
     public void setAllowEmptyLambdas(boolean allow) {
         allowEmptyLambdas = allow;
@@ -678,9 +483,20 @@ public class WhitespaceAroundCheck extends AbstractCheck {
      * Setter to allow empty catch bodies.
      *
      * @param allow {@code true} to allow empty catch blocks.
+     * @since 7.6
      */
     public void setAllowEmptyCatches(boolean allow) {
         allowEmptyCatches = allow;
+    }
+
+    /**
+     * Setter to allow empty switch blocks and block statements.
+     *
+     * @param allow {@code true} to allow empty switch case and default blocks.
+     * @since 10.19.0
+     */
+    public void setAllowEmptySwitchBlockStatements(boolean allow) {
+        allowEmptySwitchBlockStatements = allow;
     }
 
     @Override
@@ -715,22 +531,31 @@ public class WhitespaceAroundCheck extends AbstractCheck {
      */
     protected boolean isNotRelevantSituation(DetailAST ast, int currentType) {
         final int parentType = ast.getParent().getType();
-        final boolean starImport = currentType == TokenTypes.STAR
-                && parentType == TokenTypes.DOT;
-        final boolean insideCaseGroup = parentType == TokenTypes.CASE_GROUP;
-
-        final boolean starImportOrSlistInsideCaseGroup = starImport || insideCaseGroup;
-        final boolean colonOfCaseOrDefaultOrForEach =
-                isColonOfCaseOrDefault(parentType)
-                        || isColonOfForEach(parentType);
-        final boolean emptyBlockOrType =
-                isEmptyBlock(ast, parentType)
+        final boolean result;
+        switch (parentType) {
+            case TokenTypes.DOT:
+                result = currentType == TokenTypes.STAR;
+                break;
+            case TokenTypes.LITERAL_DEFAULT:
+            case TokenTypes.LITERAL_CASE:
+            case TokenTypes.CASE_GROUP:
+                result = true;
+                break;
+            case TokenTypes.FOR_EACH_CLAUSE:
+                result = ignoreEnhancedForColon;
+                break;
+            case TokenTypes.EXPR:
+                result = currentType == TokenTypes.LITERAL_SWITCH;
+                break;
+            case TokenTypes.ARRAY_INIT:
+            case TokenTypes.ANNOTATION_ARRAY_INIT:
+                result = currentType == TokenTypes.RCURLY;
+                break;
+            default:
+                result = isEmptyBlock(ast, parentType)
                     || allowEmptyTypes && isEmptyType(ast);
-
-        return starImportOrSlistInsideCaseGroup
-                || colonOfCaseOrDefaultOrForEach
-                || emptyBlockOrType
-                || isArrayInitialization(currentType, parentType);
+        }
+        return result;
     }
 
     /**
@@ -800,7 +625,8 @@ public class WhitespaceAroundCheck extends AbstractCheck {
                 || isEmptyCtorBlockCheckedFromRcurly(ast)
                 || isEmptyLoop(ast, parentType)
                 || isEmptyLambda(ast, parentType)
-                || isEmptyCatch(ast, parentType);
+                || isEmptyCatch(ast, parentType)
+                || isEmptySwitchBlockStatement(ast);
     }
 
     /**
@@ -831,41 +657,6 @@ public class WhitespaceAroundCheck extends AbstractCheck {
                 && ast.getFirstChild().getType() == TokenTypes.RCURLY;
         }
         return result;
-    }
-
-    /**
-     * Whether colon belongs to cases or defaults.
-     *
-     * @param parentType parent
-     * @return true if current token in colon of case or default tokens
-     */
-    private static boolean isColonOfCaseOrDefault(int parentType) {
-        return parentType == TokenTypes.LITERAL_DEFAULT
-                    || parentType == TokenTypes.LITERAL_CASE;
-    }
-
-    /**
-     * Whether colon belongs to for-each.
-     *
-     * @param parentType parent
-     * @return true if current token in colon of for-each token
-     */
-    protected boolean isColonOfForEach(int parentType) {
-        return parentType == TokenTypes.FOR_EACH_CLAUSE
-                && ignoreEnhancedForColon;
-    }
-
-    /**
-     * Is array initialization.
-     *
-     * @param currentType current token
-     * @param parentType parent token
-     * @return true is current token inside array initialization
-     */
-    private static boolean isArrayInitialization(int currentType, int parentType) {
-        return currentType == TokenTypes.RCURLY
-                && (parentType == TokenTypes.ARRAY_INIT
-                        || parentType == TokenTypes.ANNOTATION_ARRAY_INIT);
     }
 
     /**
@@ -954,6 +745,41 @@ public class WhitespaceAroundCheck extends AbstractCheck {
      */
     protected boolean isEmptyCatch(DetailAST ast, int parentType) {
         return allowEmptyCatches && isEmptyBlock(ast, parentType, TokenTypes.LITERAL_CATCH);
+    }
+
+    /**
+     * Tests if the given {@code DetailAst} is part of an allowed empty
+     * switch case or default block.
+     *
+     * @param ast the {@code DetailAst} to test.
+     * @return {@code true} if {@code ast} makes up part of an allowed
+     *         empty switch case or default block.
+     */
+    private boolean isEmptySwitchBlockStatement(DetailAST ast) {
+        final boolean isEmptySwitchBlockStatement;
+
+        if (allowEmptySwitchBlockStatements) {
+            final DetailAST parent = ast.getParent();
+            final DetailAST grandParent = parent.getParent();
+
+            final boolean isEmptyCaseInSwitchRule =
+                    isEmptyBlock(ast, parent.getType(), TokenTypes.SWITCH_RULE);
+
+            final boolean isEmptyCaseGroupCheckedFromLcurly =
+                    isEmptyBlock(ast, grandParent.getType(), TokenTypes.CASE_GROUP);
+
+            final boolean isEmptyCaseGroupCheckedFromRcurly =
+                    parent.getFirstChild().getType() == TokenTypes.RCURLY
+                      && grandParent.getParent().getType() == TokenTypes.CASE_GROUP;
+
+            isEmptySwitchBlockStatement = isEmptyCaseInSwitchRule
+                    || isEmptyCaseGroupCheckedFromLcurly || isEmptyCaseGroupCheckedFromRcurly;
+        }
+        else {
+            isEmptySwitchBlockStatement = false;
+        }
+
+        return isEmptySwitchBlockStatement;
     }
 
     /**

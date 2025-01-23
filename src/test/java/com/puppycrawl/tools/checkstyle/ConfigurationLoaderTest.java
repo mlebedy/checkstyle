@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -28,8 +28,9 @@ import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -158,14 +159,14 @@ public class ConfigurationLoaderTest extends AbstractPathTestSupport {
         }
         catch (CheckstyleException ex) {
             assertWithMessage("Invalid exception message: " + ex.getMessage())
-                    .that(ex.getMessage().contains("\"name\""))
-                    .isTrue();
+                    .that(ex.getMessage())
+                    .contains("\"name\"");
             assertWithMessage("Invalid exception message: " + ex.getMessage())
-                    .that(ex.getMessage().contains("\"property\""))
-                    .isTrue();
+                    .that(ex.getMessage())
+                    .contains("\"property\"");
             assertWithMessage("Invalid exception message: " + ex.getMessage())
-                    .that(ex.getMessage().endsWith(":8:41"))
-                    .isTrue();
+                    .that(ex.getMessage())
+                    .endsWith(":8:41");
         }
     }
 
@@ -180,14 +181,14 @@ public class ConfigurationLoaderTest extends AbstractPathTestSupport {
         }
         catch (CheckstyleException ex) {
             assertWithMessage("Invalid exception message: " + ex.getMessage())
-                    .that(ex.getMessage().contains("\"name\""))
-                    .isTrue();
+                    .that(ex.getMessage())
+                    .contains("\"name\"");
             assertWithMessage("Invalid exception message: " + ex.getMessage())
-                    .that(ex.getMessage().contains("\"property\""))
-                    .isTrue();
+                    .that(ex.getMessage())
+                    .contains("\"property\"");
             assertWithMessage("Invalid exception message: " + ex.getMessage())
-                    .that(ex.getMessage().endsWith(":8:41"))
-                    .isTrue();
+                    .that(ex.getMessage())
+                    .endsWith(":8:41");
         }
     }
 
@@ -199,14 +200,14 @@ public class ConfigurationLoaderTest extends AbstractPathTestSupport {
         }
         catch (CheckstyleException ex) {
             assertWithMessage("Invalid exception message: " + ex.getMessage())
-                    .that(ex.getMessage().contains("\"value\""))
-                    .isTrue();
+                    .that(ex.getMessage())
+                    .contains("\"value\"");
             assertWithMessage("Invalid exception message: " + ex.getMessage())
-                    .that(ex.getMessage().contains("\"property\""))
-                    .isTrue();
+                    .that(ex.getMessage())
+                    .contains("\"property\"");
             assertWithMessage("Invalid exception message: " + ex.getMessage())
-                    .that(ex.getMessage().endsWith(":8:43"))
-                    .isTrue();
+                    .that(ex.getMessage())
+                    .endsWith(":8:43");
         }
     }
 
@@ -218,14 +219,14 @@ public class ConfigurationLoaderTest extends AbstractPathTestSupport {
         }
         catch (CheckstyleException ex) {
             assertWithMessage("Invalid exception message: " + ex.getMessage())
-                    .that(ex.getMessage().contains("\"name\""))
-                    .isTrue();
+                    .that(ex.getMessage())
+                    .contains("\"name\"");
             assertWithMessage("Invalid exception message: " + ex.getMessage())
-                    .that(ex.getMessage().contains("\"module\""))
-                    .isTrue();
+                    .that(ex.getMessage())
+                    .contains("\"module\"");
             assertWithMessage("Invalid exception message: " + ex.getMessage())
-                    .that(ex.getMessage().endsWith(":7:23"))
-                    .isTrue();
+                    .that(ex.getMessage())
+                    .endsWith(":7:23");
         }
     }
 
@@ -237,14 +238,14 @@ public class ConfigurationLoaderTest extends AbstractPathTestSupport {
         }
         catch (CheckstyleException ex) {
             assertWithMessage("Invalid exception message: " + ex.getMessage())
-                    .that(ex.getMessage().contains("\"property\""))
-                    .isTrue();
+                    .that(ex.getMessage())
+                    .contains("\"property\"");
             assertWithMessage("Invalid exception message: " + ex.getMessage())
-                    .that(ex.getMessage().contains("\"module\""))
-                    .isTrue();
+                    .that(ex.getMessage())
+                    .contains("\"module\"");
             assertWithMessage("Invalid exception message: " + ex.getMessage())
-                    .that(ex.getMessage().endsWith(":8:38"))
-                    .isTrue();
+                    .that(ex.getMessage())
+                    .endsWith(":8:38");
         }
     }
 
@@ -312,11 +313,16 @@ public class ConfigurationLoaderTest extends AbstractPathTestSupport {
 
         final Configuration[] children = config.getChildren();
         final Configuration[] grandchildren = children[0].getChildren();
-
+        final List<String> messages = new ArrayList<>(grandchildren[0].getMessages().values());
         final String expectedKey = "name.invalidPattern";
+        final List<String> expectedMessages = Collections
+                .singletonList("Member ''{0}'' must start with ''m'' (checked pattern ''{1}'').");
         assertWithMessage("Messages should contain key: " + expectedKey)
-                .that(grandchildren[0].getMessages().containsKey(expectedKey))
-                .isTrue();
+                .that(grandchildren[0].getMessages())
+                .containsKey(expectedKey);
+        assertWithMessage("Message is not expected")
+                .that(messages)
+                .isEqualTo(expectedMessages);
     }
 
     private static void verifyConfigNode(
@@ -421,6 +427,21 @@ public class ConfigurationLoaderTest extends AbstractPathTestSupport {
         props.setProperty("a", "A");
         props.setProperty("b", "B");
         return props;
+    }
+
+    @Test
+    public void testSystemEntity() throws Exception {
+        final Properties props = new Properties();
+        props.setProperty("checkstyle.basedir", "basedir");
+
+        final DefaultConfiguration config =
+            (DefaultConfiguration) loadConfiguration(
+                "InputConfigurationLoaderSystemDoctype.xml", props);
+
+        final Properties atts = new Properties();
+        atts.setProperty("tabWidth", "4");
+
+        verifyConfigNode(config, "Checker", 0, atts);
     }
 
     @Test
@@ -595,7 +616,7 @@ public class ConfigurationLoaderTest extends AbstractPathTestSupport {
     public void testLoadConfigurationDeprecated() throws Exception {
         final DefaultConfiguration config =
                 (DefaultConfiguration) ConfigurationLoader.loadConfiguration(
-                        new InputSource(Files.newInputStream(Paths.get(
+                        new InputSource(Files.newInputStream(Path.of(
                             getPath("InputConfigurationLoaderModuleIgnoreSeverity.xml")))),
                         new PropertiesExpander(new Properties()), IgnoredModulesOptions.OMIT);
 
@@ -634,6 +655,21 @@ public class ConfigurationLoaderTest extends AbstractPathTestSupport {
     }
 
     @Test
+    public void testLoadConfigurationFromClassPathWithNonAsciiSymbolsInPath() throws Exception {
+        final DefaultConfiguration config =
+                (DefaultConfiguration) ConfigurationLoader.loadConfiguration(
+                    getResourcePath("æ£µ¥/InputConfigurationLoaderDefaultProperty.xml"),
+                        new PropertiesExpander(new Properties()));
+
+        final Properties expectedPropertyValues = new Properties();
+        expectedPropertyValues.setProperty("tabWidth", "2");
+        expectedPropertyValues.setProperty("basedir", ".");
+        // charset property uses 2 variables, one is not defined, so default becomes a result value
+        expectedPropertyValues.setProperty("charset", "ASCII");
+        verifyConfigNode(config, "Checker", 0, expectedPropertyValues);
+    }
+
+    @Test
     public void testParsePropertyString() throws Exception {
         final List<String> propertyRefs = new ArrayList<>();
         final List<String> fragments = new ArrayList<>();
@@ -660,7 +696,7 @@ public class ConfigurationLoaderTest extends AbstractPathTestSupport {
 
         final DefaultConfiguration configuration1 =
                 (DefaultConfiguration) ConfigurationLoader.loadConfiguration(
-                        new InputSource(Files.newInputStream(Paths.get(
+                        new InputSource(Files.newInputStream(Path.of(
                             getPath("InputConfigurationLoaderModuleIgnoreSeverity.xml")))),
                         new PropertiesExpander(new Properties()),
                         ConfigurationLoader.IgnoredModulesOptions.EXECUTE);
@@ -693,6 +729,79 @@ public class ConfigurationLoaderTest extends AbstractPathTestSupport {
                     .hasMessageThat()
                     .isEqualTo(expectedMessage);
         }
+    }
+
+    @Test
+    public void testLoadConfiguration3() throws Exception {
+        final String[] configFiles = {
+            "InputConfigurationLoaderOldConfig0.xml",
+            "InputConfigurationLoaderOldConfig1.xml",
+            "InputConfigurationLoaderOldConfig2.xml",
+            "InputConfigurationLoaderOldConfig3.xml",
+            "InputConfigurationLoaderOldConfig4.xml",
+            "InputConfigurationLoaderOldConfig5.xml",
+            "InputConfigurationLoaderOldConfig6.xml",
+            "InputConfigurationLoaderOldConfig7.xml",
+        };
+
+        for (String configFile : configFiles) {
+            final DefaultConfiguration config =
+                    (DefaultConfiguration) ConfigurationLoader.loadConfiguration(
+                            new InputSource(Files.newInputStream(Path.of(
+                                    getPath(configFile)))),
+                            new PropertiesExpander(new Properties()),
+                            IgnoredModulesOptions.OMIT);
+
+            assertWithMessage("should have properties")
+                    .that(config.getPropertyNames()).asList()
+                    .contains("severity");
+
+            assertWithMessage("should have properties")
+                    .that(config.getPropertyNames()).asList()
+                    .contains("fileExtensions");
+
+            assertWithMessage("")
+                    .that(config.getAttribute("severity"))
+                    .isEqualTo("error");
+
+            assertWithMessage("")
+                    .that(config.getAttribute("fileExtensions"))
+                    .isEqualTo("java, properties, xml");
+
+            assertWithMessage("")
+                    .that(config.getChildren().length)
+                    .isEqualTo(1);
+
+            final Configuration[] children = config.getChildren();
+            final Configuration[] grandchildren = children[0].getChildren();
+
+            assertWithMessage("")
+                    .that(children[0].getPropertyNames()).asList()
+                    .contains("severity");
+
+            assertWithMessage("")
+                    .that(grandchildren[0].getPropertyNames()).asList()
+                    .contains("query");
+        }
+    }
+
+    @Test
+    public void testDefaultValuesForNonDefinedProperties() throws Exception {
+        final Properties props = new Properties();
+        props.setProperty("checkstyle.charset.base", "UTF");
+
+        final File file = new File(
+                getPath("InputConfigurationLoaderDefaultProperty.xml"));
+        final DefaultConfiguration config =
+            (DefaultConfiguration) ConfigurationLoader.loadConfiguration(
+                    file.toURI().toString(), new PropertiesExpander(props));
+
+        final Properties expectedPropertyValues = new Properties();
+        expectedPropertyValues.setProperty("tabWidth", "2");
+        expectedPropertyValues.setProperty("basedir", ".");
+        // charset property uses 2 variables, one is not defined, so default becomes a result value
+        expectedPropertyValues.setProperty("charset", "ASCII");
+        verifyConfigNode(config, "Checker", 0, expectedPropertyValues);
     }
 
 }

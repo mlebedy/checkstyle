@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -29,9 +29,10 @@ import com.puppycrawl.tools.checkstyle.utils.CheckUtil;
 import com.puppycrawl.tools.checkstyle.utils.JavadocUtil;
 
 /**
- * <p>
- * Checks for missing Javadoc comments in package-info.java files.
- * </p>
+ * <div>
+ * Checks for missing package definition Javadoc comments in package-info.java files.
+ * </div>
+ *
  * <p>
  * Rationale: description and other related documentation for a package can be written up
  * in the package-info.java file and it gets used in the production of the Javadocs.
@@ -39,26 +40,16 @@ import com.puppycrawl.tools.checkstyle.utils.JavadocUtil;
  * href="https://docs.oracle.com/javase/8/docs/technotes/tools/windows/javadoc.html#packagecomment"
  * >link</a> for more info.
  * </p>
+ *
  * <p>
- * To configure the check:
+ * This check specifically only validates package definitions. It will not validate any methods or
+ * interfaces declared in the package-info.java file.
  * </p>
- * <pre>
- * &lt;module name="MissingJavadocPackage"/&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * /**
- * * Provides API classes
- * *&#47;
- * package com.checkstyle.api; // no violation
- * /*
- * * Block comment is not a javadoc
- * *&#47;
- * package com.checkstyle.api; // violation
- * </pre>
+ *
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -134,7 +125,7 @@ public class MissingJavadocPackageCheck extends AbstractCheck {
             .map(DetailAST::getFirstChild);
         boolean result = false;
         if (firstAnnotationChild.isPresent()) {
-            for (DetailAST child = firstAnnotationChild.get(); child != null;
+            for (DetailAST child = firstAnnotationChild.orElseThrow(); child != null;
                  child = child.getNextSibling()) {
                 if (isJavadoc(child)) {
                     result = true;

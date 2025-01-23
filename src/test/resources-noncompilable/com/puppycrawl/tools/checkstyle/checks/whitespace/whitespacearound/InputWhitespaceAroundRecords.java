@@ -18,7 +18,7 @@ tokens = (default)ASSIGN, BAND, BAND_ASSIGN, BOR, BOR_ASSIGN, BSR, BSR_ASSIGN, B
 
 */
 
-//non-compiled with javac: Compilable with Java14
+//non-compiled with javac: Compilable with Java17
 package com.puppycrawl.tools.checkstyle.checks.whitespace.whitespacearound;
 
 public class InputWhitespaceAroundRecords {
@@ -27,7 +27,7 @@ public class InputWhitespaceAroundRecords {
 
     // simple record def
     record MyRecord1() {
-    } // ok
+    }
 
     // nested constructs
     record MyRecord2() {
@@ -75,25 +75,25 @@ public class InputWhitespaceAroundRecords {
     }
 
     record TestRecord8() {
-        public TestRecord8 () { // ok
+        public TestRecord8 () {
 
         }
     }
 
     class TestClass {
-        public TestClass () { // ok
+        public TestClass () {
 
         }
     }
 
     record TestRecord9() {
-        public TestRecord9() { // ok
+        public TestRecord9() {
 
         }
     }
 
     class TestClass2 {
-        public TestClass2() { // ok
+        public TestClass2() {
 
         }
     }

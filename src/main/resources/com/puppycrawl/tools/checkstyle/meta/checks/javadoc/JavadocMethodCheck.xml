@@ -2,19 +2,22 @@
 <checkstyle-metadata>
    <module>
       <check fully-qualified-name="com.puppycrawl.tools.checkstyle.checks.javadoc.JavadocMethodCheck"
-              name="JavadocMethod"
-              parent="com.puppycrawl.tools.checkstyle.TreeWalker">
-         <description>&lt;p&gt;
+             name="JavadocMethod"
+             parent="com.puppycrawl.tools.checkstyle.TreeWalker">
+         <description>&lt;div&gt;
  Checks the Javadoc of a method or constructor.
- &lt;/p&gt;
+ &lt;/div&gt;
+
  &lt;p&gt;
  Violates parameters and type parameters for which no param tags are present can
  be suppressed by defining property {@code allowMissingParamTags}.
  &lt;/p&gt;
+
  &lt;p&gt;
  Violates methods which return non-void but for which no return tag is present can
  be suppressed by defining property {@code allowMissingReturnTag}.
  &lt;/p&gt;
+
  &lt;p&gt;
  Violates exceptions which are declared to be thrown (by {@code throws} in the method
  signature or by {@code throw new} in the method body), but for which no throws tag is
@@ -33,11 +36,13 @@
  throw statements inside such classes are going to be evaluated, so they are ignored.
  &lt;/li&gt;
  &lt;/ul&gt;
+
  &lt;p&gt;
  ATTENTION: Checkstyle does not have information about hierarchy of exception types
  so usage of base class is considered as separate exception type.
  As workaround, you need to specify both types in javadoc (parent and exact type).
  &lt;/p&gt;
+
  &lt;p&gt;
  Javadoc is not required on a method that is tagged with the {@code @Override}
  annotation. However, under Java 5 it is not possible to mark a method required
@@ -45,11 +50,13 @@
  supports using the convention of using a single {@code {@inheritDoc}} tag
  instead of all the other tags.
  &lt;/p&gt;
+
  &lt;p&gt;
  Note that only inheritable items will allow the {@code {@inheritDoc}}
  tag to be used in place of comments. Static methods at all visibilities,
  private non-static methods and constructors are not inheritable.
  &lt;/p&gt;
+
  &lt;p&gt;
  For example, if the following method is implementing a method required by
  an interface, then the Javadoc could be done as:
@@ -61,17 +68,9 @@
                            int aLineNo)
  &lt;/pre&gt;</description>
          <properties>
-            <property default-value="Override"
-                       name="allowedAnnotations"
-                       type="java.lang.String[]">
-               <description>Specify annotations that allow missed documentation.</description>
-            </property>
-            <property default-value="false" name="validateThrows" type="boolean">
-               <description>Control whether to validate {@code throws} tags.</description>
-            </property>
             <property default-value="public, protected, package, private"
-                       name="accessModifiers"
-                       type="com.puppycrawl.tools.checkstyle.checks.naming.AccessModifierOption[]">
+                      name="accessModifiers"
+                      type="com.puppycrawl.tools.checkstyle.checks.naming.AccessModifierOption[]">
                <description>Specify the access modifiers where Javadoc comments are
  checked.</description>
             </property>
@@ -83,10 +82,18 @@
                <description>Control whether to ignore violations
  when a method returns non-void type and does not have a {@code return} tag in the javadoc.</description>
             </property>
+            <property default-value="Override"
+                      name="allowedAnnotations"
+                      type="java.lang.String[]">
+               <description>Specify annotations that allow missed documentation.</description>
+            </property>
+            <property default-value="false" name="validateThrows" type="boolean">
+               <description>Control whether to validate {@code throws} tags.</description>
+            </property>
             <property default-value="METHOD_DEF,CTOR_DEF,ANNOTATION_FIELD_DEF,COMPACT_CTOR_DEF"
-                       name="tokens"
-                       type="java.lang.String[]"
-                       validation-type="tokenSet">
+                      name="tokens"
+                      type="java.lang.String[]"
+                      validation-type="tokenSet">
                <description>tokens to check</description>
             </property>
          </properties>

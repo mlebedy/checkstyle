@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -34,25 +34,29 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 import com.puppycrawl.tools.checkstyle.utils.JavadocUtil;
 
 /**
- * <p>
+ * <div>
  * Verifies that the {@code @Override} annotation is present
  * when the {@code @inheritDoc} javadoc tag is present.
- * </p>
+ * </div>
+ *
  * <p>
  * Rationale: The &#64;Override annotation helps
  * compiler tools ensure that an override is actually occurring.  It is
  * quite easy to accidentally overload a method or hide a static method
  * and using the &#64;Override annotation points out these problems.
  * </p>
+ *
  * <p>
  * This check will log a violation if using the &#64;inheritDoc tag on a method that
  * is not valid (ex: private, or static method).
  * </p>
+ *
  * <p>
  * There is a slight difference between the &#64;Override annotation in Java 5 versus
  * Java 6 and above. In Java 5, any method overridden from an interface cannot
  * be annotated with &#64;Override. In Java 6 this behavior is allowed.
  * </p>
+ *
  * <p>
  * As a result of the aforementioned difference between Java 5 and Java 6, a
  * property called {@code javaFiveCompatibility} is available. This
@@ -69,91 +73,11 @@ import com.puppycrawl.tools.checkstyle.utils.JavadocUtil;
  * Default value is {@code false}.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;MissingOverride&quot;/&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * class Test extends SuperClass {
  *
- *     &#47;** {&#64;inheritDoc} *&#47;
- *     &#64;Override
- *     public void test1() { // OK
- *
- *     }
- *
- *     &#47;** {&#64;inheritDoc} *&#47;
- *     public void test2() { // violation, should be annotated with &#64;Override
- *
- *     }
- *
- *     &#47;** {&#64;inheritDoc} *&#47;
- *     private void test3() { // violation, using the &#64;inheritDoc tag on private method
- *
- *     }
- *
- *     &#47;** {&#64;inheritDoc} *&#47;
- *     public static void test4() { // violation, using the &#64;inheritDoc tag on static method
- *
- *     }
- * }
- * </pre>
- * <p>
- * To configure the check for the {@code javaFiveCompatibility} mode:
- * </p>
- * <pre>
- * &lt;module name="MissingOverride"&gt;
- *   &lt;property name="javaFiveCompatibility"
- *       value="true"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * class Test1 {
- *
- *     &#47;** {&#64;inheritDoc} *&#47;
- *     public void equals() { // violation, should be annotated with &#64;Override
- *
- *     }
- * }
- *
- * interface Test2 {
- *
- *     &#47;** {&#64;inheritDoc} *&#47;
- *     void test(); // violation, should be annotated with &#64;Override
- * }
- *
- * class Test3 extends SuperClass {
- *
- *     &#47;** {&#64;inheritDoc} *&#47;
- *     public void test() { // OK, is ignored because class extends other class
- *
- *     }
- * }
- *
- * class Test4 implements SuperInterface {
- *
- *     &#47;** {&#64;inheritDoc} *&#47;
- *     public void test() { // OK, is ignored because class implements interface
- *
- *     }
- * }
- *
- * class Test5 {
- *     Runnable r = new Runnable() {
- *          &#47;** {&#64;inheritDoc} *&#47;
- *          public void run() { // OK, is ignored because class is anonymous class
- *
- *          }
- *     };
- * }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -197,6 +121,7 @@ public final class MissingOverrideCheck extends AbstractCheck {
      * Setter to enable java 5 compatibility mode.
      *
      * @param compatibility compatibility or not
+     * @since 5.0
      */
     public void setJavaFiveCompatibility(final boolean compatibility) {
         javaFiveCompatibility = compatibility;
@@ -277,7 +202,7 @@ public final class MissingOverrideCheck extends AbstractCheck {
             .filter(JavadocUtil::isJavadocComment)
             .findFirst();
         return javadoc.isPresent()
-                && MATCH_INHERIT_DOC.matcher(javadoc.get()).find();
+                && MATCH_INHERIT_DOC.matcher(javadoc.orElseThrow()).find();
     }
 
 }

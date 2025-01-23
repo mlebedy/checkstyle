@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -19,6 +19,9 @@
 
 package com.puppycrawl.tools.checkstyle.checks.coding;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import com.puppycrawl.tools.checkstyle.FileStatefulCheck;
@@ -29,10 +32,10 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
 
 /**
- * <p>
+ * <div>
  * Checks if unnecessary parentheses are used in a statement or expression.
  * The check will flag the following with warnings:
- * </p>
+ * </div>
  * <pre>
  * return (x);          // parens around identifier
  * return (x + 1);      // parens around return value
@@ -44,6 +47,7 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * boolean b = (~a) &gt; -27            // parens around ~a
  *             &amp;&amp; (a-- &lt; 30);        // parens around expression
  * </pre>
+ *
  * <p>
  * The check is not "type aware", that is to say, it can't tell if parentheses
  * are unnecessary based on the types in an expression. The check is partially aware about
@@ -56,6 +60,7 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * int q = 4;
  * int r = 3;
  * if (p == (q &lt;= r)) {}</pre>
+ *
  * <p>
  * In the first case, given that <em>a</em>, <em>b</em>, and <em>c</em> are
  * all {@code int} variables, the parentheses around {@code a + b}
@@ -66,6 +71,7 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * and <em>r</em> were {@code boolean} still there will be no violation
  * raised as check is not "type aware".
  * </p>
+ *
  * <p>
  * The partial support for operator precedence includes cases of the following type:
  * </p>
@@ -179,51 +185,11 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  * POST_DEC</a>.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;UnnecessaryParentheses&quot;/&gt;
- * </pre>
- * <p>
- * Which results in the following violations:
- * </p>
- * <pre>
- * public int square(int a, int b){
- *   int square = (a * b); // violation
- *   return (square);      // violation
- * }
- * int sumOfSquares = 0;
- * for(int i=(0); i&lt;10; i++){          // violation
- *   int x = (i + 1);                  // violation
- *   sumOfSquares += (square(x * x));  // violation
- * }
- * double num = (10.0); //violation
- * List&lt;String&gt; list = Arrays.asList(&quot;a1&quot;, &quot;b1&quot;, &quot;c1&quot;);
- * myList.stream()
- *   .filter((s) -&gt; s.startsWith(&quot;c&quot;)) // violation
- *   .forEach(System.out::println);
- * int a = 10, b = 12, c = 15;
- * boolean x = true, y = false, z= true;
- * if ((a &gt;= 0 &amp;&amp; b &lt;= 9)            // violation, unnecessary parenthesis
- *          || (c &gt;= 5 &amp;&amp; b &lt;= 5)    // violation, unnecessary parenthesis
- *          || (c &gt;= 3 &amp;&amp; a &lt;= 7)) { // violation, unnecessary parenthesis
- *     return;
- * }
- * if ((-a) != -27 // violation, unnecessary parenthesis
- *          &amp;&amp; b &gt; 5) {
- *     return;
- * }
- * if (x==(a &lt;= 15)) { // ok
- *     return;
- * }
- * if (x==(y == z)) { // ok
- *     return;
- * }
- * </pre>
+ *
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -340,10 +306,14 @@ public class UnnecessaryParenthesesCheck extends AbstractCheck {
         TokenTypes.STAR_ASSIGN,
     };
 
-    /** Token types for conditional and relational operators. */
-    private static final int[] CONDITIONALS_AND_RELATIONAL = {
+    /** Token types for conditional operators. */
+    private static final int[] CONDITIONAL_OPERATOR = {
         TokenTypes.LOR,
         TokenTypes.LAND,
+    };
+
+    /** Token types for relation operator. */
+    private static final int[] RELATIONAL_OPERATOR = {
         TokenTypes.LITERAL_INSTANCEOF,
         TokenTypes.GT,
         TokenTypes.LT,
@@ -363,6 +333,13 @@ public class UnnecessaryParenthesesCheck extends AbstractCheck {
         TokenTypes.BNOT,
         TokenTypes.POST_INC,
         TokenTypes.POST_DEC,
+    };
+
+    /** Token types for bitwise binary operator. */
+    private static final int[] BITWISE_BINARY_OPERATORS = {
+        TokenTypes.BXOR,
+        TokenTypes.BOR,
+        TokenTypes.BAND,
     };
 
     /**
@@ -464,6 +441,10 @@ public class UnnecessaryParenthesesCheck extends AbstractCheck {
             TokenTypes.BNOT,
             TokenTypes.POST_INC,
             TokenTypes.POST_DEC,
+            TokenTypes.BXOR,
+            TokenTypes.BOR,
+            TokenTypes.BAND,
+            TokenTypes.QUESTION,
         };
     }
 
@@ -479,7 +460,11 @@ public class UnnecessaryParenthesesCheck extends AbstractCheck {
         final DetailAST parent = ast.getParent();
 
         if (isLambdaSingleParameterSurrounded(ast)) {
-            log(ast, MSG_LAMBDA, ast.getText());
+            log(ast, MSG_LAMBDA);
+        }
+        else if (ast.getType() == TokenTypes.QUESTION) {
+            getParenthesesChildrenAroundQuestion(ast)
+                .forEach(unnecessaryChild -> log(unnecessaryChild, MSG_EXPR));
         }
         else if (parent.getType() != TokenTypes.ANNOTATION_MEMBER_VALUE_PAIR) {
             final int type = ast.getType();
@@ -542,9 +527,6 @@ public class UnnecessaryParenthesesCheck extends AbstractCheck {
 
     /**
      * Tests if the given {@code DetailAST} is surrounded by parentheses.
-     * In short, does {@code ast} have a previous sibling whose type is
-     * {@code TokenTypes.LPAREN} and a next sibling whose type is {@code
-     * TokenTypes.RPAREN}.
      *
      * @param ast the {@code DetailAST} to check if it is surrounded by
      *        parentheses.
@@ -552,10 +534,15 @@ public class UnnecessaryParenthesesCheck extends AbstractCheck {
      *         parentheses.
      */
     private static boolean isSurrounded(DetailAST ast) {
-        // if previous sibling is left parenthesis,
-        // next sibling can't be other than right parenthesis
         final DetailAST prev = ast.getPreviousSibling();
-        return prev != null && prev.getType() == TokenTypes.LPAREN;
+        final DetailAST parent = ast.getParent();
+        final boolean isPreviousSiblingLeftParenthesis = prev != null
+                && prev.getType() == TokenTypes.LPAREN;
+        final boolean isMethodCallWithUnnecessaryParenthesis =
+                parent.getType() == TokenTypes.METHOD_CALL
+                && parent.getPreviousSibling() != null
+                && parent.getPreviousSibling().getType() == TokenTypes.LPAREN;
+        return isPreviousSiblingLeftParenthesis || isMethodCallWithUnnecessaryParenthesis;
     }
 
     /**
@@ -591,12 +578,10 @@ public class UnnecessaryParenthesesCheck extends AbstractCheck {
                 log(ast, MSG_EXPR);
             }
         }
-
-        parentToSkip = null;
     }
 
     /**
-     * Checks if conditional, relational, unary and postfix operators
+     * Checks if conditional, relational, bitwise binary operator, unary and postfix operators
      * in expressions are surrounded by unnecessary parentheses.
      *
      * @param ast the {@code DetailAST} to check if it is surrounded by
@@ -606,20 +591,84 @@ public class UnnecessaryParenthesesCheck extends AbstractCheck {
      */
     private static boolean unnecessaryParenAroundOperators(DetailAST ast) {
         final int type = ast.getType();
-        final int parentType = ast.getParent().getType();
-        final boolean isConditional = TokenUtil.isOfType(type, CONDITIONALS_AND_RELATIONAL);
-        boolean result = TokenUtil.isOfType(parentType, CONDITIONALS_AND_RELATIONAL);
-        if (isConditional) {
-            if (type == TokenTypes.LOR) {
-                result = result && !TokenUtil.isOfType(parentType, TokenTypes.LAND);
-            }
-            result = result && !TokenUtil.isOfType(parentType, TokenTypes.EQUAL,
-                TokenTypes.NOT_EQUAL);
+        final boolean isConditionalOrRelational = TokenUtil.isOfType(type, CONDITIONAL_OPERATOR)
+                        || TokenUtil.isOfType(type, RELATIONAL_OPERATOR);
+        final boolean isBitwise = TokenUtil.isOfType(type, BITWISE_BINARY_OPERATORS);
+        final boolean hasUnnecessaryParentheses;
+        if (isConditionalOrRelational) {
+            hasUnnecessaryParentheses = checkConditionalOrRelationalOperator(ast);
+        }
+        else if (isBitwise) {
+            hasUnnecessaryParentheses = checkBitwiseBinaryOperator(ast);
         }
         else {
-            result = result && TokenUtil.isOfType(type, UNARY_AND_POSTFIX);
+            hasUnnecessaryParentheses = TokenUtil.isOfType(type, UNARY_AND_POSTFIX)
+                    && isBitWiseBinaryOrConditionalOrRelationalOperator(ast.getParent().getType());
         }
-        return result;
+        return hasUnnecessaryParentheses;
+    }
+
+    /**
+     * Check if conditional or relational operator has unnecessary parentheses.
+     *
+     * @param ast to check if surrounded by unnecessary parentheses
+     * @return true if unnecessary parenthesis
+     */
+    private static boolean checkConditionalOrRelationalOperator(DetailAST ast) {
+        final int type = ast.getType();
+        final int parentType = ast.getParent().getType();
+        final boolean isParentEqualityOperator =
+                TokenUtil.isOfType(parentType, TokenTypes.EQUAL, TokenTypes.NOT_EQUAL);
+        final boolean result;
+        if (type == TokenTypes.LOR) {
+            result = !TokenUtil.isOfType(parentType, TokenTypes.LAND)
+                    && !TokenUtil.isOfType(parentType, BITWISE_BINARY_OPERATORS);
+        }
+        else if (type == TokenTypes.LAND) {
+            result = !TokenUtil.isOfType(parentType, BITWISE_BINARY_OPERATORS);
+        }
+        else {
+            result = true;
+        }
+        return result && !isParentEqualityOperator
+                && isBitWiseBinaryOrConditionalOrRelationalOperator(parentType);
+    }
+
+    /**
+     * Check if bitwise binary operator has unnecessary parentheses.
+     *
+     * @param ast to check if surrounded by unnecessary parentheses
+     * @return true if unnecessary parenthesis
+     */
+    private static boolean checkBitwiseBinaryOperator(DetailAST ast) {
+        final int type = ast.getType();
+        final int parentType = ast.getParent().getType();
+        final boolean result;
+        if (type == TokenTypes.BOR) {
+            result = !TokenUtil.isOfType(parentType, TokenTypes.BAND, TokenTypes.BXOR)
+                    && !TokenUtil.isOfType(parentType, RELATIONAL_OPERATOR);
+        }
+        else if (type == TokenTypes.BXOR) {
+            result = !TokenUtil.isOfType(parentType, TokenTypes.BAND)
+                    && !TokenUtil.isOfType(parentType, RELATIONAL_OPERATOR);
+        }
+        // we deal with bitwise AND here.
+        else {
+            result = !TokenUtil.isOfType(parentType, RELATIONAL_OPERATOR);
+        }
+        return result && isBitWiseBinaryOrConditionalOrRelationalOperator(parentType);
+    }
+
+    /**
+     * Check if token type is bitwise binary or conditional or relational operator.
+     *
+     * @param type Token type to check
+     * @return true if it is bitwise binary or conditional operator
+     */
+    private static boolean isBitWiseBinaryOrConditionalOrRelationalOperator(int type) {
+        return TokenUtil.isOfType(type, CONDITIONAL_OPERATOR)
+                || TokenUtil.isOfType(type, RELATIONAL_OPERATOR)
+                || TokenUtil.isOfType(type, BITWISE_BINARY_OPERATORS);
     }
 
     /**
@@ -641,6 +690,27 @@ public class UnnecessaryParenthesesCheck extends AbstractCheck {
             }
         }
         return result;
+    }
+
+    /**
+     *  Returns the direct LPAREN tokens children to a given QUESTION token which
+     *  contain an expression not a literal variable.
+     *
+     *  @param questionToken {@code DetailAST} question token to be checked
+     *  @return the direct children to the given question token which their types are LPAREN
+     *          tokens and not contain a literal inside the parentheses
+     */
+    private static List<DetailAST> getParenthesesChildrenAroundQuestion(DetailAST questionToken) {
+        final List<DetailAST> surroundedChildren = new ArrayList<>();
+        DetailAST directChild = questionToken.getFirstChild();
+        while (directChild != null) {
+            if (directChild.getType() == TokenTypes.LPAREN
+                    && !TokenUtil.isOfType(directChild.getNextSibling(), LITERALS)) {
+                surroundedChildren.add(directChild);
+            }
+            directChild = directChild.getNextSibling();
+        }
+        return Collections.unmodifiableList(surroundedChildren);
     }
 
     /**

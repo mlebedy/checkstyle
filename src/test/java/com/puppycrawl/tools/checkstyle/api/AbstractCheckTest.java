@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,7 @@
 package com.puppycrawl.tools.checkstyle.api;
 
 import static com.google.common.truth.Truth.assertWithMessage;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static com.puppycrawl.tools.checkstyle.internal.utils.TestUtil.getExpectedThrowable;
 
 import java.io.File;
 import java.nio.charset.Charset;
@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 
 import org.junit.jupiter.api.Test;
@@ -176,7 +177,7 @@ public class AbstractCheckTest extends AbstractModuleTestSupport {
             Charset.defaultCharset().name())));
 
         assertWithMessage("Invalid line content")
-                .that(check.getLine(3))
+                .that(check.getLine(9))
                 .isEqualTo(" * I'm a javadoc");
     }
 
@@ -205,7 +206,7 @@ public class AbstractCheckTest extends AbstractModuleTestSupport {
 
         final int[] expectedCodePoints = "    public int getVariable() {".codePoints().toArray();
         assertWithMessage("Invalid line content")
-                .that(check.getLineCodePoints(12))
+                .that(check.getLineCodePoints(18))
                 .isEqualTo(expectedCodePoints);
     }
 
@@ -381,12 +382,10 @@ public class AbstractCheckTest extends AbstractModuleTestSupport {
 
     @Test
     public void testCheck() throws Exception {
-        final DefaultConfiguration checkConfig = createModuleConfig(ViolationAstCheck.class);
-
         final String[] expected = {
-            "1:1: Violation.",
+            "6:1: Violation.",
         };
-        verify(checkConfig, getPath("InputAbstractCheckTestFileContents.java"), expected);
+        verifyWithInlineConfigParser(getPath("InputAbstractCheckTestFileContents.java"), expected);
     }
 
     /**
@@ -397,7 +396,12 @@ public class AbstractCheckTest extends AbstractModuleTestSupport {
     @Test
     public void testTokensAreUnmodifiable() {
         final DummyAbstractCheck check = new DummyAbstractCheck();
-        assertThrows(UnsupportedOperationException.class, () -> check.getTokenNames().add(""));
+        final Set<String> tokenNameSet = check.getTokenNames();
+        final Exception ex = getExpectedThrowable(UnsupportedOperationException.class,
+                () -> tokenNameSet.add(""));
+        assertWithMessage("Exception class is not expected")
+                .that(ex.getClass())
+                .isEqualTo(UnsupportedOperationException.class);
     }
 
     public static final class DummyAbstractCheck extends AbstractCheck {

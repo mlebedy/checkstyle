@@ -11,7 +11,7 @@ package com.puppycrawl.tools.checkstyle.checks.coding.requirethis;
 
 public class InputRequireThisAnonymousEmpty {
 
-    private int bar;
+    private int bar; private int Override;
     int a;
 
     interface AnonWithEmpty {
@@ -26,11 +26,11 @@ public class InputRequireThisAnonymousEmpty {
 
             @Override
             public void fooEmpty() {
-                int a = doSideEffect(); // violation
+                int a = doSideEffect(); // violation 'Method call to 'doSideEffect' needs "this.".'
             }
 
             public int doSideEffect() {
-                return bar; // violation
+                return bar; // violation '.* 'bar' needs "InputRequireThisAnonymousEmpty.this.".'
             }
         };
 
@@ -53,7 +53,7 @@ public class InputRequireThisAnonymousEmpty {
             int foobar = 1;
             @Override
             public void fooEmpty() {
-                foobar++; // violation
+                foobar++; // violation 'Reference to instance variable 'foobar' needs "this.".'
             }
         };
     }

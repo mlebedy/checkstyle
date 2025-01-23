@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -27,46 +27,22 @@ import com.puppycrawl.tools.checkstyle.utils.CheckUtil;
 import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
 
 /**
- * <p>
+ * <div>
  * Checks that each variable declaration is in its own statement
  * and on its own line.
- * </p>
+ * </div>
+ *
  * <p>
  * Rationale: <a
  * href="https://checkstyle.org/styleguides/sun-code-conventions-19990420/CodeConventions.doc5.html#a2992">
  * the Java code conventions chapter 6.1</a> recommends that
  * declarations should be one per line/statement.
  * </p>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name="MultipleVariableDeclarations"/&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <pre>
- * public class Test {
- *   public void myTest() {
- *     int mid;
- *     int high;
- *     // ...
  *
- *     int lower, higher; // violation
- *     // ...
- *
- *     int value,
- *         index; // violation
- *     // ...
- *
- *     int place = mid, number = high;  // violation
- *   }
- * }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>

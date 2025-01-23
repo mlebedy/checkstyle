@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -25,6 +25,7 @@ import static com.puppycrawl.tools.checkstyle.checks.coding.OverloadMethodsDecla
 import org.junit.jupiter.api.Test;
 
 import com.puppycrawl.tools.checkstyle.AbstractModuleTestSupport;
+import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 
 public class OverloadMethodsDeclarationOrderCheckTest
     extends AbstractModuleTestSupport {
@@ -38,10 +39,14 @@ public class OverloadMethodsDeclarationOrderCheckTest
     public void testDefault() throws Exception {
 
         final String[] expected = {
-            "32:5: " + getCheckMessage(MSG_KEY, 21),
-            "60:9: " + getCheckMessage(MSG_KEY, 49),
-            "72:5: " + getCheckMessage(MSG_KEY, 70),
-            "115:5: " + getCheckMessage(MSG_KEY, 104),
+            "33:5: " + getCheckMessage(MSG_KEY, 21),
+            "62:9: " + getCheckMessage(MSG_KEY, 50),
+            "67:9: " + getCheckMessage(MSG_KEY, 62),
+            "87:5: " + getCheckMessage(MSG_KEY, 83),
+            "132:5: " + getCheckMessage(MSG_KEY, 120),
+            "144:5: " + getCheckMessage(MSG_KEY, 137),
+            "156:9: " + getCheckMessage(MSG_KEY, 149),
+            "159:5: " + getCheckMessage(MSG_KEY, 144),
         };
         verifyWithInlineConfigParser(
                 getPath("InputOverloadMethodsDeclarationOrder.java"), expected);
@@ -51,13 +56,25 @@ public class OverloadMethodsDeclarationOrderCheckTest
     public void testOverloadMethodsDeclarationOrderRecords() throws Exception {
 
         final String[] expected = {
-            "21:9: " + getCheckMessage(MSG_KEY, 15),
-            "41:9: " + getCheckMessage(MSG_KEY, 35),
-            "57:9: " + getCheckMessage(MSG_KEY, 50),
+            "22:9: " + getCheckMessage(MSG_KEY, 15),
+            "43:9: " + getCheckMessage(MSG_KEY, 36),
+            "59:9: " + getCheckMessage(MSG_KEY, 52),
+            "66:9: " + getCheckMessage(MSG_KEY, 59),
         };
         verifyWithInlineConfigParser(
                 getNonCompilablePath("InputOverloadMethodsDeclarationOrderRecords.java"),
             expected);
+    }
+
+    @Test
+    public void testOverloadMethodsDeclarationOrderPrivateAndStaticMethods() throws Exception {
+
+        final String[] expected = CommonUtil.EMPTY_STRING_ARRAY;
+
+        verifyWithInlineConfigParser(
+                getPath(
+                        "InputOverloadMethodsDeclarationOrderPrivateAndStaticMethods.java"
+                ), expected);
     }
 
     @Test

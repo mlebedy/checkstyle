@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -29,9 +29,9 @@ import com.puppycrawl.tools.checkstyle.utils.CodePointUtil;
 import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 
 /**
- * <p>
+ * <div>
  * Checks the padding between the identifier of a method definition,
- * constructor definition, method call, or constructor invocation;
+ * constructor definition, method call, constructor invocation, record, or record pattern;
  * and the left parenthesis of the parameter list.
  * That is, if the identifier and left parenthesis are on the same line,
  * checks whether a space is required immediately after the identifier or
@@ -39,7 +39,7 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * If they are not on the same line, reports a violation, unless configured to
  * allow line breaks. To allow linebreaks after the identifier, set property
  * {@code allowLineBreaks} to {@code true}.
- * </p>
+ * </div>
  * <ul>
  * <li>
  * Property {@code allowLineBreaks} - Allow a line break between the identifier
@@ -59,6 +59,8 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * Default value is:
  * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#CTOR_DEF">
  * CTOR_DEF</a>,
+ * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#CTOR_CALL">
+ * CTOR_CALL</a>,
  * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#LITERAL_NEW">
  * LITERAL_NEW</a>,
  * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#METHOD_CALL">
@@ -70,64 +72,16 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#ENUM_CONSTANT_DEF">
  * ENUM_CONSTANT_DEF</a>,
  * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#RECORD_DEF">
- * RECORD_DEF</a>.
+ * RECORD_DEF</a>,
+ * <a href="https://checkstyle.org/apidocs/com/puppycrawl/tools/checkstyle/api/TokenTypes.html#RECORD_PATTERN_DEF">
+ * RECORD_PATTERN_DEF</a>.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name="MethodParamPad"/&gt;
- * </pre>
- * <pre>
- * public class Test {
- *  public Test() { // OK
- *     super(); // OK
- *   }
  *
- *   public Test (int aParam) { // Violation - '(' is preceded with whitespace
- *     super (); // Violation - '(' is preceded with whitespace
- *   }
- *
- *   public void method() {} // OK
- *
- *   public void methodWithVeryLongName
- *     () {} // Violation - '(' is preceded with whitespace
- *
- * }
- * </pre>
- * <p>
- * To configure the check to require a space
- * after the identifier of a method definition, except if the left
- * parenthesis occurs on a new line:
- * </p>
- * <pre>
- * &lt;module name="MethodParamPad"&gt;
- *   &lt;property name="tokens" value="METHOD_DEF"/&gt;
- *   &lt;property name="option" value="space"/&gt;
- *   &lt;property name="allowLineBreaks" value="true"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <pre>
- * public class Test {
- *   public Test() { // OK
- *     super(); // OK
- *   }
- *
- *   public Test (int aParam) { // OK
- *     super (); // OK
- *   }
- *
- *   public void method() {} // Violation - '(' is NOT preceded with whitespace
- *
- *   public void methodWithVeryLongName
- *     () {} // OK, because allowLineBreaks is true
- *
- * }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -185,12 +139,14 @@ public class MethodParamPadCheck
     public int[] getAcceptableTokens() {
         return new int[] {
             TokenTypes.CTOR_DEF,
+            TokenTypes.CTOR_CALL,
             TokenTypes.LITERAL_NEW,
             TokenTypes.METHOD_CALL,
             TokenTypes.METHOD_DEF,
             TokenTypes.SUPER_CTOR_CALL,
             TokenTypes.ENUM_CONSTANT_DEF,
             TokenTypes.RECORD_DEF,
+            TokenTypes.RECORD_PATTERN_DEF,
         };
     }
 
@@ -236,6 +192,7 @@ public class MethodParamPadCheck
      *
      * @param allowLineBreaks whether whitespace should be
      *     flagged at line breaks.
+     * @since 3.4
      */
     public void setAllowLineBreaks(boolean allowLineBreaks) {
         this.allowLineBreaks = allowLineBreaks;
@@ -246,6 +203,7 @@ public class MethodParamPadCheck
      *
      * @param optionStr string to decode option from
      * @throws IllegalArgumentException if unable to decode
+     * @since 3.4
      */
     public void setOption(String optionStr) {
         option = PadOption.valueOf(optionStr.trim().toUpperCase(Locale.ENGLISH));

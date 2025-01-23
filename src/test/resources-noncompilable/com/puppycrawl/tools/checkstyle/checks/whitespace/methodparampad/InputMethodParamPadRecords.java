@@ -3,12 +3,12 @@ MethodParamPad
 allowLineBreaks = true
 option = (default)nospace
 tokens = (default)CTOR_DEF, LITERAL_NEW, METHOD_CALL, METHOD_DEF, SUPER_CTOR_CALL, \
-         ENUM_CONSTANT_DEF, RECORD_DEF
+         ENUM_CONSTANT_DEF, RECORD_DEF, RECORD_PATTERN_DEF
 
 
 */
 
-//non-compiled with javac: Compilable with Java14
+//non-compiled with javac: Compilable with Java17
 package com.puppycrawl.tools.checkstyle.checks.whitespace.methodparampad;
 
 import org.w3c.dom.Node;
@@ -16,8 +16,8 @@ import org.w3c.dom.Node;
 public class InputMethodParamPadRecords {
 
     // in record def
-    record MyTestRecord (String string, Record rec){ // violation
-        private boolean inRecord (Object obj) { // violation
+    record Mtr (String string, Record rec){ // violation ''(' is preceded with whitespace'
+        private boolean inRecord (Object obj) { // violation ''(' is preceded with whitespace'
             int value = 0;
             if(obj instanceof Integer i) {
                 value = i;
@@ -28,32 +28,32 @@ public class InputMethodParamPadRecords {
     }
 
     //in ctor
-    record MyTestRecord2 () { // violation
-        MyTestRecord2 (String one, String two, String three){ // violation
-            this ();// ok
+    record Mtr2 () { // violation ''(' is preceded with whitespace'
+        Mtr2 (String s1, String s2, String s3){ // violation ''(' is preceded with whitespace'
+            this (); // violation ''(' is preceded with whitespace'
         }
     }
 
-    record MyTestRecord3 (Integer i, Node node) { // violation
-        public static void main (String... args) { // violation
+    record Mtr3 (Integer i, Node node) { // violation ''(' is preceded with whitespace'
+        public static void main (String... args) { // violation ''(' is preceded with whitespace'
             System.out.println("works!");
         }
     }
 
     //in method def
-    record MyTestRecord4 () { // violation
-        void foo (){} // violation
+    record Mtr4 () { // violation ''(' is preceded with whitespace'
+        void foo (){} // violation ''(' is preceded with whitespace'
     }
 
     //in ctor invocation
-    record MyTestRecord5() {
-        static MyTestRecord mtr =
-                new MyTestRecord ("my string", new MyTestRecord4()); // violation
+    record Mtr5() {
+        static Mtr mtr =
+                new Mtr ("my string", new Mtr4()); // violation ''(' is preceded with whitespace'
     }
 
     //in ctor invocation
     class MyTestClass {
-        private MyTestRecord mtr =
-                new MyTestRecord ("my string", new MyTestRecord4()); // violation
+        private Mtr mtr =
+                new Mtr ("my string", new Mtr4()); // violation ''(' is preceded with whitespace'
     }
 }

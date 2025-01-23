@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -32,12 +32,13 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 import com.puppycrawl.tools.checkstyle.utils.CheckUtil;
 
 /**
- * <p>
+ * <div>
  * Checks that any combination of String literals
  * is on the left side of an {@code equals()} comparison.
  * Also checks for String literals assigned to some field
  * (such as {@code someString.equals(anotherString = "text")}).
- * </p>
+ * </div>
+ *
  * <p>Rationale: Calling the {@code equals()} method on String literals
  * will avoid a potential {@code NullPointerException}. Also, it is
  * pretty common to see null checks right before equals comparisons
@@ -51,43 +52,11 @@ import com.puppycrawl.tools.checkstyle.utils.CheckUtil;
  * Default value is {@code false}.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;EqualsAvoidNull&quot;/&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <pre>
- * String nullString = null;
- * nullString.equals("My_Sweet_String");            // violation
- * "My_Sweet_String".equals(nullString);            // OK
- * nullString.equalsIgnoreCase("My_Sweet_String");  // violation
- * "My_Sweet_String".equalsIgnoreCase(nullString);  // OK
- * </pre>
- * <p>
- * To configure the check to allow ignoreEqualsIgnoreCase:
- * </p>
- * <pre>
- * &lt;module name=&quot;EqualsAvoidNull&quot;&gt;
- *   &lt;property name=&quot;ignoreEqualsIgnoreCase&quot; value=&quot;true&quot;/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <pre>
- * String nullString = null;
- * nullString.equals("My_Sweet_String");            // violation
- * "My_Sweet_String".equals(nullString);            // OK
- * nullString.equalsIgnoreCase("My_Sweet_String");  // OK
- * "My_Sweet_String".equalsIgnoreCase(nullString);  // OK
- * </pre>
+ *
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -173,6 +142,7 @@ public class EqualsAvoidNullCheck extends AbstractCheck {
      *
      * @param newValue whether to ignore checking
      *     {@code String.equalsIgnoreCase(String)}.
+     * @since 5.4
      */
     public void setIgnoreEqualsIgnoreCase(boolean newValue) {
         ignoreEqualsIgnoreCase = newValue;
@@ -494,14 +464,14 @@ public class EqualsAvoidNullCheck extends AbstractCheck {
             final String className) {
         boolean result = false;
         final String name = objCalledOn.getText();
-        FieldFrame frame = getObjectFrame(currentFrame);
+        FieldFrame frame = currentFrame;
         while (frame != null) {
             if (className.equals(frame.getFrameName())) {
                 final DetailAST field = frame.findField(name);
                 result = STRING.equals(getFieldType(field));
                 break;
             }
-            frame = getObjectFrame(frame.getParent());
+            frame = frame.getParent();
         }
         return result;
     }
@@ -514,7 +484,7 @@ public class EqualsAvoidNullCheck extends AbstractCheck {
      */
     private static FieldFrame getObjectFrame(FieldFrame frame) {
         FieldFrame objectFrame = frame;
-        while (objectFrame != null && !objectFrame.isClassOrEnumOrRecordDef()) {
+        while (!objectFrame.isClassOrEnumOrRecordDef()) {
             objectFrame = objectFrame.getParent();
         }
         return objectFrame;
@@ -551,7 +521,7 @@ public class EqualsAvoidNullCheck extends AbstractCheck {
     /**
      * Holds the names of fields of a type.
      */
-    private static class FieldFrame {
+    private static final class FieldFrame {
 
         /** Parent frame. */
         private final FieldFrame parent;
@@ -576,7 +546,7 @@ public class EqualsAvoidNullCheck extends AbstractCheck {
          *
          * @param parent parent frame.
          */
-        /* package */ FieldFrame(FieldFrame parent) {
+        private FieldFrame(FieldFrame parent) {
             this.parent = parent;
         }
 
@@ -667,7 +637,7 @@ public class EqualsAvoidNullCheck extends AbstractCheck {
          * Determines whether this FieldFrame contains the field.
          *
          * @param name name of the field to check.
-         * @return true if this FieldFrame contains instance field.
+         * @return DetailAST if this FieldFrame contains instance field.
          */
         public DetailAST findField(String name) {
             return fieldNameToAst.get(name);

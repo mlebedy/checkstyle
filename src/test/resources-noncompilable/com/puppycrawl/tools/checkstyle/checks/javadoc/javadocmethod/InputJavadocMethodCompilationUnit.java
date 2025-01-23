@@ -4,13 +4,13 @@ validateThrows = true
 
 
 */
-//non-compiled with javac: Compilable with Java14
+//non-compiled with javac: Compilable with Java17
 package com.puppycrawl.tools.checkstyle.checks.javadoc.javadocmethod;
 
 @Deprecated @ProblemCauser
 public record InputJavadocMethodCompilationUnit() {
 
-    public void doThing() { // ok
+    public void doThing() {
         // No error unless an annotation is present
         @ProblemCauser
         record Test(String hello, int world) {}

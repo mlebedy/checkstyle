@@ -8,89 +8,110 @@ allowNewlineParagraph = (default)true
 
 package com.puppycrawl.tools.checkstyle.checks.javadoc.javadocparagraph;
 
+// violation 3 lines below 'tag should be preceded with an empty line.'
 /**
- * Some Javadoc. // 2 violations below
+ * Some Summary.
  * <p>
- * /^ WARN/   Some Javadoc.<p> // 2 violations
+ * Some paragraph.<p>
  *
  */
+// violation 3 lines above 'tag should be preceded with an empty line.'
 class InputJavadocParagraphIncorrect {
-
+    // violation 2 lines below 'tag should be preceded with an empty line.'
     /**
-     * Some Javadoc.<P> // 2 violations
+     * Some summary.<P>
      *
-     * <p>  Some Javadoc. // violation 'tag should be placed immediately before the first word'
+     * <p>  Some paragraph.
      *
      * @since 8.0
      */
+    // violation 4 lines above 'tag should be placed immediately before the first word'
     public static final byte NUL = 0;
 
-    // violation 2 lines below '<p> tag should be preceded with an empty line.'
+    // violation 3 lines below '<p> tag should be preceded with an empty line.'
+    // violation 4 lines below 'tag should be placed immediately before the first word'
     /**
-     * Some <p>Javadoc.
+     * Some <p>summary.
      *
-     * <p>    Some Javadoc. // violation 'tag should be placed immediately before the first word'
+     * <p>    Some paragraph.
      *
-     * @see <a href="http://www.gwtproject.org/doc/latest/DevGuideOrganizingProjects.html#DevGuideModules">
+     * @see <a href="example.com">
      *     Documentation about GWT emulated source</a>
      */
     boolean emulated() {return false;}
 
-    /**<p>Some Javadoc.<p>  // 3 violations
-     * <p>  // 2 violations
-     * <p><p>  // 2 violations
-     * <p>/^WARN/   Some Javadoc.<p>*/  // 2 violations
+    // 2 violations 4 lines below:
+    //  'Redundant <p> tag.'
+    //  'tag should be preceded with an empty line.'
+    // violation 2 lines below 'tag should be preceded with an empty line.'
+    /**<p>Some summary.<p>
+     * <p>
+     * <p><p>
+     * <p>   Some paragraph.<p>*/
+    // 2 violations 2 lines above:
+    //  'tag should be preceded with an empty line.'
+    //  'tag should be preceded with an empty line.'
+    // 4 violations 4 lines above:
+    //  '<p> tag should be placed immediately before the first word'
+    //  'tag should be preceded with an empty line.'
+    //  '<p> tag should be placed immediately before the first word'
+    //  'tag should be preceded with an empty line.'
      class InnerInputJavadocParagraphIncorrect {
-
+        // violation 2 lines below 'tag should be preceded with an empty line.'
         /**
-         * Some Javadoc./WARN/<p>  // 2 violations
+         * Some Summary.<p>
          *
          * @since 8.0
          */
         public static final byte NUL = 0;
 
+        // violation below 'Redundant <p> tag.'
         /**<p>
-         * /^WARN/ Some Javadoc. // 2 violations above
+         *  Some Summary.
          *
-         * <P> // violation 'tag should be placed immediately before the first word'
-         * /^WARN/
-         * <p> // 2 violations
-         *  /^WARN/ Some Javadoc.<p> // 2 violations
-         * @see <a href="http://www.gwtproject.org/doc/latest/DevGuideOrganizingProjects.html#DevGuideModules">
+         * <P>
+         *
+         * <p>
+         *   Some paragraph.<p>
+         * @see <a href="example.com">
          *     Documentation about GWT emulated source</a>
          */
+        // violation 4 lines above 'tag should be preceded with an empty line.'
         boolean emulated() {return false;}
     }
 
     InnerInputJavadocParagraphIncorrect anon = new InnerInputJavadocParagraphIncorrect() {
-
         // violation 2 lines below 'Redundant <p> tag.'
             /**
-         * <p>Some Javadoc.
+         * <p>Some summary.
          *
-         * Some Javadoc.
+         * Some paragraph.
          *
          * @since 8.0
          */
         // violation 5 lines above 'Empty line should be followed by <p> tag on the next line.'
         public static final byte NUL = 0;
-
+        // violation 3 lines below 'tag should be preceded with an empty line.'
+        // violation 4 lines below 'tag should be placed immediately before the first word'
         /**
-         * /WARN/  Some Javadoc.<p> // 2 violations
+         *   Some summary.<p>
          *
-         *  <p>  Some Javadoc. // violation 'tag should be placed immediately before the first word'
+         *  <p>  Some paragraph.
          *
-         * @see <a href="http://www.gwtproject.org/doc/latest/DevGuideOrganizingProjects.html#DevGuideModules">
-         *     Documentation about <p> GWT emulated source</a> // 2 violations
+         * @see <a href="example.com">
+         *     Documentation about <p> GWT emulated source</a>
          */
+        // 2 violations 2 lines above:
+        //  'tag should be placed immediately before the first word'
+        //  'tag should be preceded with an empty line.'
         boolean emulated() {return false;}
 
         // violation 3 lines below 'Empty line should be followed by <p> tag on the next line.'
         /**
-         * Double newline.
+         * Some Summary.
          *
          *
-         * Some Javadoc. //DOUBLE WARN AT TWO PREVIOUS LINES
+         * Some paragraph.
          */
         // violation 3 lines above 'Empty line should be followed by <p> tag on the next line.'
          void doubleNewline() {}

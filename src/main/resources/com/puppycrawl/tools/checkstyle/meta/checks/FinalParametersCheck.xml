@@ -2,14 +2,15 @@
 <checkstyle-metadata>
    <module>
       <check fully-qualified-name="com.puppycrawl.tools.checkstyle.checks.FinalParametersCheck"
-              name="FinalParameters"
-              parent="com.puppycrawl.tools.checkstyle.TreeWalker">
-         <description>&lt;p&gt;
+             name="FinalParameters"
+             parent="com.puppycrawl.tools.checkstyle.TreeWalker">
+         <description>&lt;div&gt;
  Checks that parameters for methods, constructors, catch and for-each blocks are final.
  Interface, abstract, and native methods are not checked: the final keyword
  does not make sense for interface, abstract, and native method parameters as
  there is no code that could modify the parameter.
- &lt;/p&gt;
+ &lt;/div&gt;
+
  &lt;p&gt;
  Rationale: Changing the value of parameters during the execution of the method's
  algorithm can be confusing and should be avoided. A great way to let the Java compiler
@@ -19,10 +20,14 @@
             <property default-value="false" name="ignorePrimitiveTypes" type="boolean">
                <description>Ignore primitive types as parameters.</description>
             </property>
+            <property default-value="true" name="ignoreUnnamedParameters" type="boolean">
+               <description>Ignore &lt;a href="https://docs.oracle.com/en/java/javase/21/docs/specs/unnamed-jls.html"&gt;
+ unnamed parameters&lt;/a&gt;.</description>
+            </property>
             <property default-value="METHOD_DEF,CTOR_DEF"
-                       name="tokens"
-                       type="java.lang.String[]"
-                       validation-type="tokenSet">
+                      name="tokens"
+                      type="java.lang.String[]"
+                      validation-type="tokenSet">
                <description>tokens to check</description>
             </property>
          </properties>

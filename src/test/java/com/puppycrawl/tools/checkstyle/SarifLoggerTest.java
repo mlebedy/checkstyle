@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -23,16 +23,19 @@ import static com.google.common.truth.Truth.assertWithMessage;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
 
+import com.puppycrawl.tools.checkstyle.AbstractAutomaticBean.OutputStreamOptions;
 import com.puppycrawl.tools.checkstyle.api.AuditEvent;
 import com.puppycrawl.tools.checkstyle.api.AutomaticBean;
 import com.puppycrawl.tools.checkstyle.api.SeverityLevel;
 import com.puppycrawl.tools.checkstyle.api.Violation;
 import com.puppycrawl.tools.checkstyle.internal.utils.CloseAndFlushTestByteArrayOutputStream;
+import com.puppycrawl.tools.checkstyle.internal.utils.TestUtil;
 
 public class SarifLoggerTest extends AbstractModuleTestSupport {
 
@@ -77,7 +80,7 @@ public class SarifLoggerTest extends AbstractModuleTestSupport {
     @Test
     public void testAddError() throws IOException {
         final SarifLogger logger = new SarifLogger(outStream,
-                AutomaticBean.OutputStreamOptions.CLOSE);
+                OutputStreamOptions.CLOSE);
         logger.auditStarted(null);
         final Violation violation =
                 new Violation(1, 1,
@@ -94,7 +97,7 @@ public class SarifLoggerTest extends AbstractModuleTestSupport {
     @Test
     public void testAddErrorWithWarningLevel() throws IOException {
         final SarifLogger logger = new SarifLogger(outStream,
-                AutomaticBean.OutputStreamOptions.CLOSE);
+                OutputStreamOptions.CLOSE);
         logger.auditStarted(null);
         final Violation violation =
                 new Violation(1, 1,
@@ -111,7 +114,7 @@ public class SarifLoggerTest extends AbstractModuleTestSupport {
     @Test
     public void testAddErrors() throws IOException {
         final SarifLogger logger = new SarifLogger(outStream,
-                AutomaticBean.OutputStreamOptions.CLOSE);
+                OutputStreamOptions.CLOSE);
         logger.auditStarted(null);
         final Violation violation =
                 new Violation(1, 1,
@@ -136,7 +139,7 @@ public class SarifLoggerTest extends AbstractModuleTestSupport {
     @Test
     public void testAddException() throws IOException {
         final SarifLogger logger = new SarifLogger(outStream,
-                AutomaticBean.OutputStreamOptions.CLOSE);
+                OutputStreamOptions.CLOSE);
         logger.auditStarted(null);
         final Violation message =
                 new Violation(1, 1,
@@ -153,7 +156,7 @@ public class SarifLoggerTest extends AbstractModuleTestSupport {
     @Test
     public void testAddExceptions() throws IOException {
         final SarifLogger logger = new SarifLogger(outStream,
-                AutomaticBean.OutputStreamOptions.CLOSE);
+                OutputStreamOptions.CLOSE);
         logger.auditStarted(null);
         final Violation violation =
                 new Violation(1, 1,
@@ -178,7 +181,7 @@ public class SarifLoggerTest extends AbstractModuleTestSupport {
     @Test
     public void testLineOnly() throws IOException {
         final SarifLogger logger = new SarifLogger(outStream,
-            AutomaticBean.OutputStreamOptions.CLOSE);
+            OutputStreamOptions.CLOSE);
         logger.auditStarted(null);
         final Violation violation =
             new Violation(1, 0,
@@ -195,7 +198,7 @@ public class SarifLoggerTest extends AbstractModuleTestSupport {
     @Test
     public void testEmpty() throws IOException {
         final SarifLogger logger = new SarifLogger(outStream,
-                AutomaticBean.OutputStreamOptions.CLOSE);
+                OutputStreamOptions.CLOSE);
         logger.auditStarted(null);
         final Violation violation =
                 new Violation(1, 1,
@@ -208,10 +211,40 @@ public class SarifLoggerTest extends AbstractModuleTestSupport {
         verifyContent(getPath("ExpectedSarifLoggerEmpty.sarif"), outStream);
     }
 
+    /**
+     * We keep this test for 100% coverage. Until #12873.
+     */
+    @Test
+    public void testCtorWithTwoParametersCloseStreamOptions() throws IOException {
+        final OutputStream infoStream = new ByteArrayOutputStream();
+        final SarifLogger logger = new SarifLogger(infoStream,
+                AutomaticBean.OutputStreamOptions.CLOSE);
+        final boolean closeStream = TestUtil.getInternalState(logger, "closeStream");
+
+        assertWithMessage("closeStream should be true")
+                .that(closeStream)
+                .isTrue();
+    }
+
+    /**
+     * We keep this test for 100% coverage. Until #12873.
+     */
+    @Test
+    public void testCtorWithTwoParametersNoneStreamOptions() throws IOException {
+        final OutputStream infoStream = new ByteArrayOutputStream();
+        final SarifLogger logger = new SarifLogger(infoStream,
+                AutomaticBean.OutputStreamOptions.NONE);
+        final boolean closeStream = TestUtil.getInternalState(logger, "closeStream");
+
+        assertWithMessage("closeStream should be false")
+                .that(closeStream)
+                .isFalse();
+    }
+
     @Test
     public void testNullOutputStreamOptions() {
         try {
-            final SarifLogger logger = new SarifLogger(outStream, null);
+            final SarifLogger logger = new SarifLogger(outStream, (OutputStreamOptions) null);
             // assert required to calm down eclipse's 'The allocated object is never used' violation
             assertWithMessage("Null instance")
                 .that(logger)
@@ -228,7 +261,7 @@ public class SarifLoggerTest extends AbstractModuleTestSupport {
     @Test
     public void testCloseStream() throws IOException {
         final SarifLogger logger = new SarifLogger(outStream,
-                AutomaticBean.OutputStreamOptions.CLOSE);
+                OutputStreamOptions.CLOSE);
         logger.auditStarted(null);
         logger.auditFinished(null);
 
@@ -242,7 +275,7 @@ public class SarifLoggerTest extends AbstractModuleTestSupport {
     @Test
     public void testNoCloseStream() throws IOException {
         final SarifLogger logger = new SarifLogger(outStream,
-                AutomaticBean.OutputStreamOptions.NONE);
+                OutputStreamOptions.NONE);
         logger.auditStarted(null);
         logger.auditFinished(null);
 
@@ -260,7 +293,7 @@ public class SarifLoggerTest extends AbstractModuleTestSupport {
     @Test
     public void testFinishLocalSetup() throws IOException {
         final SarifLogger logger = new SarifLogger(outStream,
-                AutomaticBean.OutputStreamOptions.CLOSE);
+                OutputStreamOptions.CLOSE);
         logger.finishLocalSetup();
         logger.auditStarted(null);
         logger.auditFinished(null);
@@ -293,11 +326,11 @@ public class SarifLoggerTest extends AbstractModuleTestSupport {
             .isEqualTo(expectedContent);
     }
 
-    private static class TestException extends RuntimeException {
+    private static final class TestException extends RuntimeException {
 
         private static final long serialVersionUID = 1L;
 
-        /* package */ TestException(String msg, Throwable cause) {
+        private TestException(String msg, Throwable cause) {
             super(msg, cause);
         }
 

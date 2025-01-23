@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -25,43 +25,23 @@ import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
 /**
- * <p>
+ * <div>
  * Detects inline conditionals. Here is one example of an inline conditional:
- * </p>
+ * </div>
  * <pre>
  * String a = getParameter("a");
  * String b = (a==null || a.length()&lt;1) ? null : a.substring(1);
  * </pre>
+ *
  * <p>
  * Rationale: Some developers find inline conditionals hard to read, so
  * their employer's coding standards forbid them.
  * </p>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;AvoidInlineConditionals&quot;/&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * int x = 5;
- * boolean foobar = (x == 5); // OK
  *
- * String text;
- * text = (text == null) ? "" : text; // violation
- *
- * String b;
- * if (a != null &amp;&amp; a.length() &gt;= 1) { // OK
- *   b = a.substring(1);
- * } else {
- *   b = null;
- * }
- *
- * b = (a != null &amp;&amp; a.length() &gt;= 1) ? a.substring(1) : null; // violation
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>

@@ -11,8 +11,7 @@ tokens = (default)PACKAGE_DEF, IMPORT, STATIC_IMPORT, CLASS_DEF, INTERFACE_DEF, 
 */
 
 package com.puppycrawl.tools.checkstyle.checks.whitespace.emptylineseparator; // trailing comment is allowed.
-// violation
-// violation at line above
+// violation ''//' should be separated from previous line.'
 
 import java.util.Map;
 

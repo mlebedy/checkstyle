@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -34,12 +34,15 @@ import com.puppycrawl.tools.checkstyle.utils.CheckUtil;
 import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 
 /**
- * <p>
+ * <div>
  * Validates abbreviations (consecutive capital letters) length in
  * identifier name, it also allows to enforce camel case naming. Please read more at
- * <a href="https://checkstyle.org/styleguides/google-java-style-20180523/javaguide.html#s5.3-camel-case">
+ * <a href="https://checkstyle.org/styleguides/google-java-style-20220203/javaguide.html#s5.3-camel-case">
  * Google Style Guide</a> to get to know how to avoid long abbreviations in names.
- * </p>
+ * </div>
+ *
+ * <p>'_' is considered as word separator in identifier name.</p>
+ *
  * <p>
  * {@code allowedAbbreviationLength} specifies how many consecutive capital letters are
  * allowed in the identifier.
@@ -50,6 +53,7 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * is what should be used to enforce strict camel casing. The identifier 'MyTest' would
  * be allowed, but 'MyTEst' would not be.
  * </p>
+ *
  * <p>
  * {@code ignoreFinal}, {@code ignoreStatic}, and {@code ignoreStaticFinal}
  * control whether variables with the respective modifiers are to be ignored.
@@ -77,6 +81,12 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * Default value is {@code true}.
  * </li>
  * <li>
+ * Property {@code ignoreOverriddenMethods} - Allow to ignore methods tagged with {@code @Override}
+ * annotation (that usually mean inherited name).
+ * Type is {@code boolean}.
+ * Default value is {@code true}.
+ * </li>
+ * <li>
  * Property {@code ignoreStatic} - Allow to skip variables with {@code static} modifier.
  * Type is {@code boolean}.
  * Default value is {@code true}.
@@ -84,12 +94,6 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * <li>
  * Property {@code ignoreStaticFinal} - Allow to skip variables with both {@code static} and
  * {@code final} modifiers.
- * Type is {@code boolean}.
- * Default value is {@code true}.
- * </li>
- * <li>
- * Property {@code ignoreOverriddenMethods} - Allow to ignore methods tagged with {@code @Override}
- * annotation (that usually mean inherited name).
  * Type is {@code boolean}.
  * Default value is {@code true}.
  * </li>
@@ -122,183 +126,11 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * RECORD_COMPONENT_DEF</a>.
  * </li>
  * </ul>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name="AbbreviationAsWordInName"/&gt;
- * </pre>
- * <p>
- * Example:
- * </p>
- * <pre>
- * public class MyClass extends SuperClass { // OK, camel case
- *   int CURRENT_COUNTER; // violation, at most 4 consecutive capital letters allowed
- *   static int GLOBAL_COUNTER; // OK, static is ignored
- *   final Set&lt;String&gt; stringsFOUND = new HashSet&lt;&gt;(); // OK, final is ignored
  *
- *   &#64;Override
- *   void printCOUNTER() { // OK, overridden method is ignored
- *     System.out.println(CURRENT_COUNTER); // OK, only definitions are checked
- *   }
- *
- *   void incrementCOUNTER() { // violation, at most 4 consecutive capital letters allowed
- *     CURRENT_COUNTER++; // OK, only definitions are checked
- *   }
- *
- *   static void incrementGLOBAL() { // violation, static method is not ignored
- *     GLOBAL_COUNTER++; // OK, only definitions are checked
- *   }
- *
- * }
- * </pre>
- * <p>
- * To configure to include static variables and methods tagged with
- * {@code @Override} annotation.
- * </p>
- * <p>Configuration:</p>
- * <pre>
- * &lt;module name="AbbreviationAsWordInName"&gt;
- *   &lt;property name="ignoreStatic" value="false"/&gt;
- *   &lt;property name="ignoreOverriddenMethods" value="false"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public class MyClass extends SuperClass { // OK, camel case
- *   int CURRENT_COUNTER; // violation, at most 4 consecutive capital letters allowed
- *   static int GLOBAL_COUNTER; // violation, static is not ignored
- *   final Set&lt;String&gt; stringsFOUND = new HashSet&lt;&gt;(); // OK, final is ignored
- *
- *   &#64;Override
- *   void printCOUNTER() { // violation, overridden method is not ignored
- *     System.out.println(CURRENT_COUNTER); // OK, only definitions are checked
- *   }
- *
- *   void incrementCOUNTER() { // violation, at most 4 consecutive capital letters allowed
- *     CURRENT_COUNTER++; // OK, only definitions are checked
- *   }
- *
- *   static void incrementGLOBAL() { // violation, at most 4 consecutive capital letters allowed
- *     GLOBAL_COUNTER++; // OK, only definitions are checked
- *   }
- *
- * }
- * </pre>
- * <p>
- * To configure to check all variables and identifiers
- * (including ones with the static modifier) and enforce
- * no abbreviations (essentially camel case) except for
- * words like 'XML' and 'URL'.
- * </p>
- * <p>Configuration:</p>
- * <pre>
- * &lt;module name="AbbreviationAsWordInName"&gt;
- *   &lt;property name="tokens" value="VARIABLE_DEF,CLASS_DEF"/&gt;
- *   &lt;property name="ignoreStatic" value="false"/&gt;
- *   &lt;property name="allowedAbbreviationLength" value="0"/&gt;
- *   &lt;property name="allowedAbbreviations" value="XML,URL,O"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public class MyClass { // OK
- *   int firstNum; // OK
- *   int secondNUM; // violation, it allowed only 1 consecutive capital letter
- *   static int thirdNum; // OK, the static modifier would be checked
- *   static int fourthNUm; // violation, the static modifier would be checked,
- *                         // and only 1 consecutive capital letter is allowed
- *   String firstXML; // OK, XML abbreviation is allowed
- *   String firstURL; // OK, URL abbreviation is allowed
- *   final int TOTAL = 5; // OK, final is ignored
- *   static final int LIMIT = 10; // OK, static final is ignored
- *   void newOAuth2Client() {} // OK, O abbreviation is allowed
- *   void OAuth2() {} // OK, O abbreviation is allowed
- *   void OAUth2() {} // violation, OA abbreviation is not allowed
- *                    // split occurs as 'OA', 'Uth2'
- *
- * }
- * </pre>
- * <p>
- * To configure to check variables, excluding fields with
- * the static modifier, and allow abbreviations up to 2
- * consecutive capital letters ignoring the longer word 'CSV'.
- * </p>
- * <p>Configuration:</p>
- * <pre>
- * &lt;module name="AbbreviationAsWordInName"&gt;
- *   &lt;property name="tokens" value="VARIABLE_DEF"/&gt;
- *   &lt;property name="ignoreStatic" value="true"/&gt;
- *   &lt;property name="allowedAbbreviationLength" value="1"/&gt;
- *   &lt;property name="allowedAbbreviations" value="CSV"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public class MyClass { // OK, ignore checking the class name
- *   int firstNum; // OK, abbreviation "N" is of allowed length 1
- *   int secondNUm; // OK
- *   int secondMYNum; // violation, found "MYN" but only
- *                    // 2 consecutive capital letters are allowed
- *   int thirdNUM; // violation, found "NUM" but it is allowed
- *                 // only 2 consecutive capital letters
- *   static int fourthNUM; // OK, variables with static modifier
- *                         // would be ignored
- *   String firstCSV; // OK, CSV abbreviation is allowed
- *   String firstXML; // violation, XML abbreviation is not allowed
- *   final int TOTAL = 5; // OK, final is ignored
- *   static final int LIMIT = 10; // OK, static final is ignored
- * }
- * </pre>
- * <p>
- * To configure to check variables, enforcing no abbreviations
- * except for variables that are both static and final.
- * </p>
- * <p>Configuration:</p>
- * <pre>
- * &lt;module name="AbbreviationAsWordInName"&gt;
- *     &lt;property name="tokens" value="VARIABLE_DEF"/&gt;
- *     &lt;property name="ignoreFinal" value="false"/&gt;
- *     &lt;property name="ignoreStatic" value="false"/&gt;
- *     &lt;property name="ignoreStaticFinal" value="true"/&gt;
- *     &lt;property name="allowedAbbreviationLength" value="0"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public class MyClass {
- *     public int counterXYZ = 1;                // violation
- *     public final int customerID = 2;          // violation
- *     public static int nextID = 3;             // violation
- *     public static final int MAX_ALLOWED = 4;  // OK, ignored
- * }
- * </pre>
- * <p>
- * To configure to check variables, enforcing no abbreviations
- * and ignoring static (but non-final) variables only.
- * </p>
- * <p>Configuration:</p>
- * <pre>
- * &lt;module name="AbbreviationAsWordInName"&gt;
- *     &lt;property name="tokens" value="VARIABLE_DEF"/&gt;
- *     &lt;property name="ignoreFinal" value="false"/&gt;
- *     &lt;property name="ignoreStatic" value="true"/&gt;
- *     &lt;property name="ignoreStaticFinal" value="false"/&gt;
- *     &lt;property name="allowedAbbreviationLength" value="0"/&gt;
- * &lt;/module&gt;
- * </pre>
- * <p>Example:</p>
- * <pre>
- * public class MyClass {
- *     public int counterXYZ = 1;                // violation
- *     public final int customerID = 2;          // violation
- *     public static int nextID = 3;             // OK, ignored
- *     public static final int MAX_ALLOWED = 4;  // violation
- * }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>
@@ -356,6 +188,7 @@ public class AbbreviationAsWordInNameCheck extends AbstractCheck {
      *
      * @param ignoreFinal
      *        Defines if ignore variables with 'final' modifier or not.
+     * @since 5.8
      */
     public void setIgnoreFinal(boolean ignoreFinal) {
         this.ignoreFinal = ignoreFinal;
@@ -366,6 +199,7 @@ public class AbbreviationAsWordInNameCheck extends AbstractCheck {
      *
      * @param ignoreStatic
      *        Defines if ignore variables with 'static' modifier or not.
+     * @since 5.8
      */
     public void setIgnoreStatic(boolean ignoreStatic) {
         this.ignoreStatic = ignoreStatic;
@@ -376,6 +210,7 @@ public class AbbreviationAsWordInNameCheck extends AbstractCheck {
      *
      * @param ignoreStaticFinal
      *        Defines if ignore variables with both 'static' and 'final' modifiers or not.
+     * @since 8.32
      */
     public void setIgnoreStaticFinal(boolean ignoreStaticFinal) {
         this.ignoreStaticFinal = ignoreStaticFinal;
@@ -387,6 +222,7 @@ public class AbbreviationAsWordInNameCheck extends AbstractCheck {
      *
      * @param ignoreOverriddenMethods
      *        Defines if ignore methods with "@Override" annotation or not.
+     * @since 5.8
      */
     public void setIgnoreOverriddenMethods(boolean ignoreOverriddenMethods) {
         this.ignoreOverriddenMethods = ignoreOverriddenMethods;
@@ -399,6 +235,7 @@ public class AbbreviationAsWordInNameCheck extends AbstractCheck {
      *
      * @param allowedAbbreviationLength amount of allowed capital letters in
      *        abbreviation.
+     * @since 5.8
      */
     public void setAllowedAbbreviationLength(int allowedAbbreviationLength) {
         this.allowedAbbreviationLength = allowedAbbreviationLength;
@@ -409,11 +246,12 @@ public class AbbreviationAsWordInNameCheck extends AbstractCheck {
      *
      * @param allowedAbbreviations abbreviations that must be
      *        skipped from checking.
+     * @since 5.8
      */
     public void setAllowedAbbreviations(String... allowedAbbreviations) {
         if (allowedAbbreviations != null) {
             this.allowedAbbreviations =
-                Arrays.stream(allowedAbbreviations).collect(Collectors.toSet());
+                Arrays.stream(allowedAbbreviations).collect(Collectors.toUnmodifiableSet());
         }
     }
 
@@ -583,8 +421,17 @@ public class AbbreviationAsWordInNameCheck extends AbstractCheck {
             else if (abbrStarted) {
                 abbrStarted = false;
 
-                final int endIndex = index - 1;
-                result = getAbbreviationIfIllegal(str, beginIndex, endIndex);
+                final int endIndex;
+                final int allowedLength;
+                if (symbol == '_') {
+                    endIndex = index;
+                    allowedLength = allowedAbbreviationLength + 1;
+                }
+                else {
+                    endIndex = index - 1;
+                    allowedLength = allowedAbbreviationLength;
+                }
+                result = getAbbreviationIfIllegal(str, beginIndex, endIndex, allowedLength);
                 if (result != null) {
                     break;
                 }
@@ -594,7 +441,7 @@ public class AbbreviationAsWordInNameCheck extends AbstractCheck {
         // if abbreviation at the end of name (example: scaleX)
         if (abbrStarted) {
             final int endIndex = str.length() - 1;
-            result = getAbbreviationIfIllegal(str, beginIndex, endIndex);
+            result = getAbbreviationIfIllegal(str, beginIndex, endIndex, allowedAbbreviationLength);
         }
         return result;
     }
@@ -606,13 +453,15 @@ public class AbbreviationAsWordInNameCheck extends AbstractCheck {
      * @param str name
      * @param beginIndex begin index
      * @param endIndex end index
+     * @param allowedLength maximum allowed length for Abbreviation
      * @return the abbreviation if it is bigger than required and not in the
      *         ignore list, otherwise {@code null}
      */
-    private String getAbbreviationIfIllegal(String str, int beginIndex, int endIndex) {
+    private String getAbbreviationIfIllegal(String str, int beginIndex, int endIndex,
+                                            int allowedLength) {
         String result = null;
         final int abbrLength = endIndex - beginIndex;
-        if (abbrLength > allowedAbbreviationLength) {
+        if (abbrLength > allowedLength) {
             final String abbr = getAbbreviation(str, beginIndex, endIndex);
             if (!allowedAbbreviations.contains(abbr)) {
                 result = abbr;
@@ -624,11 +473,13 @@ public class AbbreviationAsWordInNameCheck extends AbstractCheck {
     /**
      * Gets the abbreviation, where {@code beginIndex} and {@code endIndex} are
      * inclusive indexes of a sequence of consecutive upper-case characters.
+     *
      * <p>
      * The character at {@code endIndex} is only included in the abbreviation if
      * it is the last character in the string; otherwise it is usually the first
      * capital in the next word.
      * </p>
+     *
      * <p>
      * For example, {@code getAbbreviation("getXMLParser", 3, 6)} returns "XML"
      * (not "XMLP"), and so does {@code getAbbreviation("parseXML", 5, 7)}.

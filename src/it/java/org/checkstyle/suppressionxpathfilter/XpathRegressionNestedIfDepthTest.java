@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -40,7 +40,7 @@ public class XpathRegressionNestedIfDepthTest extends AbstractXpathTestSupport {
     @Test
     public void testCorrect() throws Exception {
         final File fileToProcess =
-                new File(getPath("SuppressionXpathRegressionNestedIfDepth.java"));
+                new File(getPath("InputXpathNestedIfDepth.java"));
 
         final DefaultConfiguration moduleConfig =
                 createModuleConfig(NestedIfDepthCheck.class);
@@ -52,7 +52,7 @@ public class XpathRegressionNestedIfDepthTest extends AbstractXpathTestSupport {
 
         final List<String> expectedXpathQueries = Collections.singletonList(
             "/COMPILATION_UNIT/CLASS_DEF"
-                + "[./IDENT[@text='SuppressionXpathRegressionNestedIfDepth']]/OBJBLOCK"
+                + "[./IDENT[@text='InputXpathNestedIfDepth']]/OBJBLOCK"
                 + "/METHOD_DEF[./IDENT[@text='test']]/SLIST/LITERAL_IF"
                 + "/SLIST/LITERAL_IF/SLIST/LITERAL_IF"
         );
@@ -64,7 +64,7 @@ public class XpathRegressionNestedIfDepthTest extends AbstractXpathTestSupport {
     @Test
     public void testMax() throws Exception {
         final File fileToProcess =
-            new File(getPath("SuppressionXpathRegressionNestedIfDepthMax.java"));
+            new File(getPath("InputXpathNestedIfDepthMax.java"));
 
         final DefaultConfiguration moduleConfig =
             createModuleConfig(NestedIfDepthCheck.class);
@@ -77,7 +77,7 @@ public class XpathRegressionNestedIfDepthTest extends AbstractXpathTestSupport {
 
         final List<String> expectedXpathQueries = Collections.singletonList(
             "/COMPILATION_UNIT/CLASS_DEF"
-                + "[./IDENT[@text='SuppressionXpathRegressionNestedIfDepthMax']]"
+                + "[./IDENT[@text='InputXpathNestedIfDepthMax']]"
                 + "/OBJBLOCK/METHOD_DEF[./IDENT[@text='test']]"
                 + "/SLIST/LITERAL_IF/"
                 + "SLIST/LITERAL_IF/"

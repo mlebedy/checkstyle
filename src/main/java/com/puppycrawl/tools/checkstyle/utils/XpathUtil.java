@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -101,7 +101,7 @@ public final class XpathUtil {
      * </pre>
      * Only these tokens support text attribute because they make our xpath queries more accurate.
      * These token types are listed below.
-     * */
+     */
     private static final BitSet TOKEN_TYPES_WITH_TEXT_ATTRIBUTE = TokenUtil.asBitSet(
             TokenTypes.IDENT, TokenTypes.STRING_LITERAL, TokenTypes.CHAR_LITERAL,
             TokenTypes.NUM_LONG, TokenTypes.NUM_INT, TokenTypes.NUM_DOUBLE, TokenTypes.NUM_FLOAT,
@@ -188,7 +188,7 @@ public final class XpathUtil {
                 JavaParser.Options.WITH_COMMENTS));
             final List<NodeInfo> matchingItems = getXpathItems(xpath, rootNode);
             return matchingItems.stream()
-                .map(item -> ((AbstractNode) item).getUnderlyingNode())
+                .map(item -> ((ElementNode) item).getUnderlyingNode())
                 .map(AstTreeStringPrinter::printBranch)
                 .collect(Collectors.joining(DELIMITER));
         }
@@ -214,8 +214,6 @@ public final class XpathUtil {
         final XPathDynamicContext xpathDynamicContext = xpathExpression
                 .createDynamicContext(rootNode);
         final List<Item> items = xpathExpression.evaluate(xpathDynamicContext);
-        return items.stream()
-                .map(NodeInfo.class::cast)
-                .collect(Collectors.toUnmodifiableList());
+        return UnmodifiableCollectionUtil.unmodifiableList(items, NodeInfo.class);
     }
 }

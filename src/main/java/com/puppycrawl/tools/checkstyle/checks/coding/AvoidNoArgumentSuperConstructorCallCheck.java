@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // checkstyle: Checks Java source code and other text files for adherence to a set of rules.
-// Copyright (C) 2001-2022 the original author or authors.
+// Copyright (C) 2001-2025 the original author or authors.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -25,40 +25,18 @@ import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
 /**
- * <p>
+ * <div>
  * Checks if call to superclass constructor without arguments is present.
  * Such invocation is redundant because constructor body implicitly
  * begins with a superclass constructor invocation {@code super();}
  * See <a href="https://docs.oracle.com/javase/specs/jls/se13/html/jls-8.html#jls-8.8.7">
  * specification</a> for detailed information.
- * </p>
- * <p>
- * To configure the check:
- * </p>
- * <pre>
- * &lt;module name=&quot;AvoidNoArgumentSuperConstructorCall&quot;/&gt;
- * </pre>
- * <p>
- * Example of violations
- * </p>
- * <pre>
- * class MyClass extends SomeOtherClass {
- *     MyClass() {
- *         super(); // violation
- *     }
+ * </div>
  *
- *     MyClass(int arg) {
- *         super(arg); // OK, call with argument have to be explicit
- *     }
- *
- *     MyClass(long arg) {
- *         // OK, call is implicit
- *     }
- * }
- * </pre>
  * <p>
  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
  * </p>
+ *
  * <p>
  * Violation Message Keys:
  * </p>

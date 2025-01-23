@@ -4,7 +4,7 @@ StringLiteralEquality
 
 */
 
-//non-compiled with javac: Compilable with Java14
+//non-compiled with javac: Compilable with Java17
 package com.puppycrawl.tools.checkstyle.checks.coding.stringliteralequality;
 
 public class InputStringLiteralEqualityCheckTextBlocks {
@@ -13,7 +13,7 @@ public class InputStringLiteralEqualityCheckTextBlocks {
 
         boolean flag1 = (status1 == "done"); // violation
 
-        boolean flag2 = (status1.equals("done")); // ok
+        boolean flag2 = (status1.equals("done"));
 
 
         String status2 = """
@@ -29,7 +29,7 @@ public class InputStringLiteralEqualityCheckTextBlocks {
                 done"""); // violation above
 
         boolean flag4 = (status2.equals("""
-                done""")); // ok
+                done"""));
 
     }
 }
