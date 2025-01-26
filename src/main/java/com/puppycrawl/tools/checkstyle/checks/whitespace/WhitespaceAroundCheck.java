@@ -529,7 +529,7 @@ public class WhitespaceAroundCheck extends AbstractCheck {
      * @param currentType type of ast
      * @return true is ok to skip validation
      */
-    private boolean isNotRelevantSituation(DetailAST ast, int currentType) {
+    protected boolean isNotRelevantSituation(DetailAST ast, int currentType) {
         final int parentType = ast.getParent().getType();
         final boolean result;
         switch (parentType) {
@@ -668,7 +668,7 @@ public class WhitespaceAroundCheck extends AbstractCheck {
      * @return {@code true} if {@code ast} makes up part of an
      *         allowed empty method block.
      */
-    private boolean isEmptyMethodBlock(DetailAST ast, int parentType) {
+    protected boolean isEmptyMethodBlock(DetailAST ast, int parentType) {
         return allowEmptyMethods
                 && isEmptyBlock(ast, parentType, TokenTypes.METHOD_DEF);
     }
@@ -681,7 +681,7 @@ public class WhitespaceAroundCheck extends AbstractCheck {
      * @return {@code true} if {@code ast} makes up part of an
      *         allowed empty constructor block.
      */
-    private boolean isEmptyCtorBlockCheckedFromRcurly(DetailAST ast) {
+    protected boolean isEmptyCtorBlockCheckedFromRcurly(DetailAST ast) {
         final DetailAST parent = ast.getParent();
         final DetailAST grandParent = ast.getParent().getParent();
         return allowEmptyConstructors
@@ -699,7 +699,7 @@ public class WhitespaceAroundCheck extends AbstractCheck {
      * @return {@code true} if {@code ast} makes up part of an
      *          empty constructor block.
      */
-    private boolean isEmptyCtorBlockCheckedFromSlist(DetailAST ast) {
+    protected boolean isEmptyCtorBlockCheckedFromSlist(DetailAST ast) {
         return allowEmptyConstructors
                 && (ast.getParent().getType() == TokenTypes.CTOR_DEF
                         || ast.getParent().getType() == TokenTypes.COMPACT_CTOR_DEF)
@@ -714,7 +714,7 @@ public class WhitespaceAroundCheck extends AbstractCheck {
      * @return {@code true} if {@code ast} makes up part of an
      *         allowed empty loop block.
      */
-    private boolean isEmptyLoop(DetailAST ast, int parentType) {
+    protected boolean isEmptyLoop(DetailAST ast, int parentType) {
         return allowEmptyLoops
                 && (isEmptyBlock(ast, parentType, TokenTypes.LITERAL_FOR)
                         || isEmptyBlock(ast, parentType, TokenTypes.LITERAL_WHILE)
@@ -730,7 +730,7 @@ public class WhitespaceAroundCheck extends AbstractCheck {
      * @return {@code true} if {@code ast} makes up part of an
      *         allowed empty lambda block.
      */
-    private boolean isEmptyLambda(DetailAST ast, int parentType) {
+    protected boolean isEmptyLambda(DetailAST ast, int parentType) {
         return allowEmptyLambdas && isEmptyBlock(ast, parentType, TokenTypes.LAMBDA);
     }
 
@@ -743,7 +743,7 @@ public class WhitespaceAroundCheck extends AbstractCheck {
      * @return {@code true} if {@code ast} makes up part of an
      *         allowed empty catch block.
      */
-    private boolean isEmptyCatch(DetailAST ast, int parentType) {
+    protected boolean isEmptyCatch(DetailAST ast, int parentType) {
         return allowEmptyCatches && isEmptyBlock(ast, parentType, TokenTypes.LITERAL_CATCH);
     }
 
@@ -792,7 +792,7 @@ public class WhitespaceAroundCheck extends AbstractCheck {
      *         empty block contained under a {@code match} token type
      *         node.
      */
-    private static boolean isEmptyType(DetailAST ast) {
+    protected boolean isEmptyType(DetailAST ast) {
         final int type = ast.getType();
         final DetailAST nextSibling = ast.getNextSibling();
         final DetailAST previousSibling = ast.getPreviousSibling();

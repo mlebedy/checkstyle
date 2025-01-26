@@ -52,7 +52,7 @@ import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
  *
  */
 @FileStatefulCheck
-public final class TreeWalker extends AbstractFileSetCheck implements ExternalResourceHolder {
+public class TreeWalker extends AbstractFileSetCheck implements ExternalResourceHolder {
 
     /** Message to use when an exception occurs and should be printed as a violation. */
     public static final String PARSE_EXCEPTION_MSG = "parse.exception";
@@ -66,10 +66,10 @@ public final class TreeWalker extends AbstractFileSetCheck implements ExternalRe
             new HashMap<>();
 
     /** Registered ordinary checks, that don't use comment nodes. */
-    private final Set<AbstractCheck> ordinaryChecks = createNewCheckSortedSet();
+    protected final Set<AbstractCheck> ordinaryChecks = createNewCheckSortedSet();
 
     /** Registered comment checks. */
-    private final Set<AbstractCheck> commentChecks = createNewCheckSortedSet();
+    protected final Set<AbstractCheck> commentChecks = createNewCheckSortedSet();
 
     /** The ast filters. */
     private final Set<TreeWalkerFilter> filters = new HashSet<>();
@@ -257,7 +257,7 @@ public final class TreeWalker extends AbstractFileSetCheck implements ExternalRe
      * @param check the check to register
      * @throws CheckstyleException if an error occurs
      */
-    private void registerCheck(AbstractCheck check) throws CheckstyleException {
+    protected void registerCheck(AbstractCheck check) throws CheckstyleException {
         final int[] tokens;
         final Set<String> checkTokens = check.getTokenNames();
         if (checkTokens.isEmpty()) {
@@ -325,7 +325,7 @@ public final class TreeWalker extends AbstractFileSetCheck implements ExternalRe
      * @param contents the contents of the file the AST was generated from.
      * @param astState state of AST.
      */
-    private void walk(DetailAST ast, FileContents contents,
+    protected void walk(DetailAST ast, FileContents contents,
             AstState astState) {
         notifyBegin(ast, contents, astState);
         processIter(ast, astState);
@@ -492,7 +492,7 @@ public final class TreeWalker extends AbstractFileSetCheck implements ExternalRe
      * State of AST.
      * Indicates whether tree contains certain nodes.
      */
-    private enum AstState {
+    protected enum AstState {
 
         /**
          * Ordinary tree.

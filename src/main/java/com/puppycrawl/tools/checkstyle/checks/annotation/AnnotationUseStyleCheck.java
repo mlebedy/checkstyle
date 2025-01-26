@@ -156,7 +156,7 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
  *
  */
 @StatelessCheck
-public final class AnnotationUseStyleCheck extends AbstractCheck {
+public class AnnotationUseStyleCheck extends AbstractCheck {
 
     /**
      * Defines the styles for defining elements in an annotation.
@@ -387,7 +387,7 @@ public final class AnnotationUseStyleCheck extends AbstractCheck {
      *
      * @param annotation the annotation token
      */
-    private void checkStyleType(final DetailAST annotation) {
+    protected void checkStyleType(final DetailAST annotation) {
         switch (elementStyle) {
             case COMPACT_NO_ARRAY:
                 checkCompactNoArrayStyle(annotation);
@@ -488,7 +488,7 @@ public final class AnnotationUseStyleCheck extends AbstractCheck {
      *
      * @param annotation the annotation token
      */
-    private void checkTrailingComma(final DetailAST annotation) {
+    protected void checkTrailingComma(final DetailAST annotation) {
         if (trailingArrayComma != TrailingArrayCommaOption.IGNORE) {
             DetailAST child = annotation.getFirstChild();
 
@@ -538,7 +538,7 @@ public final class AnnotationUseStyleCheck extends AbstractCheck {
      *
      * @param ast the annotation token
      */
-    private void checkCheckClosingParensOption(final DetailAST ast) {
+    protected void checkCheckClosingParensOption(final DetailAST ast) {
         if (closingParens != ClosingParensOption.IGNORE) {
             final DetailAST paren = ast.getLastChild();
 

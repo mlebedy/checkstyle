@@ -381,9 +381,7 @@ public class LeftCurlyCheck
         if (braceLine.length() <= brace.getColumnNo() + 1
                 || braceLine.charAt(brace.getColumnNo() + 1) != '}') {
             if (option == LeftCurlyOption.NL) {
-                if (!CommonUtil.hasWhitespaceBefore(brace.getColumnNo(), braceLine)) {
-                    log(brace, MSG_KEY_LINE_NEW, OPEN_CURLY_BRACE, brace.getColumnNo() + 1);
-                }
+                validateNewLine(brace, braceLine);
             }
             else if (option == LeftCurlyOption.EOL) {
                 validateEol(brace, braceLine);
@@ -394,13 +392,19 @@ public class LeftCurlyCheck
         }
     }
 
+    protected void validateNewLine(DetailAST brace, String braceLine) {
+        if (!CommonUtil.hasWhitespaceBefore(brace.getColumnNo(), braceLine)) {
+            log(brace, MSG_KEY_LINE_NEW, OPEN_CURLY_BRACE, brace.getColumnNo() + 1);
+        }
+    }
+
     /**
      * Validate EOL case.
      *
      * @param brace brace AST
      * @param braceLine line content
      */
-    private void validateEol(DetailAST brace, String braceLine) {
+    protected void validateEol(DetailAST brace, String braceLine) {
         if (CommonUtil.hasWhitespaceBefore(brace.getColumnNo(), braceLine)) {
             log(brace, MSG_KEY_LINE_PREVIOUS, OPEN_CURLY_BRACE, brace.getColumnNo() + 1);
         }
@@ -416,7 +420,7 @@ public class LeftCurlyCheck
      * @param startToken start Token
      * @param braceLine content of line with Brace
      */
-    private void validateNewLinePosition(DetailAST brace, DetailAST startToken, String braceLine) {
+    protected void validateNewLinePosition(DetailAST brace, DetailAST startToken, String braceLine) {
         // not on the same line
         if (startToken.getLineNo() + 1 == brace.getLineNo()) {
             if (CommonUtil.hasWhitespaceBefore(brace.getColumnNo(), braceLine)) {

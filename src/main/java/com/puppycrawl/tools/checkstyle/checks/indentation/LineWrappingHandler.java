@@ -169,9 +169,11 @@ public class LineWrappingHandler {
                 continue;
             }
             if (currentType == TokenTypes.RPAREN) {
+                indentCheck.notifyLineWrappingLog(this, node, firstNode, firstNodeIndent, expandedTabsColumnNo(node), firstNodeIndent);
                 logWarningMessage(node, firstNodeIndent);
             }
             else if (!TokenUtil.isOfType(currentType, IGNORED_LIST)) {
+                indentCheck.notifyLineWrappingLog(this, node, firstNode, firstNodeIndent, expandedTabsColumnNo(node), currentIndent);
                 logWarningMessage(node, currentIndent);
             }
         }
@@ -336,9 +338,11 @@ public class LineWrappingHandler {
                     && (parentNode.getParent().getType() == TokenTypes.MODIFIERS
                         || parentNode.getParent().getType() == TokenTypes.ANNOTATIONS)
                     || TokenUtil.areOnSameLine(node, atNode))) {
+                indentCheck.notifyLineWrappingLog(this, node, atNode, firstNodeIndent, expandedTabsColumnNo(node), firstNodeIndent);
                 logWarningMessage(node, firstNodeIndent);
             }
             else if (!isArrayInitPresentInAncestors) {
+                indentCheck.notifyLineWrappingLog(this, node, atNode, firstNodeIndent, expandedTabsColumnNo(node), firstNodeIndent);
                 logWarningMessage(node, currentIndent);
             }
             itr.remove();

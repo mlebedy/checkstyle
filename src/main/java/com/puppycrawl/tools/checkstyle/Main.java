@@ -118,6 +118,7 @@ public final class Main {
         // provide proper exit code based on results.
         int exitStatus = 0;
         int errorCounter = 0;
+        boolean keepProcessRunning;
         try {
             final ParseResult parseResult = commandLine.parseArgs(args);
             if (parseResult.isVersionHelpRequested()) {
@@ -153,7 +154,9 @@ public final class Main {
                 System.err.println(errorCounterViolation.getMessage());
             }
         }
-        Runtime.getRuntime().exit(exitStatus);
+        if (!cliOptions.keepProcessRunning) {
+            Runtime.getRuntime().exit(exitStatus);
+        }
     }
 
     /**
@@ -734,6 +737,10 @@ public final class Main {
                         + "with comment nodes excluding Javadoc of the specified file. It can only"
                         + " be used on a single file and cannot be combined with other options.")
         private boolean printAstWithComments;
+
+        @Option(names = {"-K", "--keepProcessRunning"},
+                description = "Don't exit.")
+        private boolean keepProcessRunning;
 
         /** Option that controls whether to print the parse tree of the javadoc comment. */
         @Option(names = {"-j", "--javadocTree"},
